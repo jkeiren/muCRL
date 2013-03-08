@@ -1,4 +1,0 @@
-(*
-* Consumer cannot read is the buffer is empty
-*)
-not(['.*_may.*'*."empty_buffer_may"] <'R_must(in_setOf(A_abs_D,empty_setOf_abs_D))'> true)

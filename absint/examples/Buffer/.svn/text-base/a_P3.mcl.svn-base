@@ -1,5 +1,0 @@
-(*
-* Deadlock freedom
-* TRUE
-*)
-nu X. (<'.*_must.*'> true and ['.*_may.*'] X)
