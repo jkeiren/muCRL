@@ -67,8 +67,12 @@
 #include <stdio.h>
 #include "xlts.h"
 
-extern int readaut(GZfile file,lts_t lts);
+extern int readaut(FILE* file,lts_t lts);
 
-extern void writeaut(GZfile file,lts_t lts);
+extern void writeaut(FILE* file,lts_t lts);
+
+extern int readbes(FILE *file,lts_t lts);
+
+extern void writebes(FILE *file,lts_t lts,int oblivious);
 
 #endif

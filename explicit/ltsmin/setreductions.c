@@ -10,6 +10,15 @@
 #include <stdlib.h>
 #include "memstat.h"
 
+#define LABELSIZE 500
+
+typedef enum {UNDEF = 0, AND = 1, OR = 2} OPERAND;
+typedef struct bes_label BES_LABEL;
+struct bes_label {OPERAND op; int rank;} ;
+extern BES_LABEL labelset[LABELSIZE]; // [LABELSIZE]; // GLOBALLY ACCESSIBLE LIST OF CONVERSIONS FOR THE LABELS <-> RANK/OP
+
+
+
 int tau_cycle_elim=0;
 
 int tau_indir_elim=0;
@@ -166,20 +175,23 @@ void set_reduce_weak(lts_t lts){
 
 
 void set_reduce_strong(lts_t lts){
-	int iter, set, *newmap, setcount, count, *tmp, *map;
+	int iter, set, *newmap, setcount, count, *tmp, *map, *size_sig, l1,l2;
         uint32_t i;
+	char str[25];
 	mytimer_t timer;
         cell_t j;
 	timer=createTimer();
 	startTimer(timer);
-	lts_uniq(lts);
+	lts_uniq(lts); // remove redundant transitions (these actually occur in BESs)
 	lts_sort(lts);
 	lts_set_type(lts,LTS_BLOCK);
 	map=(int*)malloc(sizeof(int)*lts->states);
+	size_sig=(int*)malloc(sizeof(int)*lts->states);
 	newmap=(int*)malloc(sizeof(int)*lts->states);
 	if (!map || !newmap ) Fatal(1,1,"out of memory");
 	for(i=0;i<lts->states;i++){
-		map[i]=0;
+		map[i]= 0; //labelset[lts->label[lts->begin[i]]].rank; // creating initial block: map(x) = rank(x) for all equations x.
+		size_sig[i]=1;                                   // recording size of the block: size_sig(x) = |sig(x)| for all equations x.
 	}
 	count=1;
 	iter=0;
@@ -190,9 +202,29 @@ void set_reduce_strong(lts_t lts){
 		setcount=0;
 		for(i=0;i<lts->states;i++){
 			set=EMPTY_SET;
-			for(j=lts->begin[i];j<lts->begin[i+1];j++){
-				set=SetInsert(set,lts->label[j],map[lts->dest[j]]);
+			//Idea: as long as the size of set was size 1 previously, run SetInsert(set,-1,map[lts->dest[j]])
+			//      as soon as the size of set was size >1 previously, run SetInsert(set,labelset[lts->label[j]].op,map[lts->dest[j]])
+			//Warning (1, "State %d is mapped onto block %d;",i,map[i]);
+			if (size_sig[i] <= 1){// ignore the logical operand; only use the ranks
+				for(j=lts->begin[i];j<lts->begin[i+1];j++){
+					set=SetInsert(set,-2-labelset[lts->label[j]].rank,map[lts->dest[j]]);
+					//SetPrint(stderr,set);
+				}
+				//iterate over all outgoing edges j of state i
+				//the destination of transition j is lts->dest[j]
 			}
+			else{// take the logical operand into account; offset by the maximal rank in order to avoid confusion
+				for(j=lts->begin[i];j<lts->begin[i+1];j++){
+					set=SetInsert(set,lts->label[j],map[lts->dest[j]]);
+					//SetPrint(stderr,set);
+				}
+
+				//iterate over all outgoing edges j of state i
+				//the destination of transition j is lts->dest[j]
+				//the operand of state i is determined by labelset[lts->label[j]].op
+
+			}
+			if (size_sig[i] <=1) size_sig[i] = SetGetSize(set);
 			newmap[i]=SetGetTag(set);
 			if (newmap[i]<0) {
 				SetSetTag(set,setcount);
@@ -213,8 +245,17 @@ void set_reduce_strong(lts_t lts){
 	/* reportTimer(timer,"computation of partition took"); */
 	lts_set_type(lts,LTS_LIST);
 	lts->root=map[lts->root];
+	l2 = 0;
         lts->root2=map[lts->root2];
 	for(j=0;j<lts->transitions;j++){
+		if (size_sig[lts->src[j]] <= 1) {
+			l1 = sprintf(str, "\"code(%d,%d)\"\00", UNDEF,labelset[lts->label[j]].rank);
+			l1 =getlabelindex(str,1);
+			if (l2== 0 && labelset[lts->label[j]].rank > 0){ 
+				l2++;
+			}
+			lts->label[j]= l1;
+		}
 		lts->src[j]=map[lts->src[j]];
 		lts->dest[j]=map[lts->dest[j]];
 	}

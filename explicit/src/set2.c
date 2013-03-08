@@ -1,4 +1,4 @@
-/* $Id: set.c,v 1.1 2004/01/29 13:17:32 bertl Exp $ */
+/* $Id: set.c,v 1.1.1.1 2004/09/07 15:06:33 uid523 Exp $ */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -7,6 +7,15 @@
 #include <stdlib.h>
 
 #define EMPTY_LIST -1
+
+#define LABELSIZE 500
+
+typedef enum {UNDEF = 0, AND = 1, OR = 2} OPERAND;
+typedef struct bes_label BES_LABEL;
+struct bes_label {OPERAND op; int rank;} ;
+extern BES_LABEL labelset[LABELSIZE]; // [LABELSIZE]; // GLOBALLY ACCESSIBLE LIST OF CONVERSIONS FOR THE LABELS <-> RANK/OP
+
+
 
 
 #define sethashcode(set,label,dest) (36425657*set+77673689*label+2341271*dest)
@@ -30,13 +39,10 @@ static unsigned int sethashcode(int set,int label,int dest){
 }
 */
 
-#define seteq(l1,d1,l2,d2) ((l1==l2)&&(d1==d2))
-#define setleq(l1,d1,l2,d2) ((l1 < l2) || ((l1==l2)&&(d1<=d2)))
-#define setless(l1,d1,l2,d2) ((l1 < l2) || ((l1==l2)&&(d1<d2)))
+#define seteq(l1,d1,l2,d2) ((labelset[l1].rank==labelset[l2].rank)&&(d1==d2))
+#define setleq(l1,d1,l2,d2) ((labelset[l1].rank <= labelset[l2].rank) || ((labelset[l1].rank==labelset[l2].rank)&&(d1<=d2)))
+#define setless(l1,d1,l2,d2) ((labelset[l1].rank < labelset[l2].rank) || ((labelset[l1].rank==labelset[l2].rank)&&(d1<d2)))
 
-//#define seteq(l1,d1,l2,d2) ((l1==l2)||(d1==d2))
-//#define setleq(l1,d1,l2,d2) (d1<=d2)
-//#define setless(l1,d1,l2,d2) (d1<d2)
 
 /** dynamic node array **/
 
@@ -45,7 +51,6 @@ struct setnode {
 	int	dest;
 	int	parent;
 	int	tag;
-	int	size;
 } ;
 
 static struct setnode *setnodes=NULL;
@@ -58,6 +63,7 @@ static int undefined_tag;
 
 static void setchecknode(){
 	if (setnodenext>=setnodesize) {
+		Warning(2,"setnoderealloc");
 		setnodesize+=SET_NODE_BLOCK;
 		setnodes=(struct setnode*)realloc(setnodes,setnodesize*sizeof(struct setnode));
 	}
@@ -90,9 +96,11 @@ static int sethashmask=0;
 static void setcheckbucket(){
 	int i,hc;
 	if (setbucketnext>=setbucketsize){
+		Warning(2,"setbucketrealloc");
 		setbucketsize+=SET_BUCKET_BLOCK;
 		setbuckets=(struct setbucket*)realloc(setbuckets,setbucketsize*sizeof(struct setbucket));
 		if ((sethashmask/4)<(setbucketsize/3)){
+			Warning(2,"setrehash");
 			if (sethash==listhash) {
 				sethashmask=(1<<SET_HASH_CLASS)-1;
 				sethash=NULL;
@@ -176,11 +184,13 @@ void SetClear(int tag){
 
 static int SetBuild(int set,int label,int dest){
 	int i,hc;
+	//int depth;
 
 	hc=sethashcode(set,label,dest) & sethashmask;
+	//depth=1;
 	for(i=sethash[hc];i!=EMPTY_LIST;i=setbuckets[i].next){
-		if (setbuckets[i].set==set&&setbuckets[i].label==label&&setbuckets[i].dest==dest) return setbuckets[i].bigset;
-		//if (setbuckets[i].set==set&&(setbuckets[i].label==label||setbuckets[i].dest==dest)) return setbuckets[i].bigset;
+		if (setbuckets[i].set==set&&labelset[setbuckets[i].label].rank==labelset[label].rank&&setbuckets[i].dest==dest) return setbuckets[i].bigset;
+		//depth++;
 	}
 	setchecknode();
 
@@ -224,8 +234,7 @@ int SetInsert(int set,int label,int dest){
 
 	hc=sethashcode(set,label,dest) & sethashmask;
 	for(i=sethash[hc];i!=EMPTY_LIST;i=setbuckets[i].next){
-		//if (setbuckets[i].set==set&&(setbuckets[i].label==label || setbuckets[i].dest==dest)) return setbuckets[i].bigset;
-		if (setbuckets[i].set==set&&(setbuckets[i].label==label && setbuckets[i].dest==dest)) return setbuckets[i].bigset;
+		if (setbuckets[i].set==set&&labelset[setbuckets[i].label].rank==labelset[label].rank&&setbuckets[i].dest==dest) return setbuckets[i].bigset;
 	}
 	s=SetFind(set,label,dest);
 	if (setnodes[s].parent!=set) {
@@ -261,14 +270,6 @@ int SetGetTag(int set){
 
 void SetSetTag(int set,int tag){
 	setnodes[set].tag=tag;
-}
-
-void SetSetSize(int set,int size){
-	setnodes[set].size=size;
-}
-
-int SetGetSizeTag(int set){
-	return setnodes[set].size;
 }
 
 int SetGetSize(int set){

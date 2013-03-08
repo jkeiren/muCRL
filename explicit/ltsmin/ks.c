@@ -64,7 +64,7 @@ static void BubbleSort(block_t *block) {
               }
         }
      }
-    // fprintf(stderr, "End BubbleSort %d %d\n", block->start, block->end);
+    fprintf(stderr, "End BubbleSort %d %d\n", block->start, block->end);
     // BubbleSortCheck(block);
     }
 

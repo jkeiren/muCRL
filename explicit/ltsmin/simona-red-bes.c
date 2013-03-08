@@ -1,4 +1,4 @@
-/* $Id: simona-red.c,v 1.1.1.1 2004/09/07 15:06:33 uid523 Exp $ */
+/* $Id: simona-red.c,v 1.2 2004/11/23 12:36:17 uid523 Exp $ */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

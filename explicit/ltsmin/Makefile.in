@@ -31,14 +31,14 @@ LDFLAGS		= @LDFLAGS@
 INSTALL         = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA    = @INSTALL_DATA@
-PROGRAMS        = ltsmin ltscmp ltscp
-PROGRAMO        = ltsmin.o ltscmp.o ltscp.o
-SOURCES		= ltscmp.c ltsmin.c ltscp.c setreductions.c simona-red.c \
+PROGRAMS        = ltsmin ltscmp ltscp besmin
+PROGRAMO        = ltsmin.o ltscmp.o ltscp.o besmin.o
+SOURCES		= ltscmp.c ltsmin.c ltscp.c besreductions.c setreductions.c simona-red.c \
 		lowmem.c ks.c
-OBJECTS		= setreductions.o simona-red.o \
+OBJECTS		= setreductions.o besreductions.o simona-red.o \
 		lowmem.o ks.o
 
-INCLUDES	= lowmem.h simona-red.h setreductions.h help.h ks.h
+INCLUDES	= lowmem.h simona-red.h setreductions.h besreductions.h help.h ks.h
 
 all:		$(PROGRAMS)
                 
@@ -51,6 +51,8 @@ install:        all
 ltsmin:		ltsmin.o $(OBJECTS) 
 		$(CC) $(LDFLAGS) -o $@ ltsmin.o $(OBJECTS) $(LIBS)
 		
+besmin:		besmin.o $(OBJECTS) 
+		$(CC) $(LDFLAGS) -o $@ besmin.o $(OBJECTS) $(LIBS)
 
 ltscmp:		ltscmp.o
 		$(CC) $(LDFLAGS) -o $@ ltscmp.o $(LIBS)
@@ -64,6 +66,8 @@ ltsmin.o:	$(INCLUDES)
 ltscmp.o:	$(INCLUDES)
 
 setreductions.o:	$(INCLUDES)
+
+besreductions.o:	$(INCLUDES)
 
 simona_red.o:	$(INCLUDES)
 

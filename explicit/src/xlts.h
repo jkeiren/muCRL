@@ -67,6 +67,7 @@ extern int lts_diameter(lts_t lts);
 
 #define LTS_AUTO 0
 #define LTS_AUT 1
+#define BES 9
 #ifdef USE_BCG
 #define LTS_BCG 2
 #endif

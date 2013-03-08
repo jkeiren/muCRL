@@ -22,6 +22,13 @@
 
 typedef int (*compar_f) (const void *,const void *);
 
+#define LABELSIZE 500
+
+typedef enum {UNDEF = 0, AND = 1, OR = 2} OPERAND;
+typedef struct bes_label BES_LABEL;
+struct bes_label {OPERAND op; int rank;} ;
+extern BES_LABEL labelset[LABELSIZE]; // [LABELSIZE]; // GLOBALLY ACCESSIBLE LIST OF CONVERSIONS FOR THE LABELS <-> RANK/OP
+
 int lts_write_segments=0;
 
 lts_t lts_create(){
@@ -72,6 +79,7 @@ static void build_block(int states,cell_t transitions,cell_t *begin,
 	}
 	begin[states]=transitions;
 	for(i=0;i<transitions;i++){
+		//Warning (1,"block[%d] = %d, label[%d] = %d, other[%d] = %d",i,block[i],i,label[i],i,other[i]);
 		if (block[i]==i) {
 			continue;
 		}
@@ -271,6 +279,30 @@ void lts_sort(lts_t lts){
 	}
 }
 
+//void lts_sort(lts_t lts){
+//	Warning (1, "Sorting lts");
+//	int i,j,k,l_op,l,d,l_rank,k_op,k_rank;
+//	lts_set_type(lts,LTS_BLOCK);
+//	for(i=0;i<lts->states;i++){
+//		for(j=lts->begin[i];j<lts->begin[i+1];j++){
+//			l=lts->label[j];
+//			d=lts->dest[j];
+//			l_op = labelset[l].op;
+//			l_rank = labelset[l].rank;
+//
+//			for(k=j;k>lts->begin[i];k--){
+//				k_op = labelset[lts->label[k-1]].op;
+//				k_rank=labelset[lts->label[k-1]].rank;
+//				if (k_rank < l_rank) break;
+//				if ((k_rank == l_rank)&&(lts->dest[k-1]<=d)) break;
+//				lts->label[k]=lts->label[k-1];
+//				lts->dest[k]=lts->dest[k-1];
+//			}
+//			lts->label[k]=l;
+//			lts->dest[k]=d;
+//		}
+//	}
+//}
 
 void lts_sort_dest(lts_t lts){
 	int i,j,k,l,d;
@@ -761,9 +793,10 @@ void lts_tau_indir_elim(lts_t lts){
 
 
 static void lts_read_aut(char *name,lts_t lts){
-	GZfile file;
+	FILE* file;
 	int i,count;
-	file=GZopen(name,"r");
+//	file=GZopen(name,"r");
+	file=fopen(name,"r");
 	if (file == NULL) {
 		FatalCall(1,0,"Failed to open %s for reading",name);
 	}
@@ -778,7 +811,31 @@ static void lts_read_aut(char *name,lts_t lts){
 	if (lts->tau<0) lts->tau=getlabelindex("tau",0);
 	if (lts->tau<0) lts->tau=getlabelindex("i",0);
 	lts->label_count=count;
-	GZclose(file);
+	fclose(file);
+}
+
+static void lts_read_bes(char *name,lts_t lts){
+	//GZfile file;
+	FILE *file;
+	int i,count,rank,z,index;
+	OPERAND op;
+	char s[25];
+	file=fopen(name,"r");
+	//file=GZopen(name,"r");
+	if (file == NULL) {
+		FatalCall(1,0,"Failed to open %s for reading",name);
+	}
+	if (readbes(file,lts)<0)
+           Fatal(1,0,"Illegal format encountered at reading %s",name);
+	count=getlabelcount();
+	Warning(1,"Count = %d",count);
+	lts->label_string=malloc(count*sizeof(char*));
+	for(i=0;i<count;i++){
+		lts->label_string[i]=getlabelstring(i);
+	}
+	lts->label_count=count;
+	//GZclose(file);
+	fclose(file);
 }
 
 static void lts_write_aut(char *name,lts_t lts, int compress){
@@ -790,6 +847,17 @@ static void lts_write_aut(char *name,lts_t lts, int compress){
 	GZclose(file);
 }
 
+static void lts_write_bes(char *name,lts_t lts,int oblivious){
+	//GZfile file=GZopen(name,"wb0");
+	FILE *file=fopen(name,"w");
+	if (file == NULL) {
+		FatalCall(1,0,"Could not open %s for output",name);
+	}
+	writebes(file,lts,oblivious);
+	//GZclose(file);
+	fclose(file);
+}
+
 static int lts_guess_format(char *name){
 	char *lastdot=strrchr(name,'.');
 	if(!lastdot) Fatal(1,0,"filename %s has no extension",name);
@@ -798,6 +866,7 @@ static int lts_guess_format(char *name){
         if (!strcmp(lastdot,"gz"))  return LTS_GZ;
 #endif
 	if (!strcmp(lastdot,"aut")) return LTS_AUT;
+	if (!strcmp(lastdot,"bes")) return BES;
 #ifdef USE_BCG
 	if (!strcmp(lastdot,"bcg")) return LTS_BCG;
 #endif
@@ -1374,6 +1443,9 @@ void lts_read(int format,char *name,lts_t lts){
 #endif
 		lts_read_aut(name,lts);
 		break;
+	case BES:
+		lts_read_bes(name,lts);
+		break;
 #ifdef USE_BCG
 	case LTS_BCG:
 		lts_read_bcg(name,lts);
@@ -1399,6 +1471,11 @@ void lts_read(int format,char *name,lts_t lts){
 	}
 }
 
+void lts_write2(char *name,lts_t lts,int oblivious){
+	if (oblivious) lts_write_bes(name,lts,oblivious);
+	else lts_write_bes(name,lts,oblivious);
+}
+
 void lts_write(int format,char *name,lts_t lts){
 	if (format==LTS_AUTO) format=lts_guess_format(name);
 	switch(format){
@@ -1409,6 +1486,9 @@ void lts_write(int format,char *name,lts_t lts){
 #endif
 	case LTS_AUT:
 		lts_write_aut(name,lts, 0);
+		break;
+	case BES:
+		lts_write_bes(name,lts,1);
 		break;
 #ifdef USE_BCG
 	case LTS_BCG:
