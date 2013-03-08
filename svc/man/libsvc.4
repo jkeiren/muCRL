@@ -1,0 +1,255 @@
+.\"  SVC -- the SVC (Systems Validation Centre) file format library
+.\"
+.\"  Copyright (C) 2000  Stichting Mathematisch Centrum, Amsterdam,
+.\"                      The  Netherlands
+.\"
+.\"  This program is free software; you can redistribute it and/or
+.\"  modify it under the terms of the GNU General Public License
+.\"  as published by the Free Software Foundation; either version 2
+.\"  of the License, or (at your option) any later version.
+.\"
+.\"  This program is distributed in the hope that it will be useful,
+.\"  but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"  GNU General Public License for more details.
+.\"
+.\"  You should have received a copy of the GNU General Public License
+.\"  along with this program; if not, write to the Free Software
+.\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+.\"
+.\" $Id: libsvc.4,v 1.2 2001/01/04 15:26:31 izak Exp $
+.TH libsvc 4 15/5/2000
+.SH NAME
+libsvc \- the svc file format library
+
+.SH SYNOPSIS
+.B cc 
+[
+.I flag\c
+ ...]
+.I file... 
+[\c
+.I library\c
+ ...] 
+.B -lsvc
+
+#include <svc.h>
+
+.SH DESCRIPTION
+
+This library implements an interface to the SVC file format for labeled 
+transition systems. The interface falls apart in five groups. First, the functions
+.I SVCopen
+and
+.I SVCclose
+are used for allocating and freeing the resources associated with an SVC file.
+Second, the functions 
+.I SVCget...
+and
+.I SVCset...
+give access to the information stored in the file header (note that
+some header information is read-only for the user, as its contents is maintained
+by the interface). Third, the functions
+.I SVCnew...\c
+, 
+.I SVCaterm2...
+and 
+.I SVC...2ATerm
+maintain the indexation for states, actions label and transition parameters 
+offered by the interface. Each state, label and parameter is represented by an
+ATerm which receives an index by 
+.I SVCnew...
+which is then used to represent this term through the interface. Conversion
+between terms and their indices is possible with the functions
+.I SVCaterm2...
+and 
+.I SVC...2ATerm.
+Fourth, the functions 
+.I SVCputTransition
+and
+.I SVCgetNextTransition
+are used for the consecutive writing or reading of transitions in an SVC
+file. The fifth and final group consists of the 
+.I SVCerror
+which generates an error message from an error number.
+
+.SH INTERFACE
+
+.HP 3 
+int SVCopen(SVCfile
+.I *file,
+char
+.I *filename,
+SVCfilemode
+.I mode,
+SVCbool
+.I *indexFlag
+);
+.HP 3 
+int SVCclose(SVCfile
+.I *file\c
+);
+.HP 3 
+int SVCnewLabel(SVCfile
+.I *file,
+ATerm
+.I label,
+SVCbool
+.I *new\c
+);
+.HP 3 
+SVClabelIndex SVCaterm2Label(SVCfile
+.I *file,
+ATerm
+.I term\c
+);
+.HP 3 
+ATerm SVClabel2ATerm(SVCfile
+.I *file,
+SVClabelIndex
+.I index\c
+);
+.HP 3 
+SVCstateIndex SVCnewState(SVCfile
+.I *file,
+ATerm
+.I state,
+SVCbool
+.I *new\c
+);
+.HP 3 
+SVCstateIndex SVCaterm2State(SVCfile
+.I *file,
+ATerm
+.I term\c
+);
+.HP 3 
+ATerm SVCstate2ATerm(SVCfile
+.I *file,
+SVCstateIndex
+.I index\c
+);
+.HP 3 
+SVCparameterIndex SVCnewParameter(SVCfile
+.I *file,
+ATerm
+.I parameter,
+SVCbool
+.I *new\c
+);
+.HP 3 
+SVCparameterIndex SVCaterm2Parameter(SVCfile
+.I *file,
+ATerm
+.I term\c
+);
+.HP 3 
+ATerm SVCparameter2ATerm(SVCfile
+.I *file,
+SVCparameterIndex
+.I index\c
+);
+.HP 3 
+int SVCputTransition(SVCfile
+.I *file,
+SVCstateIndex
+.I from,
+SVClabelIndex
+.I action,
+SVCstateIndex
+.I to,
+SVCparameterIndex
+.I parameter\c
+);
+.HP 3 
+int SVCgetNextTransition(SVCfile
+.I *file,
+SVCstateIndex
+.I *from,
+SVClabelIndex
+.I *action,
+SVCstateIndex
+.I *to,
+SVCparameterIndex
+.I *parameter\c
+);
+.HP 3 
+int SVCgetComments(SVCfile
+.I *file\c
+);
+.HP 3 
+int SVCsetComments(SVCfile
+.I *file,
+char
+.I *comments\c
+);
+.HP 3 
+char *SVCgetCreator(SVCfile
+.I *file\c
+);
+.HP 3 
+int SVCsetCreator(SVCfile
+.I *file,
+char
+.I *creator\c
+);
+.HP 3 
+char *SVCgetType(SVCfile
+.I *file\c
+);
+.HP 3 
+int SVCsetType(SVCfile
+.I *file,
+char
+.I type\c
+);
+.HP 3 
+char *SVCgetVersion(SVCfile *file\c
+);
+.HP 3 
+int SVCsetVersion(SVCfile
+.I *file,
+char
+.I *version\c
+);
+.HP 3 
+char *SVCgetDate(SVCfile
+.I *file\c
+);
+.HP 3 
+int SVCgetFilename(SVCfile
+.I *file\c
+);
+.HP 3 
+char *SVCgetFormatVersion(SVCfile *file\c
+);
+.HP 3 
+SVCbool SVCgetIndexFlag(SVCfile *file\c
+);
+.HP 3 
+SVCint SVCnumLabels(SVCfile
+.I *file\c
+);
+.HP 3 
+SVCint SVCnumStates(SVCfile
+.I *file\c
+);
+.HP 3 
+SVCint SVCnumParameters(SVCfile
+.I *file\c
+);
+.HP 3 
+SVCint SVCnumTransitions(SVCfile
+.I *file\c
+);
+.HP 3 
+char *svcError(int
+.I svcerrnum \c
+);
+
+
+.SH AUTHOR
+Izak van Langevelde <izak@cwi.nl>
+.LP
+Please send all complaints, comments and bug fixes to the author. 
+

@@ -1,0 +1,205 @@
+SHELL           = /bin/sh
+.SUFFIXES:      .c .o
+
+srcdir		= @srcdir@
+top_srcdir	= @top_srcdir@
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+datarootdir 	= @datarootdir@
+bindir		= @bindir@
+libdir		= @libdir@
+includedir	= @includedir@
+datadir		= @datadir@
+distdir		= @distdir@
+libexecdir	= @libexecdir@
+exampledir	= @exampledir@
+noprintdirectory= @noprintdirectory@
+
+
+RM		= @RM@
+CC		= @CC@
+DEFS		= @DEFS@
+CFLAGS		= @CFLAGS@
+CPPFLAGS	= -I. -I$(top_srcdir)/prover/src -I$(top_srcdir)/svc/src @CPPFLAGS@
+LIBS		= -L. -L$(top_srcdir)/svc/src -llts -lstep -lmcrl @LIBS@
+PROVERLIBS	= -L. -L$(top_srcdir)/prover/src -llts -lstep -lprover -lmcrl @LIBS@
+TCLLIBS         = @TCLLIBS@
+SIMLIBS		= -L. -L$(top_srcdir)/prover/src -llts -lstep -lstategraph -lprover -lmcrl @LIBS@ @TCLLIBS@
+X_CFLAGS        = @X_CFLAGS@
+VERSION		= @VERSION@
+LDFLAGS		= @LDFLAGS@
+DYNFLAGS	= @DYNFLAGS@
+
+INSTALL         = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA    = @INSTALL_DATA@
+
+PROGRAMS =	structelm sumelm constelm parelm rewr pp instantiator tbfinfo \
+		tbfupdate svcupdate decluster binary compose lps2mcrl
+OBJECTS =	structelm.o constelm.o parelm.o rewr.o pp.o xsim.o simu.o \
+                instantiator.o sumelm.o tbfinfo.o tbfupdate.o decluster.o binary.o \
+		liblts.o libmcrl.o librww.o librw.o libstep.o libsubst.o svcupdate.o \
+		jitty.o jittyrw.o compose.o lps2mcrl.o
+INCLUDES=	mcrl.h rw.h tasks.h mcrl_sig.h step.h jitty.h lts.h
+SUBDIR	=	src
+LIBRARIES=	libmcrl.a liblts.a libstep.a
+DISTFILES=	structelm.c constelm.c parelm.c pp.c instantiator.c rewr.c \
+                sumelm.c xsim.c simu.c tbfinfo.c decluster.c \
+	        jitty.c jittyrw.c librww.c librw.c rw.c \
+                libstep.c libmcrl.c liblts.c libsubst.c labelfreq.c binary.c \
+		compose.c tbfupdate.c svcupdate.c lps2mcrl.c \
+		Makefile.in GNUmakefile Rww.in msim.tcl mcrlparse.h mcrlparse.l \
+		edit.h edit.l $(INCLUDES) 
+
+@SET_MAKE@
+all:		
+		$(MAKE) withoutsim 
+		if test "@SIMULATOR@" =  "yes";\
+		then \
+		    $(MAKE) xsim; \
+	       	    $(MAKE) msim; \
+		fi
+
+withoutsim:	$(PROGRAMS)
+
+xsim:		xsim.o simu.o $(LIBRARIES) $(top_srcdir)/prover/src/libprover.a $(top_srcdir)/prover/src/libstategraph.a
+		@(cd ../prover/src && $(MAKE) $(noprintdirectory) libprover.a)
+		@(cd ../prover/src && $(MAKE) $(noprintdirectory) libstategraph.a)
+		$(CC) -o $@ xsim.o simu.o $(SIMLIBS)
+
+msim:		msim.tcl Makefile
+		echo "./xsim ./msim.tcl $(VERSION) $(top_srcdir)/data/abp.tbf" '$$*'  > ./msim
+		chmod u+x ./msim
+
+clean:
+		$(RM) $(OBJECTS) $(PROGRAMS) msim xsim $(LIBRARIES) core.* core
+		if test ! -f  $(top_srcdir)/tarball; then \
+			$(RM) edit.h mcrlparse.h; \
+		fi
+
+dist:
+		mkdir $(distdir)/$(SUBDIR)
+		cp $(DISTFILES) $(distdir)/$(SUBDIR)  
+
+install0:	
+		$(MAKE) withoutsim
+		$(INSTALL) -d $(includedir)
+		@for file in $(INCLUDES); do \
+		    $(INSTALL_DATA) $$file $(includedir); \
+		done
+		$(INSTALL) -d $(bindir)
+		@for file in $(PROGRAMS); do \
+		    $(INSTALL_PROGRAM) $$file $(bindir); \
+		done
+		$(INSTALL) -d $(libdir)
+		$(INSTALL_DATA) libmcrl.a $(libdir)            
+		$(INSTALL_DATA) libstep.a $(libdir)
+		$(INSTALL_DATA) liblts.a $(libdir)
+		$(INSTALL) -d $(datadir)
+		$(INSTALL_DATA) librww.c $(datadir)
+		$(INSTALL_DATA) librw.c $(datadir)
+		$(INSTALL) -d $(libexecdir)
+		$(INSTALL_DATA) Rww $(libexecdir)
+		$(INSTALL_DATA) labelfreq.c $(datadir)
+		
+install:	
+		$(MAKE) install0
+		@if test "@SIMULATOR@" =  "yes"; \
+		then $(MAKE) xsim; \
+		     $(MAKE) msim; \
+		     $(INSTALL) -d $(libexecdir); \
+		     $(INSTALL_PROGRAM) xsim $(libexecdir); \
+		     $(INSTALL) -d $(datadir); \
+		     $(INSTALL_DATA) msim.tcl $(datadir); \
+		     $(INSTALL) -d $(bindir); \
+		     echo "$(libexecdir)/xsim $(datadir)/msim.tcl $(VERSION) $(exampledir)/abp.tbf" '$$*'  > $(bindir)/msim; \
+		     chmod a+x $(bindir)/msim; \
+		fi
+
+uninstall:
+		if test -d $(bindir); then \
+		(cd $(bindir); $(RM) $(PROGRAMS);$(RM) msim) ;\
+		fi
+		if test -d $(libexecdir); then \
+		(cd $(libexecdir);$(RM) xsim Rww) ;\
+		fi
+		if test -d $(includedir); then \
+		(cd $(includedir); $(RM) $(INCLUDES)) ;\
+		fi
+		if test -d $(libdir); then \
+		(cd $(libdir); $(RM) $(LIBRARIES)) ;\
+		fi
+		if test -d $(datadir); then \
+		(cd $(datadir); $(RM) labelfreq.c librww.c librw.c msim.tcl) ;\
+		fi
+
+libmcrl.a:      libmcrl.o jitty.o jittyrw.o librww.o librw.o libsubst.o
+		ar -rs $@ libmcrl.o jitty.o jittyrw.o librww.o \
+                librw.o libsubst.o
+
+libstep.a:      libstep.o
+		ar -rs $@ libstep.o
+
+liblts.a:       liblts.o
+		ar -rs $@ liblts.o
+
+instantiator:	$(LIBRARIES) instantiator.o
+		$(CC) -o $@ $(LDFLAGS) instantiator.o $(LIBS)
+
+svcupdate:	$(LIBRARIES) svcupdate.o
+		$(CC) -o $@ $(LDFLAGS) svcupdate.o $(LIBS)
+
+rewr:		$(LIBRARIES) $(top_srcdir)/prover/src/libprover.a rewr.o
+		@(cd ../prover/src && $(MAKE) $(noprintdirectory) libprover.a) 
+		$(CC) -o $@ $(LDFLAGS) "$@.o" $(PROVERLIBS)
+
+binary:		$(LIBRARIES) binary.o
+		$(CC) -o $@ $(LDFLAGS) binary.o $(LIBS)
+
+pp:		$(LIBRARIES) pp.o
+		$(CC) -o $@ $(LDFLAGS) pp.o $(LIBS)
+
+tbfinfo:	$(LIBRARIES) tbfinfo.o
+		$(CC) -o $@ $(LDFLAGS) tbfinfo.o $(LIBS)
+
+tbfupdate:      $(LIBRARIES) tbfupdate.o
+		$(CC) -o $@ $(LDFLAGS) tbfupdate.o $(LIBS)
+                
+structelm:	$(LIBRARIES) structelm.o
+		$(CC) -o $@ $(LDFLAGS) structelm.o $(LIBS)
+
+parelm:		$(LIBRARIES) parelm.o
+		$(CC) -o $@ $(LDFLAGS) parelm.o $(LIBS)
+
+constelm:	$(LIBRARIES) constelm.o
+		$(CC) -o $@ $(LDFLAGS) constelm.o $(LIBS)
+                
+sumelm:         $(LIBRARIES) sumelm.o
+		$(CC) -o $@ $(LDFLAGS) sumelm.o $(LIBS)
+
+compose:        $(LIBRARIES) compose.o
+		$(CC) -o $@ $(LDFLAGS) compose.o $(LIBS)
+
+lps2mcrl:        $(LIBRARIES) lps2mcrl.o
+		$(CC) -o $@ $(LDFLAGS) lps2mcrl.o $(LIBS)
+
+decluster:	$(LIBRARIES) decluster.o
+		$(CC) -o $@ $(LDFLAGS) decluster.o $(LIBS)
+
+libmcrl.o:      libmcrl.c mcrlparse.h mcrl.h Makefile rw.h rw.c
+		$(CC) $(DEFS) $(CFLAGS) $(X_CFLAGS) $(CPPFLAGS) -c $*.c
+
+tbfupdate.o:	tbfupdate.c edit.h Makefile
+		$(CC) $(DEFS) $(CFLAGS) $(X_CFLAGS) $(CPPFLAGS) -c $*.c
+
+svcupdate.o:	svcupdate.c edit.h Makefile
+		$(CC) $(DEFS) $(CFLAGS) $(X_CFLAGS) $(CPPFLAGS) -c $*.c
+		
+		
+.c.o:
+		$(CC) -DSRCDIR=\"`pwd`\" $(DEFS) $(CFLAGS) $(X_CFLAGS) $(CPPFLAGS) -c $*.c
+                
+.l.h:
+		flex $*.l
+
+$(OBJECTS):	$(INCLUDES) Makefile

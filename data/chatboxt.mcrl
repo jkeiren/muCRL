@@ -1,0 +1,501 @@
+% A mcrl description of a chatbox van Judi Romijn. Users can
+% JOIN and LEAVE a discussion, and if joined can send each other 
+% messages and acknowledgements. The system has exactly 2^16 states.
+% This example is heavily used for comparison with the SPIN toolset
+% and shows that when all actions are hidden (to facilitate a fair
+% comparison with SPIN, which does not have labelled transitions)
+% SPIN is approximately four times faster than the mCRL toolset
+% dd, 18/1/1999. The reason for this is undoubtedly that SPIN
+% uses a machine bit to represent an element of type Bool, whereas
+% the mCRL toolset uses full terms T and F, represented internally
+% with pointers of 4 bytes.
+
+% This description differs for chatbox in that the JOIN, LEAVE
+% and DREQ actions have been hidden.
+
+sort	Bool
+func	T,F : -> Bool
+map	not: Bool -> Bool
+	or,and: Bool # Bool -> Bool
+var	b : Bool
+rew	not(T) = F
+	not(F) = T
+	and(F,b) = F
+	and(b,F) = F
+	and(T,b) = b
+	and(b,T) = b
+	or(F,b) = b
+	or(b,F) = b
+	or(T,b) = T
+	or(b,T) = T
+
+sort	Nat
+func	0,1,2,3: -> Nat
+
+sort	Mes
+func	MES, ACK: -> Mes
+
+sort	Output
+func	NO_OUTPUT, OK, DIND : -> Output
+
+act	JOIN, LEAVE: Nat # Output
+	DREQ: Nat # Nat # Mes # Output
+
+proc	Chatbox(pres0: Bool, pres1: Bool, pres2: Bool, pres3: Bool,
+                sentto01: Bool, sentto02: Bool, sentto03: Bool,
+                sentto10: Bool, sentto12: Bool, sentto13: Bool,
+                sentto20: Bool, sentto21: Bool, sentto23: Bool,
+                sentto30: Bool, sentto31: Bool, sentto32: Bool)
+        = 
+	   JOIN(0,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                       sentto01, sentto02, sentto03,
+                                       sentto10, sentto12, sentto13,
+                                       sentto20, sentto21, sentto23,
+                                       sentto30, sentto31, sentto32)
+	      <| pres0 |>
+           JOIN(0,OK) . Chatbox(not(pres0), pres1, pres2, pres3,
+                                sentto01, sentto02, sentto03,
+                                sentto10, sentto12, sentto13,
+                                sentto20, sentto21, sentto23,
+                                sentto30, sentto31, sentto32)
+         +
+	   JOIN(1,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                       sentto01, sentto02, sentto03,
+                                       sentto10, sentto12, sentto13,
+                                       sentto20, sentto21, sentto23,
+                                       sentto30, sentto31, sentto32)
+              <| pres1 |>
+           JOIN(1,OK) . Chatbox(pres0, not(pres1), pres2, pres3,
+                                sentto01, sentto02, sentto03,
+                                sentto10, sentto12, sentto13,
+                                sentto20, sentto21, sentto23,
+                                sentto30, sentto31, sentto32)
+         +
+           JOIN(2,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                       sentto01, sentto02, sentto03,
+                                       sentto10, sentto12, sentto13,
+                                       sentto20, sentto21, sentto23,
+                                       sentto30, sentto31, sentto32)
+              <| pres2 |>
+           JOIN(2,OK) . Chatbox(pres0, pres1, not(pres2), pres3,
+                                sentto01, sentto02, sentto03,
+                                sentto10, sentto12, sentto13,
+                                sentto20, sentto21, sentto23,
+                                sentto30, sentto31, sentto32)
+         +
+           JOIN(3,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                       sentto01, sentto02, sentto03,
+                                       sentto10, sentto12, sentto13,
+                                       sentto20, sentto21, sentto23,
+                                       sentto30, sentto31, sentto32)
+              <| pres3 |>
+           JOIN(3,OK) . Chatbox(pres0, pres1, pres2, not(pres3),
+                                sentto01, sentto02, sentto03,
+                                sentto10, sentto12, sentto13,
+                                sentto20, sentto21, sentto23,
+                                sentto30, sentto31, sentto32)
+	 +
+	   LEAVE(0,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                        sentto01, sentto02, sentto03,
+                                        sentto10, sentto12, sentto13,
+                                        sentto20, sentto21, sentto23,
+                                        sentto30, sentto31, sentto32)
+	      <| not(pres0) |>
+           LEAVE(0,OK) . Chatbox(not(pres0), pres1, pres2, pres3,
+                                 sentto01, sentto02, sentto03,
+                                 sentto10, sentto12, sentto13,
+                                 sentto20, sentto21, sentto23,
+                                 sentto30, sentto31, sentto32)
+         +
+	   LEAVE(1,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                        sentto01, sentto02, sentto03,
+                                        sentto10, sentto12, sentto13,
+                                        sentto20, sentto21, sentto23,
+                                        sentto30, sentto31, sentto32)
+              <| not(pres1) |>
+           LEAVE(1,OK) . Chatbox(pres0, not(pres1), pres2, pres3,
+                                 sentto01, sentto02, sentto03,
+                                 sentto10, sentto12, sentto13,
+                                 sentto20, sentto21, sentto23,
+                                 sentto30, sentto31, sentto32)
+         +
+           LEAVE(2,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                        sentto01, sentto02, sentto03,
+                                        sentto10, sentto12, sentto13,
+                                        sentto20, sentto21, sentto23,
+                                        sentto30, sentto31, sentto32)
+              <| not(pres2) |>
+           LEAVE(2,OK) . Chatbox(pres0, pres1, not(pres2), pres3,
+                                 sentto01, sentto02, sentto03,
+                                 sentto10, sentto12, sentto13,
+                                 sentto20, sentto21, sentto23,
+                                 sentto30, sentto31, sentto32)
+         +
+           LEAVE(3,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                        sentto01, sentto02, sentto03,
+                                        sentto10, sentto12, sentto13,
+                                        sentto20, sentto21, sentto23,
+                                        sentto30, sentto31, sentto32)
+              <| not(pres3) |>
+           LEAVE(3,OK) . Chatbox(pres0, pres1, pres2, not(pres3),
+                                 sentto01, sentto02, sentto03,
+                                 sentto10, sentto12, sentto13,
+                                 sentto20, sentto21, sentto23,
+                                 sentto30, sentto31, sentto32)
+	 +
+	   DREQ(0,0,MES,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+	      <| T |>
+	   delta
+         +
+           DREQ(1,1,MES,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+	      <| T |>
+	   delta
+         +
+           DREQ(2,2,MES,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+              <| T |>
+           delta
+         +
+           DREQ(3,3,MES,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+              <| T |>
+           delta
+	 +
+           DREQ(0,1,MES,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      not(sentto01), sentto02, sentto03,
+                                      sentto10, sentto12, sentto13,
+                                      sentto20, sentto21, sentto23,
+                                      sentto30, sentto31, sentto32)
+              <| and(pres0,and(pres1,not(sentto01))) |>
+           DREQ(0,1,MES,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+         +
+           DREQ(0,2,MES,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      sentto01, not(sentto02),sentto03,
+                                      sentto10, sentto12, sentto13,
+                                      sentto20, sentto21, sentto23,
+                                      sentto30, sentto31, sentto32)
+              <| and(pres0,and(pres2,not(sentto02))) |>
+           DREQ(0,2,MES,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+         +
+           DREQ(0,3,MES,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      sentto01, sentto02, not(sentto03),
+                                      sentto10, sentto12, sentto13,
+                                      sentto20, sentto21, sentto23,
+                                      sentto30, sentto31, sentto32)
+              <| and(pres0,and(pres3,not(sentto03))) |>
+           DREQ(0,3,MES,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+         +
+           DREQ(1,0,MES,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      sentto01, sentto02, sentto03,
+                                      not(sentto10), sentto12, sentto13,
+                                      sentto20, sentto21, sentto23,
+                                      sentto30, sentto31, sentto32)
+              <| and(pres1,and(pres0,not(sentto10))) |>
+           DREQ(1,0,MES,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+         +
+           DREQ(1,2,MES,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      sentto01, sentto02, sentto03,
+                                      sentto10, not(sentto12), sentto13,
+                                      sentto20, sentto21, sentto23,
+                                      sentto30, sentto31, sentto32)
+              <| and(pres1,and(pres2,not(sentto12))) |>
+           DREQ(1,2,MES,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+         +
+           DREQ(1,3,MES,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      sentto01, sentto02, sentto03,
+                                      sentto10, sentto12, not(sentto13),
+                                      sentto20, sentto21, sentto23,
+                                      sentto30, sentto31, sentto32)
+              <| and(pres1,and(pres3,not(sentto13))) |>
+           DREQ(1,3,MES,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+         +
+           DREQ(2,0,MES,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      sentto01, sentto02, sentto03,
+                                      sentto10, sentto12, sentto13,
+                                      not(sentto20), sentto21, sentto23,
+                                      sentto30, sentto31, sentto32)
+              <| and(pres2,and(pres0,not(sentto20))) |>
+           DREQ(2,0,MES,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+         +
+           DREQ(2,1,MES,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      sentto01, sentto02, sentto03,
+                                      sentto10, sentto12, sentto13,
+                                      sentto20, not(sentto21), sentto23,
+                                      sentto30, sentto31, sentto32)
+              <| and(pres2,and(pres1,not(sentto21))) |>
+           DREQ(2,1,MES,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+         +
+           DREQ(2,3,MES,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      sentto01, sentto02, sentto03,
+                                      sentto10, sentto12, sentto13,
+                                      sentto20, sentto21, not(sentto23),
+                                      sentto30, sentto31, sentto32)
+              <| and(pres2,and(pres3,not(sentto23))) |>
+           DREQ(2,3,MES,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+         +
+           DREQ(3,0,MES,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      sentto01, sentto02, sentto03,
+                                      sentto10, sentto12, sentto13,
+                                      sentto20, sentto21, sentto23,
+                                      not(sentto30), sentto31, sentto32)
+              <| and(pres3,and(pres0,not(sentto30))) |>
+           DREQ(3,0,MES,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+         +
+           DREQ(3,1,MES,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      sentto01, sentto02, sentto03,
+                                      sentto10, sentto12, sentto13,
+                                      sentto20, sentto21, sentto23,
+                                      sentto30, not(sentto31), sentto32)
+              <| and(pres3,and(pres1,not(sentto31))) |>
+           DREQ(3,1,MES,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+         +
+           DREQ(3,2,MES,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      sentto01, sentto02, sentto03,
+                                      sentto10, sentto12, sentto13,
+                                      sentto20, sentto21, sentto23,
+                                      sentto30, sentto31, not(sentto32))
+              <| and(pres3,and(pres2,not(sentto32))) |>
+           DREQ(3,2,MES,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+	 +
+	   DREQ(0,0,ACK,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+	      <| T |>
+	   delta
+         +
+           DREQ(1,1,ACK,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+	      <| T |>
+	   delta
+         +
+           DREQ(2,2,ACK,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+              <| T |>
+           delta
+         +
+           DREQ(3,3,ACK,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+              <| T |>
+           delta
+	 +
+           DREQ(0,1,ACK,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      sentto01, sentto02, sentto03,
+                                      not(sentto10), sentto12, sentto13,
+                                      sentto20, sentto21, sentto23,
+                                      sentto30, sentto31, sentto32)
+              <| and(pres0,and(pres1,sentto10)) |>
+           DREQ(0,1,ACK,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+         +
+           DREQ(0,2,ACK,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      sentto01, sentto02,sentto03,
+                                      sentto10, sentto12, sentto13,
+                                      not(sentto20), sentto21, sentto23,
+                                      sentto30, sentto31, sentto32)
+              <| and(pres0,and(pres2,sentto20)) |>
+           DREQ(0,2,ACK,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+         +
+           DREQ(0,3,ACK,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      sentto01, sentto02, sentto03,
+                                      sentto10, sentto12, sentto13,
+                                      sentto20, sentto21, sentto23,
+                                      not(sentto30), sentto31, sentto32)
+              <| and(pres0,and(pres3,sentto30)) |>
+           DREQ(0,3,ACK,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+         +
+           DREQ(1,0,ACK,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      not(sentto01), sentto02, sentto03,
+                                      sentto10, sentto12, sentto13,
+                                      sentto20, sentto21, sentto23,
+                                      sentto30, sentto31, sentto32)
+              <| and(pres1,and(pres0,sentto01)) |>
+           DREQ(1,0,ACK,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+         +
+           DREQ(1,2,ACK,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      sentto01, sentto02, sentto03,
+                                      sentto10, sentto12, sentto13,
+                                      sentto20, not(sentto21), sentto23,
+                                      sentto30, sentto31, sentto32)
+              <| and(pres1,and(pres2,sentto21)) |>
+           DREQ(1,2,ACK,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+         +
+           DREQ(1,3,ACK,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      sentto01, sentto02, sentto03,
+                                      sentto10, sentto12, sentto13,
+                                      sentto20, sentto21, sentto23,
+                                      sentto30, not(sentto31), sentto32)
+              <| and(pres1,and(pres3,sentto31)) |>
+           DREQ(1,3,ACK,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+         +
+           DREQ(2,0,ACK,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      sentto01, not(sentto02), sentto03,
+                                      sentto10, sentto12, sentto13,
+                                      sentto20, sentto21, sentto23,
+                                      sentto30, sentto31, sentto32)
+              <| and(pres2,and(pres0,sentto02)) |>
+           DREQ(2,0,ACK,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+         +
+           DREQ(2,1,ACK,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      sentto01, sentto02, sentto03,
+                                      sentto10, not(sentto12), sentto13,
+                                      sentto20, sentto21, sentto23,
+                                      sentto30, sentto31, sentto32)
+              <| and(pres2,and(pres1,sentto12)) |>
+           DREQ(2,1,ACK,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+         +
+           DREQ(2,3,ACK,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      sentto01, sentto02, sentto03,
+                                      sentto10, sentto12, sentto13,
+                                      sentto20, sentto21, sentto23,
+                                      sentto30, sentto31, not(sentto32))
+              <| and(pres2,and(pres3,sentto32)) |>
+           DREQ(2,3,ACK,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+         +
+           DREQ(3,0,ACK,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      sentto01, sentto02, not(sentto03),
+                                      sentto10, sentto12, sentto13,
+                                      sentto20, sentto21, sentto23,
+                                      sentto30, sentto31, sentto32)
+              <| and(pres3,and(pres0,sentto03)) |>
+           DREQ(3,0,ACK,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+         +
+           DREQ(3,1,ACK,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      sentto01, sentto02, sentto03,
+                                      sentto10, sentto12, not(sentto13),
+                                      sentto20, sentto21, sentto23,
+                                      sentto30, sentto31, sentto32)
+              <| and(pres3,and(pres1,sentto13)) |>
+           DREQ(3,1,ACK,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+         +
+           DREQ(3,2,ACK,OK) . Chatbox(pres0, pres1, pres2, pres3,
+                                      sentto01, sentto02, sentto03,
+                                      sentto10, sentto12, sentto13,
+                                      sentto20, sentto21, not(sentto23),
+                                      sentto30, sentto31, sentto32)
+              <| and(pres3,and(pres2,sentto23)) |>
+           DREQ(3,2,ACK,NO_OUTPUT) . Chatbox(pres0, pres1, pres2, pres3,
+                                             sentto01, sentto02, sentto03,
+                                             sentto10, sentto12, sentto13,
+                                             sentto20, sentto21, sentto23,
+                                             sentto30, sentto31, sentto32)
+
+
+init	hide({JOIN,LEAVE,DREQ},Chatbox(F,F,F,F, F,F,F, F,F,F, F,F,F, F,F,F))
+
+

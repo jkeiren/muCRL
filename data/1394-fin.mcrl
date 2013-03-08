@@ -1,0 +1,954 @@
+% $Id: 1394-fin.mcrl,v 1.2 2002/11/11 10:22:12 bertl Exp $
+% This file contains a description of the physical layer service
+% of the 1394 or firewire protocol and also a description of the link
+% layer protocol entities. This decription has been published 
+% as S.P. Luttik. Description and formal specification of the link layer
+% of P1394. Technical Report SEN-R9706, CWI, Amsterdam, 1997.
+% The state space of the description as given, with 2 link
+% protocol entities and the domains DATA, ACK and HEADER all having
+% two elements has approximately 380.000 states. For 3 link protocols
+% and the domains DATA, ACK and HEADER having only one element
+% the state space has less than 300.000 states.
+%
+% This description has been analysed in M. Sighireanu and R. Mateescu, 
+%  Verification of the Link Layer Protocol of the IEEE-1394 Serial Bus 
+% (``FireWire''): an Experiment with E-LOTOS. Springer International
+% Journal on Software Tools for Technology Transfer (STTT), 1998. 
+% 1996, where they showed a mistake in the description, which could
+% be trace back to a mistake in the standard.
+%
+% The description in this file differs on a few points from the
+% description by Luttik to facilitate the generation of the state
+% space. 
+
+
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ %%%                 ELEMENTARY DATA TYPES (BOOL/NAT)            %%%
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+sort Bool
+func
+  T,F: -> Bool
+
+map
+  eq: Bool#Bool -> Bool
+var
+  b: Bool
+rew
+  eq(T,b)=b
+  eq(b,T)=b
+  eq(b,F)=not(b)
+  eq(F,b)=not(b)
+
+map
+  and: Bool#Bool -> Bool
+var
+  b: Bool
+rew
+  and(T,b)=b
+  and(b,T)=b
+  and(b,F)=F
+  and(F,b)=F
+
+map 
+  or: Bool#Bool -> Bool
+var
+  b: Bool
+rew
+  or(T,b)=T
+  or(b,T)=T
+  or(b,F)=b
+  or(F,b)=b
+
+
+map 
+  not: Bool           -> Bool
+  if:  Bool#Bool#Bool -> Bool
+var
+  b1,b2: Bool
+rew
+  not(F)=T
+  not(T)=F
+  if(T,b1,b2)=b1
+  if(F,b1,b2)=b2
+
+sort NAT
+func
+  0,1,2:         -> NAT
+%  0,1,2,3,4,5,6,7,8,9:         -> NAT
+map  succ:  NAT -> NAT
+
+map 
+  eq: NAT#NAT -> Bool
+var
+  n,m: NAT
+rew
+  1=succ(0)
+  2=succ(1)
+  eq(0,0)=T
+  eq(succ(n),0)=F
+  eq(0,succ(n))=F
+  eq(succ(n),succ(m))=eq(n,m)
+
+map 
+  lt: NAT#NAT -> Bool
+var
+  n,m: NAT
+rew
+  lt(0,0)=F
+  lt(succ(n),0)=F
+  lt(0,succ(n))=T
+  lt(succ(n),succ(m))=lt(n,m)
+
+
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ %%% DATA/CONTROL/ACKNOWLEDGE ELEMENTS AND THERE CRC COMPUTATION %%%
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+sort CHECK
+func
+  bottom,check:   -> CHECK
+map
+  eq: CHECK#CHECK -> Bool
+rew
+  eq(bottom,bottom)=T
+  eq(check,check)=T
+  eq(check,bottom)=F
+  eq(bottom,check)=F
+
+sort DATA
+func
+  d1,d2:      -> DATA
+map
+  crc:   DATA -> CHECK
+  eq:  DATA#DATA -> Bool
+rew
+  crc(d1)=check
+  crc(d2)=check
+  eq(d1,d1)=T
+  eq(d1,d2)=F
+  eq(d2,d1)=F
+  eq(d2,d2)=T
+
+sort HEADER
+func
+  h1,h2:       -> HEADER
+map
+  crc:  HEADER -> CHECK
+  eq: HEADER # HEADER -> Bool
+rew
+  crc(h1)=check
+  crc(h2)=check
+  eq(h1,h1)=T
+  eq(h1,h2)=F
+  eq(h2,h1)=F
+  eq(h2,h2)=T
+
+sort ACK
+func
+  a1,a2:     -> ACK
+map
+  crc:   ACK -> CHECK
+  eq : ACK # ACK -> Bool
+rew
+  crc(a1)=check
+  crc(a2)=check
+  eq(a1,a1)=T
+  eq(a1,a2)=F
+  eq(a2,a1)=F
+  eq(a2,a2)=T
+
+
+sort SIGNAL
+
+func
+  sig: NAT          -> SIGNAL
+  sig: HEADER#CHECK -> SIGNAL
+  sig: DATA#CHECK   -> SIGNAL
+  sig: ACK#CHECK    -> SIGNAL
+
+  Start,End:        -> SIGNAL
+  Prefix,subactgap: -> SIGNAL
+  dhead,Dummy:      -> SIGNAL
+
+map
+  is_start,is_end:    SIGNAL -> Bool
+  is_prefix,is_sagap: SIGNAL -> Bool
+  is_dummy,is_dhead:  SIGNAL -> Bool
+  eq:                 SIGNAL#SIGNAL -> Bool
+var
+  n,n' : NAT
+  h,h' : HEADER
+  d,d' : DATA
+  a,a' : ACK
+  c,c' : CHECK
+  s : SIGNAL
+rew
+  is_start(Start)=T
+  is_start(End)=F
+  is_start(Prefix)=F
+  is_start(subactgap)=F
+  is_start(dhead)=F
+  is_start(Dummy)=F
+  is_start(sig(n))=F
+  is_start(sig(h,c))=F
+  is_start(sig(d,c))=F
+  is_start(sig(a,c))=F
+  eq(Start,s)=is_start(s)
+  eq(s,Start)=is_start(s)
+
+
+  is_end(End)=T
+  is_end(Start)=F
+  is_end(Prefix)=F
+  is_end(subactgap)=F
+  is_end(dhead)=F
+  is_end(Dummy)=F
+  is_end(sig(n))=F
+  is_end(sig(h,c))=F
+  is_end(sig(d,c))=F
+  is_end(sig(a,c))=F
+  eq(End,s)=is_end(s)
+  eq(s,End)=is_end(s)
+
+  is_prefix(Prefix)=T
+  is_prefix(Start)=F
+  is_prefix(End)=F
+  is_prefix(subactgap)=F
+  is_prefix(dhead)=F
+  is_prefix(Dummy)=F
+  is_prefix(sig(n))=F
+  is_prefix(sig(h,c))=F
+  is_prefix(sig(d,c))=F
+  is_prefix(sig(a,c))=F
+  eq(Prefix,s)=is_prefix(s)
+  eq(s,Prefix)=is_prefix(s)
+
+  is_sagap(subactgap)=T
+  is_sagap(Start)=F
+  is_sagap(End)=F
+  is_sagap(Prefix)=F
+  is_sagap(dhead)=F
+  is_sagap(Dummy)=F
+  is_sagap(sig(n))=F
+  is_sagap(sig(h,c))=F
+  is_sagap(sig(d,c))=F
+  is_sagap(sig(a,c))=F
+  eq(subactgap,s)=is_sagap(s)
+  eq(s,subactgap)=is_sagap(s)
+
+  is_dhead(subactgap)=F
+  is_dhead(Start)=F
+  is_dhead(End)=F
+  is_dhead(Prefix)=F
+  is_dhead(dhead)=T
+  is_dhead(Dummy)=F
+  is_dhead(sig(n))=F
+  is_dhead(sig(h,c))=F
+  is_dhead(sig(d,c))=F
+  is_dhead(sig(a,c))=F
+  eq(dhead,s)=is_dhead(s)
+  eq(s,dhead)=is_dhead(s)
+
+  is_dummy(subactgap)=F
+  is_dummy(Start)=F
+  is_dummy(End)=F
+  is_dummy(Prefix)=F
+  is_dummy(dhead)=F
+  is_dummy(Dummy)=T
+  is_dummy(sig(n))=F
+  is_dummy(sig(h,c))=F
+  is_dummy(sig(d,c))=F
+  is_dummy(sig(a,c))=F
+  eq(Dummy,s)=is_dummy(s)
+  eq(s,Dummy)=is_dummy(s)
+
+  eq(sig(n),sig(n'))=eq(n,n')
+  eq(sig(n),sig(h,c))=F
+  eq(sig(n),sig(d,c))=F
+  eq(sig(n),sig(a,c))=F
+  eq(sig(h,c),sig(n'))=F
+  eq(sig(h,c),sig(h',c'))=and(eq(h,h'),eq(c,c'))
+  eq(sig(h,c),sig(d,c'))=F
+  eq(sig(h,c),sig(a,c'))=F
+  eq(sig(d,c),sig(n))=F
+  eq(sig(d,c),sig(h,c'))=F
+  eq(sig(d,c),sig(d',c'))=and(eq(d,d'),eq(c,c'))
+  eq(sig(d,c),sig(a,c'))=F
+  eq(sig(a,c),sig(n))=F
+  eq(sig(a,c),sig(h,c'))=F
+  eq(sig(a,c),sig(d,c'))=F
+  eq(sig(a,c),sig(a',c'))=and(eq(a,a'),eq(c,c'))
+
+
+map
+  is_dest,is_header: SIGNAL     -> Bool
+  is_data,is_ack:    SIGNAL     -> Bool
+var
+  n : NAT
+  h : HEADER
+  d : DATA
+  a : ACK
+  c : CHECK
+rew
+  is_dest(sig(n))=T
+  is_dest(sig(h,c))=F
+  is_dest(sig(d,c))=F
+  is_dest(sig(a,c))=F
+  is_dest(Start)=F
+  is_dest(End)=F
+  is_dest(Prefix)=F
+  is_dest(subactgap)=F
+  is_dest(dhead)=F
+  is_dest(Dummy)=F
+
+  is_header(sig(h,c))=T
+  is_header(sig(n))=F
+  is_header(sig(d,c))=F
+  is_header(sig(a,c))=F
+  is_header(Start)=F
+  is_header(End)=F
+  is_header(Prefix)=F
+  is_header(subactgap)=F
+  is_header(dhead)=F
+  is_header(Dummy)=F
+
+  is_data(sig(d,c))=T
+  is_data(sig(n))=F
+  is_data(sig(h,c))=F
+  is_data(sig(a,c))=F
+  is_data(Start)=F
+  is_data(End)=F
+  is_data(Prefix)=F
+  is_data(subactgap)=F
+  is_data(dhead)=F
+  is_data(Dummy)=F
+
+  is_ack(sig(a,c))=T
+  is_ack(sig(n))=F
+  is_ack(sig(h,c))=F
+  is_ack(sig(d,c))=F
+  is_ack(Start)=F
+  is_ack(End)=F
+  is_ack(Prefix)=F
+  is_ack(subactgap)=F
+  is_ack(dhead)=F
+  is_ack(Dummy)=F
+
+
+map
+  is_physig,is_terminator: SIGNAL -> Bool
+var
+  s : SIGNAL
+rew
+  is_physig(s)=or(is_start(s),or(is_end(s),or(is_prefix(s),is_sagap(s))))
+  is_terminator(s)=or(is_end(s),is_prefix(s))
+
+map
+  is_hda: SIGNAL -> Bool
+var
+  s : SIGNAL
+rew
+  is_hda(s)=or(is_header(s),or(is_data(s),is_ack(s)))
+
+map
+  valid_hpart, valid_ack: SIGNAL -> Bool
+var
+  n : NAT
+  h : HEADER
+  d : DATA
+  a : ACK
+  c : CHECK
+rew
+  valid_ack(sig(a,c))=eq(c,check)
+  valid_ack(sig(h,c))=F
+  valid_ack(sig(d,c))=F
+  valid_ack(sig(n))=F
+  valid_ack(Start)=F
+  valid_ack(End)=F
+  valid_ack(Prefix)=F
+  valid_ack(subactgap)=F
+  valid_ack(Dummy)=F
+  valid_ack(dhead)=F
+
+  valid_hpart(sig(h,c))=eq(c,check)
+  valid_hpart(sig(n))=F
+  valid_hpart(sig(d,c))=F
+  valid_hpart(sig(a,c))=F
+  valid_hpart(Start)=F
+  valid_hpart(End)=F
+  valid_hpart(Prefix)=F
+  valid_hpart(subactgap)=F
+  valid_hpart(Dummy)=F
+  valid_hpart(dhead)=F
+
+map
+  getdest:     SIGNAL            -> NAT
+  getdcrc:     SIGNAL            -> CHECK
+  getdata:     SIGNAL            -> DATA
+  gethead:     SIGNAL            -> HEADER
+  getack:      SIGNAL            -> ACK
+
+  corrupt:     SIGNAL            -> SIGNAL
+var
+  n   : NAT
+  h   : HEADER
+  d   : DATA
+  a   : ACK
+  c   : CHECK
+rew
+  getdest(sig(n))    = n
+  gethead(sig(h,c))  = h
+  getdcrc(sig(d,c))  = c
+  getdata(sig(d,c))  = d
+  getack (sig(a,c))  = a
+
+  corrupt(sig(h,c)) = sig(h,bottom)
+  corrupt(sig(d,c)) = sig(d,bottom)
+  corrupt(sig(a,c)) = sig(a,bottom)
+
+sort SIG_TUPLE
+
+func
+  quadruple: SIGNAL#SIGNAL#SIGNAL#SIGNAL -> SIG_TUPLE
+  void:                                  -> SIG_TUPLE
+
+map
+  first,second,third,fourth:  SIG_TUPLE  -> SIGNAL
+
+  is_void: SIG_TUPLE -> Bool
+
+var
+  x1,x2,x3,x4: SIGNAL
+rew
+  first(quadruple(x1,x2,x3,x4))=x1
+  second(quadruple(x1,x2,x3,x4))=x2
+  third(quadruple(x1,x2,x3,x4))=x3
+  fourth(quadruple(x1,x2,x3,x4))=x4
+
+  is_void(void)=T
+  is_void(quadruple(x1,x2,x3,x4))=F
+
+sort PAR
+func
+  fair,immediate:       -> PAR
+map
+  eq: PAR#PAR -> Bool
+rew
+  eq(fair,fair)=T
+  eq(immediate,immediate)=T
+  eq(fair,immediate)=F
+  eq(immediate,fair)=F
+
+sort PAC
+func
+  won,lost:               -> PAC
+map
+  eq: PAC#PAC -> Bool
+rew
+  eq(won,won)=T
+  eq(lost,lost)=T
+  eq(won,lost)=F
+  eq(lost,won)=F
+
+sort LDC
+func
+  ackrec:            ACK -> LDC
+  ackmiss,broadsent:     -> LDC
+
+sort LDI
+func
+  good,broadrec: HEADER#DATA -> LDI
+  dcrc_err:      HEADER      -> LDI
+
+sort BOC
+
+func
+  release,hold: -> BOC
+map
+  eq:   BOC#BOC -> Bool
+rew
+  eq(release,release)=T
+  eq(hold,hold)=T
+  eq(release,hold)=F
+  eq(hold,release)=F
+
+act
+  LDreq:  NAT#NAT#HEADER#DATA
+  LDcon:  NAT#LDC
+  LDind:  NAT#LDI
+  LDres:  NAT#ACK#BOC
+
+  sPDreq,rPDind: NAT#SIGNAL
+  sPAreq: NAT#PAR
+  rPAcon: NAT#PAC
+  rPCind: NAT
+
+proc
+
+Link0(n:NAT,id:NAT,buffer:SIG_TUPLE)=
+(
+    sum(dest:NAT,
+      sum(h:HEADER,
+        sum(d:DATA,
+          LDreq(id,dest,h,d).
+            Link0(n,id,quadruple(dhead,
+                                 sig(dest),
+                                 sig(h,crc(h)),
+                                 sig(d,crc(d))))
+        )
+      )
+    )
+  <| is_void(buffer) |>
+    sPAreq(id,fair).Link1(n,id,buffer)
+)
++
+  sum(p:SIGNAL,
+    rPDind(id,p).
+      ( Link4(n,id,buffer) <| is_start(p) |> Link0(n,id,buffer) )
+  )
+
+Link1(n:NAT,id:NAT,p:SIG_TUPLE)=
+  rPAcon(id,won).Link2req(n,id,p)
++
+  rPAcon(id,lost).Link0(n,id,p)
+
+
+Link2req(n:NAT,id:NAT,p:SIG_TUPLE)=
+   ( rPCind(id).sPDreq(id,Start).
+     rPCind(id).sPDreq(id,first(p)).
+     rPCind(id).sPDreq(id,second(p)) ) .
+   ( rPCind(id).sPDreq(id,third(p)).
+     rPCind(id).sPDreq(id,fourth(p)).
+     rPCind(id).sPDreq(id,End) ).
+    (  
+      LDcon(id,broadsent).Link0(n,id,void)
+     <| eq(getdest(second(p)),n) |>
+      Link3(n,id,void)
+    )
+
+Link3(n:NAT,id:NAT,buffer:SIG_TUPLE)=
+  sum(p:SIGNAL,
+    rPDind(id,p).
+      (
+        Link3(n,id,buffer)
+      <| is_prefix(p) |>
+        (
+          Link3RA(n,id,buffer)
+        <| is_start(p) |>
+          (
+            LDcon(id,ackmiss).Link0(n,id,buffer)
+          <| is_sagap(p) |>
+            LDcon(id,ackmiss).LinkWSA(n,id,buffer,n)
+          )
+        )
+      )
+  )
+
+Link3RA(n:NAT,id:NAT,buffer:SIG_TUPLE)=
+  sum(a:SIGNAL,
+    rPDind(id,a).
+      (
+        (
+          LDcon(id,ackmiss).Link0(n,id,buffer)
+        <| is_sagap(a) |>
+          LDcon(id,ackmiss).LinkWSA(n,id,buffer,n)
+        )
+      <| is_physig(a) |>
+        Link3RE(n,id,buffer,a)
+      )
+  )
+
+Link3RE(n:NAT,id:NAT,buffer:SIG_TUPLE,a:SIGNAL)=
+  sum(e:SIGNAL,
+    rPDind(id,e).
+      (
+        LDcon(id,ackrec(getack(a))).LinkWSA(n,id,buffer,n)
+      <| and(valid_ack(a),is_terminator(e)) |>
+        (
+          LDcon(id,ackmiss).Link0(n,id,buffer)
+        <| is_sagap(e) |>
+          LDcon(id,ackmiss).LinkWSA(n,id,buffer,n)
+        )
+      )
+  )
+
+
+Link4(n:NAT,id:NAT,buffer:SIG_TUPLE)=
+  sum(dh:SIGNAL,
+    rPDind(id,dh).
+      (
+        (
+          Link0(n,id,buffer)
+        <| is_sagap(dh) |>
+          LinkWSA(n,id,buffer,n)
+        )
+      <| is_physig(dh) |>
+        Link4DH(n,id,buffer)
+      )
+  )
+
+Link4DH(n:NAT,id:NAT,buffer:SIG_TUPLE)=
+  sum(dest:SIGNAL,
+    rPDind(id,dest).
+      (
+        (
+          sPAreq(id,immediate).Link4RH(n,id,buffer,id)
+        <| eq(getdest(dest),id) |>
+          ( 
+            Link4RH(n,id,buffer,n)
+          <| eq(getdest(dest),n) |>
+            LinkWSA(n,id,buffer,n)
+          )
+        )
+      <| is_dest(dest) |>
+        (
+          Link0(n,id,buffer)
+        <| is_sagap(dest) |>
+          LinkWSA(n,id,buffer,n)
+        )
+      )
+  )
+
+Link4RH(n:NAT,id:NAT,buffer:SIG_TUPLE,dest:NAT)=
+  sum(h:SIGNAL,
+    rPDind(id,h).
+      (
+        Link4RD(n,id,buffer,dest,h)
+      <| valid_hpart(h) |>
+        LinkWSA(n,id,buffer,dest)
+      )
+  )
+
+Link4RD(n:NAT,id:NAT,buffer:SIG_TUPLE,dest:NAT,h:SIGNAL)=
+  sum(d:SIGNAL,
+    rPDind(id,d).
+      (
+        Link4RE(n,id,buffer,dest,h,d)
+      <| is_data(d) |>
+        LinkWSA(n,id,buffer,dest)
+      )
+  )
+
+Link4RE(n:NAT,id:NAT,buffer:SIG_TUPLE,dest:NAT,h:SIGNAL,d:SIGNAL)=
+  sum(e:SIGNAL,
+    rPDind(id,e).
+      (
+        (
+          Link4DRec(n,id,buffer,h,d)
+        <| eq(dest,id) |>
+          Link4BRec(n,id,buffer,h,d)
+        )
+      <| is_terminator(e) |>
+        LinkWSA(n,id,buffer,dest)
+      )
+  )
+
+Link4DRec(n:NAT,id:NAT,buffer:SIG_TUPLE,h:SIGNAL,d:SIGNAL)=
+  LDind(id,good(gethead(h),getdata(d))).rPAcon(id,won).Link5(n,id,buffer)
+<| eq(getdcrc(d),check) |>
+  LDind(id,dcrc_err(gethead(h))).rPAcon(id,won).Link5(n,id,buffer)
+
+Link4BRec(n:NAT,id:NAT,buffer:SIG_TUPLE,h:SIGNAL,d:SIGNAL)=
+  LDind(id,broadrec(gethead(h),getdata(d))).Link0(n,id,buffer)
+<| eq(getdcrc(d),check) |>
+  Link0(n,id,buffer)
+
+Link5(n:NAT,id:NAT,buffer:SIG_TUPLE)=
+  sum(a:ACK,
+    sum(b:BOC,
+      LDres(id,a,b).Link6(n,id,buffer,sig(a,crc(a)),b)
+    )
+  )
++
+  rPCind(id).sPDreq(id,Prefix).Link5(n,id,buffer)
+
+Link6(n:NAT,id:NAT,buffer:SIG_TUPLE,p:SIGNAL,b:BOC)=
+  ( rPCind(id).sPDreq(id,Start).rPCind(id).sPDreq(id,p) ) .
+      ( rPCind(id).
+        (
+          sPDreq(id,End).Link0(n,id,buffer)
+        <| eq(b,release) |>
+          sPDreq(id,Prefix).Link7(n,id,buffer)
+        )
+      )
+ 
+
+Link7(n:NAT,id:NAT,buffer:SIG_TUPLE)=
+  rPCind(id).sPDreq(id,Prefix).Link7(n,id,buffer)
++
+  sum(dest:NAT,
+    sum(h:HEADER,
+      sum(d:DATA,
+        LDreq(id,dest,h,d).
+          Link2resp(n,id,buffer,quadruple(dhead,
+                                          sig(dest),
+                                          sig(h,crc(h)),
+                                          sig(d,crc(d))))
+      )
+    )
+  )
+
+Link2resp(n:NAT,id:NAT,buffer:SIG_TUPLE,p:SIG_TUPLE)=
+  ( rPCind(id).sPDreq(id,Start).
+    rPCind(id).sPDreq(id,first(p)).
+    rPCind(id).sPDreq(id,second(p)) ).
+    ( rPCind(id).sPDreq(id,third(p)).
+      rPCind(id).sPDreq(id,fourth(p)).
+      rPCind(id).sPDreq(id,End)).
+        (  LDcon(id,broadsent).Link0(n,id,buffer)
+             <| eq(getdest(second(p)),n) |>
+               Link3(n,id,buffer)
+        )
+
+
+LinkWSA(n:NAT,id:NAT,buffer:SIG_TUPLE,dest:NAT)=
+  sum(p:SIGNAL,
+    rPDind(id,p).
+      (
+        Link0(n,id,buffer)
+      <| is_sagap(p) |>
+        LinkWSA(n,id,buffer,dest)
+      )
+  )
++
+  (
+    rPAcon(id,won).rPCind(id).sPDreq(id,End).Link0(n,id,buffer)
+  <| eq(dest,id) |>
+    delta
+  )
+
+
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ %%%                AUXILIARY SPECIFICATION OF BUS               %%%
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+sort BoolTABLE
+func
+  empty:                             -> BoolTABLE
+  btable:   NAT#Bool#BoolTABLE       -> BoolTABLE
+
+map
+  inita:     NAT                      -> BoolTABLE
+  invert:   NAT#BoolTABLE            -> BoolTABLE
+  get:      NAT#BoolTABLE            -> Bool
+  if:       Bool#BoolTABLE#BoolTABLE -> BoolTABLE
+  eq:BoolTABLE#BoolTABLE->Bool
+var
+  n,m     : NAT
+  b       : Bool
+bt1,bt2 : BoolTABLE
+rew
+  eq(bt1, bt1)=T
+  inita(0)=empty
+  inita(succ(n))=btable(n,F,inita(n))
+
+  invert(n,empty)=empty
+  invert(n,btable(m,b,bt1))=
+    if(eq(n,m),
+      btable(m,not(b),bt1),
+      btable(m,b,invert(n,bt1))
+    )
+  get(n,btable(m,b,bt1))=if(eq(n,m),b,get(n,bt1))
+  get(n,empty)=F
+  if(T,bt1,bt2)=bt1
+  if(F,bt1,bt2)=bt2
+
+map
+  zero,one,more: BoolTABLE -> Bool
+var
+  n  : NAT
+  bt : BoolTABLE
+rew
+  zero(empty)=T
+  zero(btable(n,T,bt))=F
+  zero(btable(n,F,bt))=zero(bt)
+  one(empty)=F
+  one(btable(n,T,bt))=zero(bt)
+  one(btable(n,F,bt))=one(bt)
+  more(bt)=and(not(zero(bt)),not(one(bt)))
+
+act
+  rPAreq: NAT#PAR
+  rPDreq,sPDind: NAT#SIGNAL
+  sPAcon: NAT#PAC
+  sPCind: NAT
+  arbresgap
+  losesignal
+
+proc
+
+BusIdle(n:NAT,t:BoolTABLE)=
+  sum(id:NAT,
+    sum(astat:PAR,
+      rPAreq(id,astat).DecideIdle(n,t,id,astat)))
++
+  arbresgap.BusIdle(n,inita(n)) <| not(zero(t)) |> delta
+
+
+DecideIdle(n:NAT,t:BoolTABLE,id:NAT,astat:PAR)=
+  ( sPAcon(id,won).BusBusy(n,invert(id,t),inita(n),inita(n),id) )
+  <| not(get(id,t)) |>
+  ( sPAcon(id,lost).BusIdle(n,t) )
+
+BusBusy(n:NAT,
+        t:BoolTABLE,
+        next:BoolTABLE,
+        destfault:BoolTABLE,
+        busy:NAT)=
+(
+  (
+    sPCind(busy).
+      sum(p:SIGNAL,
+        rPDreq(busy,p).Distribute(n,t,next,destfault,busy,p,0)
+      )
+  ) 
+  <| lt(busy,n) |>
+  (
+      SubactionGap(n,t,0)
+    <| zero(next) |>
+      Resolve(n,t,next,0)
+  )
+)
++
+  sum(j:NAT,
+    rPAreq(j,fair).sPAcon(j,lost).BusBusy(n,t,next,destfault,busy)
+  )
++
+  sum(j:NAT,
+    rPAreq(j,immediate).
+      ( BusBusy(n,t,invert(j,next),destfault,busy)
+          <| not(get(j,next)) |> delta )
+  )
+
+SubactionGap(n:NAT,t:BoolTABLE,i:NAT)=
+  BusIdle(n,t)
+<| eq(i,n) |>
+  sPDind(i,subactgap).SubactionGap(n,t,succ(i))
+
+Resolve(n:NAT,t:BoolTABLE,next:BoolTABLE,i:NAT)=
+(
+  (
+    ( sPAcon(i,won).sPCind(i).Resolve(n,t,next,succ(i)) )
+  <| get(i,next) |>
+    ( tau.Resolve(n,t,next,succ(i)) )
+  )
+<| lt(i,n) |>
+  Resolve2(n,t,next)
+)
+
+Resolve2(n:NAT,t:BoolTABLE,next:BoolTABLE)=
+(
+  sum(j:NAT,
+    rPDreq(j,End).
+      (
+        Resolve2(n,t,invert(j,next))
+      <| get(j,next) |>
+        delta
+      )
+  )
+<| more(next) |>
+  sum(j:NAT,
+    sum(p:SIGNAL,
+      rPDreq(j,p).
+        (
+          SubactionGap(n,t,0)
+        <| is_end(p) |>
+          Distribute(n,t,inita(n),inita(n),j,p,0)
+        )
+    )
+  )
+)
+
+Distribute(n:NAT,
+           t:BoolTABLE,
+           next:BoolTABLE,
+           destfault:BoolTABLE,
+           busy:NAT,
+           p:SIGNAL,
+           i:NAT)=
+(
+  (
+    (
+      %% Signals can be handed over correctly
+      ( sPDind(i,p).
+          Distribute(n,t,next,destfault,busy,p,succ(i))
+            <| or(not(is_header(p)),not(get(i,destfault))) |>
+              delta )
+    +
+      %% Destination signals may be corrupted
+      ( sum(dest:NAT,
+          sPDind(i,sig(dest)).
+            Distribute(n,t,next,invert(i,destfault),busy,p,succ(i))
+        ) <| is_dest(p) |> delta )
+    +
+      %% Headers/Data/Acks may be corrupted
+      ( sPDind(i,corrupt(p)).
+          Distribute(n,t,next,destfault,busy,p,succ(i))
+            <| is_hda(p) |> delta )
+    +
+      %% Headers/Data/Acks may get lost
+      ( losesignal.Distribute(n,t,next,destfault,busy,p,succ(i))
+          <| is_hda(p) |> delta )
+    +
+      %% Packets may be too large
+      ( sPDind(i,p).sPDind(i,Dummy).
+          Distribute(n,t,next,destfault,busy,p,succ(i))
+            <| is_data(p) |> delta )
+    +
+      ( rPAreq(i,immediate).
+          ( Distribute(n,t,invert(i,next),destfault,busy,p,i)
+              <| not(get(i,next)) |> delta ) )
+    )
+  <| not(eq(i,busy)) |>
+    tau.Distribute(n,t,next,destfault,busy,p,succ(i))
+  )
+<| lt(i,n) |>
+  (
+    BusBusy(n,t,next,destfault,n)
+  <| is_end(p) |>
+    BusBusy(n,t,next,destfault,busy)
+  )
+)             
+
+
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ %%%      SPECIFICATION OF n LINK LAYERS CONNECTED BY A BUS      %%%
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+act
+  PDind,PDreq: NAT#SIGNAL
+  PAcon: NAT#PAC
+  PAreq: NAT#PAR
+  PCind: NAT
+
+comm
+  rPDind|sPDind=PDind
+  rPDreq|sPDreq=PDreq
+  rPAcon|sPAcon=PAcon
+  rPAreq|sPAreq=PAreq
+  rPCind|sPCind=PCind
+
+proc
+
+ LINK(n:NAT,i:NAT)=
+   ( Link0(n,i,void) )
+
+ BUS(n:NAT)=
+   BusIdle(n, inita(n))
+
+ P1394(n:NAT)=
+   hide({PDind, PDreq, PAcon, PAreq, PCind, arbresgap,losesignal},
+     encap( {rPDind, sPDind, rPDreq, sPDreq, rPAcon,
+             sPAcon, rPAreq, sPAreq, rPCind, sPCind},
+         BUS(2) || LINK(2,0) || LINK(2,1) 
+%        BUS(8) ||  LINK(8,0) || LINK(8,1) || LINK(8,2) || LINK(8,3) ||
+%           LINK(8,4) || LINK(8,5) || LINK(8,6) || LINK(8,7) || LINK(8,8)
+       )
+     )
+
+init P1394(2)
+%init LINK(1,0)
+% init BUS(2)

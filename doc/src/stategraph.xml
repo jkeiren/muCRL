@@ -1,0 +1,102 @@
+
+<refentry id="stategraph">
+<refmeta>
+<refentrytitle>stategraph</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>stategraph</refname>
+<refpurpose>
+Applies control flow analysis
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>stategraph</command> 
+&common1;
+<arg><option>-show</option></arg>
+<arg><option>-show-summands</option></arg>
+<arg><option>-stateview</option></arg>
+<arg><option>-minchange</option></arg>
+<arg><option><link linkend="libmcrl">Data Options</link></option></arg>
+<arg><option><link linkend="rw">Rewriter Options</link></option></arg>
+<arg><option><parameter>input</parameter>.tbf</option></arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+This filter reads from 
+<filename><replaceable>input</replaceable>.tbf</filename> (or 
+<filename> stdin </filename> if not given) an &lpe; 
+in <literal>.tbf </literal> format and applies control flow analysis to
+<itemizedlist>
+<listitem><para>remove unreachable summands</para></listitem> 
+<listitem><para>to set dummy parameters to a constant dummy value</para></listitem>
+<listitem><para>to guess better initial values</para></listitem>
+</itemizedlist>
+This updated LPE will be written to <filename>stdout</filename>.
+If <option>-show</option> or <option>-show-summands</option>,  are given, then only a control flow analysis
+will be applied and the resulting control flow graphs will be 
+written to <filename>stdout</filename> (instead of an LPE).
+If <option>-stateview</option> is given then the control flow graphs will be 
+displayed on screen.
+</para>
+<remark>
+only useful after 
+<literal>&mcrl.lnk; -nocluster -regular</literal>.
+Effect takes often place after additional 
+&constelm.lnk;
+</remark>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+<!--<title>Options</title>-->
+&common2;
+<varlistentry>
+  <term><option>-show</option>
+  </term>
+  <listitem>
+    <para>
+    Generate control flow graphs in dot format on <filename>stdout</filename> 
+    instead of result LPE
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-show-summands</option> </term>
+  <listitem>
+  <para>
+  Like <option>-show</option>, in addition summand numbers will be written in
+  the <literal>.dot</literal> graphs.
+  </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-stateview</option>
+  </term>
+  <listitem>
+  <para>
+  Displays control flow graphs. This is only possible if the toolset
+  is installed with <command>java</command>,<command>grappa</command>, 
+  and <command>dot</command>. 
+  </para>
+  </listitem> 
+</varlistentry>
+<varlistentry>
+  <term><option>-minchange</option>
+  </term>
+  <listitem>
+  <para>
+  Dummies are kept unchanged instead of set to a constant
+  (this may result in larger state space, but it is
+  handy for proving invariants or symmetry)
+  </para>
+  </listitem> 
+</varlistentry>
+</variablelist>
+</refsect1>
+&stategraph.xml;
+</refentry>

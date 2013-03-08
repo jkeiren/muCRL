@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>msim</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><link rel="home" href="index.html" title="Manual Pages of the mCRL toolset (2.17.8)" /><link rel="up" href="rn02.html" title="Linear Process Equations" /><link rel="prev" href="rn02re07.html" title="invelm" /><link rel="next" href="rn02re09.html" title="parelm" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">msim</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="rn02re07.html">Prev</a> </td><th width="60%" align="center">Linear Process Equations</th><td width="20%" align="right"> <a accesskey="n" href="rn02re09.html">Next</a></td></tr></table><hr /></div><div class="refentry" lang="en" xml:lang="en"><a id="msim"></a><div class="titlepage"></div><div class="refnamediv"><h2>Name</h2><p>msim — Interactive simulation of a system described by an <a class="link" href="rn01re01.html#lpe" title="Linear Process Equation">LPE</a> 
+</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p><code class="command">msim</code>  [<code class="option">-help</code>] [<code class="option">-help-all</code>] [<code class="option">-version</code>] [<code class="option"><a class="link" href="rn06re29.html" title="Stepper Options">Stepper Options</a></code>] [<code class="option"><a class="link" href="rn06re28.html" title="Rewriter Options">Rewriter Options</a></code>] [<code class="option"><a class="link" href="rn06re27.html" title="Data Options">Data Options</a></code>]  <code class="option"><em class="parameter"><code>input</code></em>.tbf</code> </p></div></div><div class="refsect1" lang="en" xml:lang="en"><a id="id410261"></a><h2>Description</h2><p>
+Reads from 
+<code class="filename"><em class="replaceable"><code>input</code></em>.tbf</code> an LPE 
+in <code class="literal">.tbf </code> format.
+A typical session consists of the following steps:
+</p><div class="itemizedlist"><ul type="disc"><li><p>
+Start msim by typing 
+<span class="command"><strong> msim 
+<code class="filename"><em class="parameter"><code>file</code></em>.tbf</code> 
+</strong></span>  
+</p></li><li><p>
+Initiate the simulation by clicking the button <span class="guibutton">Start</span> 
+</p></li><li><p>
+Continue the simulation by selecting actions 
+in <span class="guimenu">Menu display</span> 
+</p></li><li><p>
+Finish the simulation by clicking the button <span class="guibutton">Quit</span>.
+</p></li></ul></div><p>
+</p><div class="refsect2" lang="en" xml:lang="en"><a id="id410334"></a><h3>Start msim</h3><p>
+The simulator msim is invoked by:
+<span class="command"><strong> msim 
+<code class="filename"><em class="parameter"><code>file</code></em>.tbf</code> 
+</strong></span>.
+The simulator will present a window that allows interactive simulation of the 
+system described in the argument 
+<code class="filename"><em class="parameter"><code>file</code></em>.tbf</code>.
+The argument <code class="filename"><em class="parameter"><code>file</code></em>.tbf</code> 
+must be a LPE, which is the output file of the tool <span class="command"><strong><a class="link" href="rn01re01.html" title="mcrl">mcrl</a></strong></span>. 
+</p></div><div class="refsect2" lang="en" xml:lang="en"><a id="id410382"></a><h3>Initiate the simulation</h3><p>
+Initiate the simulation by clicking the button <span class="guibutton">Start</span>.  
+If all goes well the simulator presents a list of actions 
+in <span class="guimenu">Menu display</span>. 
+Otherwise an error message will appear in the message window 
+(bottom of the screen).
+</p></div><div class="refsect2" lang="en" xml:lang="en"><a id="id410409"></a><h3>Continue the simulation</h3><p>
+The main window offers the following possibilities:
+</p><div class="itemizedlist"><ul type="disc"><li><p>Single step through the system by selecting actions 
+in the <span class="guimenu">Menu display</span></p></li><li><p>A trace to the <em class="parameter"><code>current state</code></em> can be written 
+by clicking the button <span class="guibutton">Save</span> in
+<code class="filename"><em class="parameter"><code>file</code></em>.trc/<em class="parameter"><code>name</code></em></code> 
+</p></li><li><p>A trace can be read 
+by clicking the button <span class="guibutton">Load</span> from
+<code class="filename"><em class="parameter"><code>file</code></em>.trc/<em class="parameter"><code>name</code></em></code>. 
+The <em class="parameter"><code>current state</code></em> becomes the state to which that 
+trace leads.  
+</p></li><li><p>The previous state can be made current by clicking 
+the button <span class="guibutton">Undo</span></p></li><li><p>Redo undone actions by clicking the button <span class="guibutton">Undo</span>
+</p></li><li><p>Display the current state vector by clicking 
+the button <span class="guibutton">State</span> 
+(the interpretation of this description requires both experience 
+and knowledge of the linearisation process)
+</p></li><li><p>Display the value of a certain function by clicking the button
+<span class="guibutton">Term</span> and entering the function in a popped up input window
+named <code class="literal">Term</code>
+</p></li></ul></div><p>
+</p></div><div class="refsect2" lang="en" xml:lang="en"><a id="id410534"></a><h3>Finish or restart the simulation</h3><p>
+</p><div class="itemizedlist"><ul type="disc"><li><p>To finish the simulation click <span class="guibutton">Quit</span></p></li><li><p>To restart the simulation click <span class="guibutton">Start</span></p></li><li><p>To restart the simulation with another specification, 
+change File and Directory and click <span class="guibutton">Start</span></p></li></ul></div><p>
+</p></div></div><div class="refsect1" lang="en" xml:lang="en"><a id="id410574"></a><h2>Options</h2><div class="variablelist"><dl><dt><span class="term"><code class="option">-help</code></span></dt><dd><p>
+    Display help information
+    </p></dd><dt><span class="term"><code class="option">-help-all</code></span></dt><dd><p>
+    Display all help information
+    </p></dd><dt><span class="term"><code class="option">-version</code></span></dt><dd><p>
+    Get the version number of this release
+    </p></dd></dl></div></div><div class="refsect1" lang="en" xml:lang="en"><a id="id410631"></a><h2>Last update</h2><p><code class="literal">16 December 2008</code> by Bert Lisser <code class="email">&lt;<a class="email" href="mailto:B.Lisser@cwi.nl">B.Lisser@cwi.nl</a>&gt;</code> 
+
+</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="rn02re07.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="rn02.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="rn02re09.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">invelm </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> parelm</td></tr></table></div></body></html>

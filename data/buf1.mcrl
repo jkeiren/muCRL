@@ -1,0 +1,152 @@
+% $Id: buf1.mcrl,v 1.1 2001/05/21 11:56:33 bertl Exp $
+% This file contains the description three buffers
+% of length 1 in pipeline
+
+sort   D
+func   d1,d2: -> D
+map   eq:D#D -> Bool
+
+sort U2
+func u1, u2: ->U2
+
+
+var
+    x: D
+rew
+eq(d1,d1)=T
+eq(d2,d2)=T
+eq(d1,d2)=F
+eq(d2,d1)=F
+% eq(d3,d3)=T
+% eq(d1,d3)=F
+% eq(d2,d3)=F
+% eq(d3,d1)=F
+% eq(d3,d2)=F
+eq(x,x)=T
+
+sort Frame
+func
+frame:	Bool#D-> Frame
+f_init:->Frame
+
+map
+eq: Frame # Frame->Bool
+check: Frame->Bool
+data: Frame->D
+
+var v1, v2:D
+b1, b2: Bool
+rew
+eq(frame(b1, v1), frame(b2, v2)) = and(eq(b1, b2), eq(v1, v2)) 
+eq(frame(b1, v1), f_init) =  F
+eq(f_init, frame(b1, v1)) =  F
+eq(f_init, f_init)=T
+
+check(frame(F,v1)) = F
+check(frame(T,v1)) = T
+
+sort Bool
+
+func T,F:-> Bool
+map  and, or:Bool#Bool -> Bool
+not:Bool -> Bool
+eq:Bool#Bool->Bool
+
+var x:Bool
+rew
+and(T,T)=T
+and(F,T)=F
+and(T,F)=F
+and(F,F)=F
+and(T,x)=x
+and(F,x)=F
+or(T,T)=T
+or(F,T)=T
+or(T,F)=T
+or(F,F)=F
+
+not(F)=T
+not(T)=F
+not(not(x))=x
+
+eq(T,T)=T
+eq(T,F)=F
+eq(F,T)=F
+eq(F,F)=T
+eq(x,x)=T
+not(eq(x,T))=eq(x,F)
+
+sort Nat
+
+func
+0:-> Nat
+S: Nat-> Nat
+
+map
+eq: Nat # Nat -> Bool
+if: Bool # Nat # Nat -> Nat
+lt: Nat#Nat -> Bool
+
+var
+n,m: Nat
+rew
+eq(0, 0) = T
+eq(0, S(n)) = F
+eq(S(n), 0) = F
+eq(S(n), S(m)) = eq(n, m)
+if(T, n, m) = n
+if(F, n, m) = m
+lt(0,0)=F
+lt(S(n),0)=F
+lt(0,S(n))=T
+lt(S(n),S(m))=lt(n,m)
+
+sort Index
+func
+1:-> Index 
+2:-> Index 
+3:-> Index 
+4:-> Index 
+map
+S:Index->Index
+eq:Index#Index->Bool
+rew
+S(1)=2
+S(2)=3
+S(3)=4
+eq(1,1)=T
+eq(2,2)=T
+eq(3,3)=T
+eq(4,4)=T
+eq(1,2)=F
+eq(2,3)=F
+eq(3,4)=F
+eq(4,1)=F
+eq(1,3)=F
+eq(2,4)=F
+eq(3,1)=F
+eq(4,2)=F
+eq(1,4)=F
+eq(2,1)=F
+eq(3,2)=F
+eq(4,3)=F
+
+act s:Index#Frame r:Index#Frame
+
+act c:Index#Frame
+
+act in, out:Frame
+
+comm s|r=c
+
+proc
+B(i:Index,f0:Frame) = sum(d:D,sum(b:Bool, r(i,frame(b,d)).s(S(i),frame(b,d)).
+B(i,f0)))
+Init(f0:Frame) = sum(d:D, sum(b:Bool, in(frame(b,d)). s(2,frame(b,d)). 
+Init(f0)))
+End(i:Index, f0:Frame) = sum(d:D,sum(b:Bool,r(i,frame(b,d)).
+(out(frame(b,d)).End(i,f0) <|eq(b,T)|>End(i,f0))))
+
+
+init hide({c,in, out},encap({r,s}, Init(f_init) || B(2,f_init) || 
+End(3,f_init)))

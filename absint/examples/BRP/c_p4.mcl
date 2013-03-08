@@ -1,0 +1,1 @@
+[true*. 's4(.*,I_ok)'.(not 's1.*')*.'s1(I_nok)'] false

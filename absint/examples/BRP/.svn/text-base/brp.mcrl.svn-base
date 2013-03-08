@@ -1,0 +1,309 @@
+% Bounded retransmission protocol.
+% J/F. Groote and J. van de Pol. A bounded retransmission protocol 
+% for large data packets. In M. Wirsing and M. Nivat,editors,
+% Algebraic Methodology and Software Technology, LNCS, pages 536-550
+% Springer Verlag, 1996 
+%
+% mcrl -tbf brp.mcrl
+%       Number of states: 10238  number of transitions 11858
+% mcrl -tbf -regular brp.mcrl: 
+%       Number of states: 10550  number of transitions 12170
+
+sort Bool
+func
+  T,F: -> Bool
+
+map
+  eq: Bool#Bool -> Bool
+var
+  b: Bool
+rew
+  eq(T,b)=b
+  eq(b,T)=b
+  eq(b,F)=not(b)
+  eq(F,b)=not(b)
+
+map
+  and: Bool#Bool -> Bool
+var
+  b: Bool
+rew
+  and(T,b)=b
+  and(b,T)=b
+  and(b,F)=F
+  and(F,b)=F
+
+map 
+  or: Bool#Bool -> Bool
+var
+  b: Bool
+rew
+  or(T,b)=T
+  or(b,T)=T
+  or(b,F)=b
+  or(F,b)=b
+
+
+map 
+  not: Bool           -> Bool
+  if:  Bool#Bool#Bool -> Bool
+var
+  b1,b2: Bool
+rew
+  not(F)=T
+  not(T)=F
+  if(T,b1,b2)=b1
+  if(F,b1,b2)=b2
+  if (b1, b2,b2) = b2
+  if(b1, T, F) = b1
+  if(b1, F, T) = not(b1)
+% if(b1,b2,b2)=b2
+
+sort Nat
+
+func  s:  Nat -> Nat
+  0:         -> Nat
+
+map
+  1:         -> Nat
+  2:         -> Nat
+  3:         -> Nat
+  4:         -> Nat
+  5:         -> Nat
+  6:         -> Nat
+
+map 
+  eq: Nat#Nat -> Bool
+  lt: Nat#Nat -> Bool
+var
+  n,m: Nat
+rew
+  1=s(0)
+  2=s(1)
+  3=s(2)
+  4=s(3)
+  5=s(4)
+  6=s(5)
+  eq(0,0)=T
+  eq(s(n),0)=F
+  eq(0,s(n))=F
+  eq(s(n),s(m))=eq(n,m)
+  lt(0,s(n))=T
+  lt(n,0)=F
+  lt(s(m),0)=F
+  lt(s(m),s(n))=lt(m,n)
+
+sort Bit
+
+func e0, e1:->Bit
+map  inv:Bit->Bit
+     if: Bool#Bit#Bit->Bit
+     eq:Bit#Bit->Bool
+var  b1, b2, b:Bit
+rew  inv(e0)=e1
+     inv(e1)=e0
+     if (T, b1, b2)=b1
+     if (F, b1, b2)=b2
+     if (eq(b1,b2), b1, b2)= b2
+     eq(b,inv(b))=F
+     eq(b,b)=T
+     eq(e0,e1)=F
+     eq(e1,e0)=F
+     
+sort D List
+func d0:->D
+     d1:->D
+     d2:->D
+     %d3:->D
+     %d4:->D
+     empty:->List
+     %aap:D->List
+     add:D#List->List
+map  if:Bool#D#D->D
+     eq:D#D->Bool
+     eq:List#List->Bool
+     head:List->D
+     tail:List->List
+     indl:List->Bit
+     last:List->Bool
+     il:->List 
+     len:List->Nat
+var  d,da,db:D
+     l,l1,l2:List
+rew  head(empty)=d0
+     head(add(d,l))=d
+     tail(empty)=empty
+     tail(add(d,l))=l
+     last(empty)=T
+     last(add(d,empty))=T
+     last(add(da,add(db,l)))=F
+     indl(empty)=e1
+     indl(add(d,empty))=e1
+     indl(add(da,add(db,l)))=e0
+     len(empty)=0
+     len(add(d,l))=s(len(l))
+     if(T,da,db)=da
+     if(F,da,db)=db
+     eq(d,d)=T
+     if (eq(da,db),da,db)=db
+     il=
+     add(d0, 
+     add(d1,
+     %add(d2,
+     %add(d3,
+     %add(d4,
+     empty
+     %)
+     %)
+     %)
+     )
+     )
+     eq(d0,d1)=F
+     eq(d0,d2)=F
+     %eq(d0,d3)=F
+     %eq(d0,d4)=F
+     eq(d1,d0)=F
+     eq(d1,d2)=F
+     %eq(d1,d3)=F
+     %eq(d1,d4)=F
+     eq(d2,d0)=F
+     eq(d2,d1)=F
+     %eq(d2,d3)=F
+     %eq(d2,d4)=F
+     %eq(d3,d0)=F
+     %eq(d3,d1)=F
+     %eq(d3,d2)=F
+     %eq(d3,d4)=F
+     %eq(d4,d0)=F
+     %eq(d4,d1)=F
+     %eq(d4,d2)=F
+     %eq(d4,d3)=F
+     eq(empty, empty)=T
+     eq(add(d,l),empty)=F
+     eq(empty,add(d,l))=F
+     eq(add(da,l1),add(db,l2))=and(eq(da,db),eq(l1,l2))
+sort Ind
+func I_fst, I_ok, I_nok,I_inc, I_dk:->Ind
+map  C_ind:List->Ind
+     I_ind:Bit # Bit->Ind
+     if:Bool #Ind # Ind-> Ind
+	  eq: Ind#Ind -> Bool
+var  l:List 
+     i1, i2:Ind
+rew  C_ind(l)=if(eq(indl(l),e0),I_nok,I_dk)
+     I_ind(e0,e0)=I_inc
+     I_ind(e0,e1)=I_ok
+     I_ind(e1,e0)=I_fst
+     I_ind(e1,e1)=I_ok
+     if (T,i1,i2)=i1
+     if (F,i1,i2)=i2
+
+sort TComm
+func set, reset, ready, signal, lost :->TComm
+map  eq:TComm # TComm ->Bool 
+var  k:TComm
+rew  eq(k,k)=T
+     eq(set,reset)=F
+     eq(set,signal)=F
+     eq(set,lost)=F
+     eq(set,ready)=F
+     eq(reset,set)=F
+     eq(reset,signal)=F
+     eq(reset,lost)=F
+     eq(reset,ready)=F
+     eq(signal,set)=F
+     eq(signal,reset)=F
+     eq(signal,lost)=F
+     eq(signal,ready)=F
+     eq(lost,set)=F
+     eq(lost,reset)=F
+     eq(lost,signal)=F     
+     eq(lost,ready)=F     
+     eq(ready,set)=F
+     eq(ready,reset)=F
+     eq(ready,signal)=F     
+     eq(ready,lost)=F   
+	  
+	  eq(I_fst, I_fst) = T
+	  eq(I_fst, I_ok) = F
+	  eq(I_fst, I_nok) = F
+	  eq(I_fst, I_inc) = F
+	  eq(I_fst, I_dk) = F
+	  
+	  eq(I_ok, I_fst) = F
+	  eq(I_ok, I_ok) = T
+	  eq(I_ok, I_nok) = F
+	  eq(I_ok, I_inc) = F
+	  eq(I_ok, I_dk) = F
+	  
+	  eq(I_nok, I_fst) = F
+	  eq(I_nok, I_ok) = F
+	  eq(I_nok, I_nok) = T
+	  eq(I_nok, I_inc) = F
+	  eq(I_nok, I_dk) = F
+	  
+	  eq(I_inc, I_fst) = F
+	  eq(I_inc, I_ok) = F
+	  eq(I_inc, I_nok) = F
+	  eq(I_inc, I_inc) = T
+	  eq(I_inc, I_dk) = F
+	  
+	  eq(I_dk, I_fst) = F
+	  eq(I_dk, I_ok) = F
+	  eq(I_dk, I_nok) = F
+	  eq(I_dk, I_inc) = F
+	  eq(I_dk, I_dk) = T
+
+
+
+
+	    
+act  r1:List
+     s1, s4_:Ind
+     s4: D#Ind
+act  a
+act  r2,s2,c2,s3,r3,c3:Bit # Bit #Bit # D
+     r5 s5 c5 r6 s6 c6
+     r7,s7,c7,r8,s8,c8,r9,s9,c9,r10,s10,c10: TComm
+comm r2|s2=c2 r3|s3=c3 r5|s5=c5 r6|s6=c6 r7|s7=c7 s8|r8=c8
+     r9|s9=c9 r10|s10=c10
+proc K= sum(b0:Bit, sum(b1:Bit, sum(b2:Bit, sum(d:D, r2(b0,b1,b2,d).(a.s3(b0,b1,b2,d)+
+     a.s9(lost)).K))))
+     
+     L=r5.(a.s6+a.s9(lost)).L
+     
+     S(b2:Bit,max:Nat)= sum(l:List,r1(l).S1(l,e1,b2,0,max) <| T |> 
+     delta)
+     S1(l:List, b0:Bit, b2:Bit, rn:Nat, max:Nat)=
+     s7(set).s2(b0,indl(l),b2,head(l)).S2(l,b0,b2,rn,max)
+     
+     S2(l:List,b0:Bit, b2:Bit, rn:Nat, max:Nat) =
+     r6.s7(reset).(s1(I_ok).S(inv(b2),max)<|last(l)|>
+     S1(tail(l),e0,inv(b2),rn,max))+
+     r7(signal).S3(l,b0,b2,rn,max,C_ind(l))
+     
+     S3(l:List, b0:Bit, b2:Bit, rn:Nat ,max:Nat , c:Ind)=
+     s1(c).s10(ready).r10(signal).S(inv(b2),max)<|eq(rn,max)|> delta +
+     S1(l,b0, b2, s(rn), max) <|lt(rn,max)|> delta
+     
+     T1=(r7(set).(r9(lost).(s7(signal)+r7(reset))+r7(reset))+r7(reset)+r9(lost)).T1
+     
+     R= sum(b1:Bit, sum(b2:Bit, sum(d:D, r3(e1,b1,b2,d). 
+          R2(b1, b2, d, I_ind(e1,b1)))))
+     
+     R1(b0:Bit,b2:Bit) =sum(b1:Bit,sum(d:D,
+     r3(b0,b1,b2,d).s8(reset).R2(b1,b2,d,I_ind(b0,b1))+
+     sum(ff:Bit,r3(ff,b1,inv(b2),d).s5.R1(b0,b2))))+
+     r8(signal).(s4_(I_nok).s8(ready).R <| eq(b0,e0)|>s8(ready).R)
+     
+     R2(b1:Bit, b2:Bit, d:D, i:Ind)=s4(d,i).s8(set).s5.R1(b1,inv(b2))
+     
+     T2=(r8(set).(r10(ready).(s8(signal).r8(ready)+r8(reset)).
+     s10(signal)+r8(reset))+r10(ready).s10(signal)+r8(reset)).T2
+
+init
+hide({a,c2,c3,c5,c6,c7,c8,c9,c10},
+encap({r2,r3,r5,r6,r7,r8,r9,r10,s2,s3,s5,s6,s7,s8,s9,s10}, 
+T1 || S(e0,3) || K || L || R || T2 
+)
+)

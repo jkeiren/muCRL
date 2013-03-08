@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>mcrl</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><link rel="home" href="index.html" title="Manual Pages of the mCRL toolset (2.17.8)" /><link rel="up" href="rn01.html" title="Syntax Check and Linearization of mCRL Specifications" /><link rel="prev" href="rn01.html" title="Syntax Check and Linearization of mCRL Specifications" /><link rel="next" href="rn02.html" title="Linear Process Equations" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">mcrl</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="rn01.html">Prev</a> </td><th width="60%" align="center">Syntax Check and Linearization of mCRL Specifications</th><td width="20%" align="right"> <a accesskey="n" href="rn02.html">Next</a></td></tr></table><hr /></div><div class="refentry" lang="en" xml:lang="en"><a id="mcrl"></a><div class="titlepage"></div><div class="refnamediv"><h2>Name</h2><p>mcrl — timed <acronym class="acronym">mCRL</acronym> parser and (untimed) <a class="link" href="rn01re01.html#lpe" title="Linear Process Equation">LPE</a> generator
+
+</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p><code class="command">mcrl</code>  [<code class="option">-linear</code>] [<code class="option">-tbf</code>] [<code class="option">-stdout</code>] [<code class="option">-regular</code>] [<code class="option">-regular2</code>] [<code class="option">-cluster</code>] [<code class="option">-nocluster</code>] [<code class="option">-binary</code>] [<code class="option">-multi</code>] [<code class="option">-newstate</code>] [<code class="option">-statenames</code>] [<code class="option">-help</code>] [<code class="option">-version</code>]  <code class="option"><em class="parameter"><code>file</code></em>.mcrl
+</code> </p></div></div><div class="refsect1" lang="en" xml:lang="en"><a id="id400628"></a><h2>Description</h2><p>
+This program checks the syntax
+and the static semantics of a timed <acronym class="acronym">mCRL</acronym> specification written in
+<code class="filename"><em class="replaceable"><code>file</code></em>.mcrl</code>, and with
+proper flags transforms a subclass of untimed mCRL specifications
+to linear process operators (<a class="link" href="rn01re01.html#lpe" title="Linear Process Equation">LPE</a>s).
+This transformation is called linearization.
+</p><div class="refsect2" lang="en" xml:lang="en"><a id="id400654"></a><h3>Syntax and static semantics</h3><p>
+The tool mcrl checks whether a specification is 
+<code class="literal">well-formed (timed)</code> <acronym class="acronym">mCRL</acronym>.
+An <a class="link" href="rn07re30.html" title="alternating bit protocol">example</a> of a <code class="literal">well-formed</code> specification 
+is the <a class="link" href="rn07re30.html" title="alternating bit protocol">Alternating Bit Protocol</a>.
+A <acronym class="acronym">mCRL</acronym> specification is <code class="literal">well-formed</code> if:
+</p><div class="itemizedlist"><ul type="disc"><li><p>
+The specification is syntactically correct
+</p></li><li><p>
+All names in the specification 
+(of sorts, functions, variables, actions, and processes) 
+are appropriately declared
+</p></li><li><p>
+The sort <span class="type">Bool</span> is declared, as are the two constructors 
+<code class="constant">T</code> and <code class="constant">F</code> of this sort
+</p></li><li><p>
+If the sort <code class="literal">Time</code> is declared, both 
+<code class="literal">time0</code> and <code class="literal">le</code> are declared as 
+functions of this sort
+</p></li><li><p>
+All data-terms conform with the declarations (i.e. they are type correct)
+</p></li><li><p>
+Both data-terms of each equation are of the same sort
+</p></li><li><p>
+All conditions are of sort <span class="type">Bool</span>
+</p></li><li><p>
+The term at the right-hand side of every @ operator is of sort 
+<code class="literal">Time</code>
+</p></li><li><p>
+If an action <em class="parameter"><code>a</code></em> is renamed to 
+<em class="parameter"><code>b</code></em>, <em class="parameter"><code>b</code></em> is declared with 
+respect to all the domains of <em class="parameter"><code>a</code></em>
+</p></li><li><p>
+The sorts of all communicating actions match
+</p></li><li><p>
+The communications are defined in such way that communication 
+is associative and commutative
+</p></li><li><p>
+There is not more than one initial process declared
+</p></li></ul></div><p>
+.
+</p></div><div class="refsect2" lang="en" xml:lang="en"><a id="id400812"></a><h3>Linearization</h3><p>
+The tool mcrl can also be used to 
+translate a well-formed <acronym class="acronym">mCRL</acronym> specification to a 
+linear process equation provided that the specification meets
+the following requirements:
+</p><div class="itemizedlist"><ul type="disc"><li><p>
+The process descriptions do not refer to time 
+(i.e. neither the <code class="literal">@</code> nor the 
+<code class="literal">&lt;&lt;</code> operator is used).
+</p></li><li><p>
+The left merge <code class="literal">|_</code>
+and the 
+communication merge <code class="literal">|</code> are not used to specify 
+processes.
+</p></li><li><p>
+Every process declaration must belong to one of the following syntactic 
+categories:
+  </p><div class="itemizedlist"><ul type="circle"><li><p>
+  Declarations in which action and process names are glued together 
+  by means of the operators <code class="literal">.</code>, 
+  <code class="literal">+</code>, <code class="literal">&lt;|</code> ... <code class="literal">|&gt;</code>, and <code class="literal">sum</code>
+  </p></li><li><p>
+  Declarations in which process names are glued together 
+  by means of the operators <code class="literal">||</code>, 
+  <code class="literal">hide</code>, <code class="literal">encap</code>, and 
+  <code class="literal">rename</code>.
+  </p></li></ul></div><p>.
+If this requirement is violated the lineariser will respond with
+error message:
+<code class="literal">
+Mixing pCRL with <acronym class="acronym">mCRL</acronym> operators
+</code>
+</p></li><li><p>
+The operators <code class="literal">||</code>, 
+<code class="literal">hide</code>, <code class="literal">encap</code>, and 
+<code class="literal">rename</code> are not used within the scope of the operators
+ <code class="literal">.</code>, 
+  <code class="literal">+</code>, <code class="literal">&lt;|</code> ... <code class="literal">|&gt;</code>, and <code class="literal">sum</code>.
+If this requirement is violated the lineariser will respond with
+error message:
+<code class="literal">
+Parallel operator in the scope of pCRL operators
+</code>
+</p></li><li><p>
+Recursion is guarded
+</p></li><li><p>
+There is no recursion at the level of the 
+<code class="literal">||</code>, 
+<code class="literal">hide</code>, <code class="literal">encap</code>, and 
+<code class="literal">rename</code> operators
+</p></li><li><p>
+The functions <code class="literal">not</code>,
+<code class="literal">and</code>, and <code class="literal">or</code> 
+of sort <span class="type">Bool</span> must be defined in the <acronym class="acronym">mCRL</acronym> specification.
+</p></li></ul></div><p>
+</p></div></div><div class="refsect1" lang="en" xml:lang="en"><a id="id401051"></a><h2>Options</h2><div class="variablelist"><dl><dt><span class="term"><code class="option">-linear</code>
+  </span></dt><dd><p>
+    A human readable LPE of the input file is written to 
+    <code class="filename"><em class="replaceable"><code>file</code></em>.lin</code>
+    </p></dd><dt><span class="term"><code class="option">-tbf</code> </span></dt><dd><p>
+  An LPE of the input file in toolbus term format is
+  written to <code class="filename"><em class="replaceable"><code>file</code></em>.tbf</code>
+  </p></dd><dt><span class="term"><code class="option">-stdout</code></span></dt><dd><p>
+   An LPE in toolbus term format is generated, and written
+   to <code class="filename">stdout</code>
+  </p></dd><dt><span class="term"><code class="option">-regular</code>
+  </span></dt><dd><p>
+   It is assumed that the input file is regular, and the
+   output LPE will be generated in regular form
+   </p></dd><dt><span class="term"><code class="option">-regular2</code>
+  </span></dt><dd><p>
+   A variant of regular where much more data variables are
+   being used. <code class="option">-regular2</code> is sometimes successful where
+   the use of <code class="option">-regular</code> leads to non termination of this tool
+   </p></dd><dt><span class="term"><code class="option">-cluster</code>
+  </span></dt><dd><p>
+   All actions in the output are clustered
+   </p></dd><dt><span class="term"><code class="option">-nocluster</code>
+  </span></dt><dd><p>
+   No actions are clustered, not even in intermediate LPEs
+   </p></dd><dt><span class="term"><code class="option">-binary</code>
+  </span></dt><dd><p>
+   Use binary, instead of n-ary, case functions when clustering.
+   In the presence of <code class="option">-newstate</code>, state variables use 
+   binary encoding.
+   </p></dd><dt><span class="term"><code class="option">-multi</code>
+  </span></dt><dd><p>
+    Write the term before the final composition of LPEs
+   </p></dd><dt><span class="term"><code class="option">-newstate</code>
+  </span></dt><dd><p>
+    Encode state variables using enumerated types.
+    <code class="option">-newstate</code> is only allowed in the presence of 
+    <code class="option">-regular</code> or <code class="option">-regular2</code>.
+    Using the flag <code class="option">-binary</code> in addition  
+    the state will be encoded by a vector of boolean variables.
+    By default (i.e. without -newstate), the functions
+    <code class="literal">one</code>, 
+    <code class="literal">x2p1</code> and <code class="literal">x2p0</code> will be used.
+   </p></dd><dt><span class="term"><code class="option">-statenames</code>
+  </span></dt><dd><p> 
+   Use meaningful names derived from the specification
+   for the state variables
+   </p></dd></dl></div></div><div class="refsect1" lang="en" xml:lang="en"><a id="id401293"></a><h2>Language <acronym class="acronym">mCRL</acronym></h2><p>
+This language includes the Algebra of Communicating Processes
+with abstraction and abstract data types.
+The abstract data type consists of definitions of
+constructors, operators and  rewrite rules.
+The data consists of sorted terms.
+Processes can be described using the ordinary process operators:
+<code class="literal">+</code>, <code class="literal">.</code>, <code class="literal"><span class="command"><strong>or</strong></span></code>, <code class="literal">delta</code>, <code class="literal">tau</code>, <code class="literal">delta<sub>H</sub></code>, <code class="literal">tau<sub>I</sub></code>,
+actions and recursive equations.
+Extra features of <acronym class="acronym">mCRL</acronym> provide interaction of data with processes:
+</p><div class="variablelist"><dl><dt><span class="term">process/action parameters</span></dt><dd><p>
+Process variables and actions are
+supplied with parameters.
+The parameters of the process variables and actions can be instantiated
+with data terms of the right sort.
+</p></dd><dt><span class="term">conditionals</span></dt><dd><p>
+The process expression 
+<em class="parameter"><code>p</code></em> <code class="literal">&lt;|</code><em class="parameter"><code>b</code></em><code class="literal">|&gt;</code> <em class="parameter"><code>q</code></em>
+where
+<em class="parameter"><code>p</code></em> and <em class="parameter"><code>q</code></em> are processes, and 
+<em class="parameter"><code>b</code></em> is a data term of sort <span class="type">Bool</span>, 
+behaves like <em class="parameter"><code>p</code></em> if <em class="parameter"><code>b</code></em> is 
+equal to <code class="constant">T</code> (true) and
+behaves like <em class="parameter"><code>q</code></em> if <em class="parameter"><code>b</code></em> is equal 
+to <code class="constant">F</code> (false).
+This process expression requires that the sort <span class="type">Bool</span>, 
+with constants <code class="constant">T</code>,
+and <code class="constant">F</code>, is defined in each <acronym class="acronym">mCRL</acronym> specification.
+</p></dd><dt><span class="term">sums</span></dt><dd><p>
+The sum operator 
+<code class="literal"><code class="literal">sum</code>(<em class="parameter"><code>e:E</code></em>,<em class="parameter"><code>P(e))
+</code></em></code> 
+behaves like
+<em class="parameter"><code>P(e<sub>1</sub>)+P(e<sub>2</sub>)+
+··· </code></em> i.e. as 
+the choice between <em class="parameter"><code>P(e<sub>i</sub>)</code></em> 
+for any data term <em class="parameter"><code>e<sub>i</sub></code></em>
+taken from <em class="parameter"><code>E</code></em>,
+which may be infinite, where <em class="parameter"><code>P</code></em> is a process term.
+</p></dd></dl></div><p>
+</p></div><div class="refsect1" lang="en" xml:lang="en"><a id="lpe"></a><h2>Linear Process Equation</h2><p>A Linear Process Equation, abbreviaton LPE, is in essence a vector 
+of typed process
+parameters (abstract data types are specified in signature <code class="literal">S</code>) 
+and a list of condition, action and effect triples that
+describes when an action may happen, and what its effect is on the
+vector of process parameters. Here an LPE is a special instance of a <acronym class="acronym">mCRL</acronym>
+process, namely
+</p><p>
+<em class="parameter"><code> proc
+P(d<sub>1</sub>:D<sub>1</sub>,...,
+  d<sub>n</sub>:D<sub>n</sub>)=
+</code></em>
+</p><table class="simplelist" border="0" summary="Simple list"><tr><td><span class="emphasis"><em><code class="literal">sum</code> (e<sub>11</sub>:E<sub>11</sub>
+,...,
+e<sub>1 m1</sub>:E<sub>1 m1</sub> ,
+a<sub>1</sub> (f<sub>11</sub> ,...,
+     f<sub>1 k1</sub>) .
+P(g<sub>11</sub> ,...,
+     g<sub>1n</sub>)
+<code class="literal">&lt;|</code> h<sub>1</sub> <code class="literal">|&gt;</code> <code class="literal">delta</code> ) +
+</em></span></td></tr><tr><td><span class="emphasis"><em>.</em></span></td></tr><tr><td><span class="emphasis"><em><code class="literal">sum</code> (e<sub>i1</sub>:E<sub>i1</sub>
+,...,
+e<sub>i mi</sub>:E<sub>i mi</sub> ,
+a<sub>i</sub>(f<sub>i1</sub> ,...,
+     f<sub>i ki</sub>) .
+P(g<sub>i1</sub> ,...,
+     g<sub>in</sub>)
+<code class="literal">&lt;|</code> h<sub>i</sub> <code class="literal">|&gt;</code> <code class="literal">delta</code> ) +
+</em></span></td></tr><tr><td><span class="emphasis"><em>.</em></span></td></tr><tr><td><span class="emphasis"><em><code class="literal">sum</code> (e<sub>m1</sub>:E<sub>m1</sub>
+,...,
+e<sub>m mm</sub>:E<sub>m mm</sub> ,
+a<sub>m</sub> (f<sub>m1</sub> ,...,
+     f<sub>m km</sub>) .
+P(g<sub>m1</sub> ,...,
+     g<sub>mn</sub>)
+<code class="literal">&lt;|</code> h<sub>m</sub> <code class="literal">|&gt;</code> <code class="literal">delta</code> )
+</em></span></td></tr></table><p>
+in which 
+</p><div class="variablelist"><dl><dt><span class="term">
+<code class="literal"><em class="parameter"><code>n,m,mi,ki</code></em></code>
+</span></dt><dd><p>
+Respectively number of process parameters, number of summands,
+number of sumvariables in summand
+<code class="literal"><em class="parameter"><code>i</code></em></code>, and number of action arguments in 
+summand <code class="literal"><em class="parameter"><code>i</code></em></code>
+</p></dd><dt><span class="term">
+<code class="literal"><em class="parameter"><code>D<sub>i</sub></code></em></code>,
+<code class="literal"><em class="parameter"><code>E<sub>ij</sub></code></em></code>
+</span></dt><dd><p>
+Abstract Data Types
+</p></dd><dt><span class="term">
+<code class="literal"><em class="parameter"><code>d<sub>i</sub></code></em></code>,
+<code class="literal"><em class="parameter"><code>e<sub>ij</sub></code></em></code>
+</span></dt><dd><p>
+Process parameter of sort 
+<code class="literal"><em class="parameter"><code>D<sub>i</sub></code></em></code>,
+respectively sumvariable of sort
+<code class="literal"><em class="parameter"><code>E<sub>ij</sub></code></em></code>
+</p></dd><dt><span class="term">
+<code class="literal"><em class="parameter"><code>a<sub>i</sub>(f<sub>i1</sub> ,...,
+     f<sub>i ki</sub>)
+</code></em></code> 
+</span></dt><dd><p> 
+Parametrized action with
+  </p><div class="itemizedlist"><ul type="disc"><li><p>
+  action name <code class="literal"><em class="parameter"><code>a<sub>i</sub></code></em></code>
+  </p></li><li><p>
+  data term <code class="literal"><em class="parameter"><code>f<sub>ij</sub></code></em></code> 
+  in <code class="literal">T[S,<em class="parameter"><code>{d<sub>1</sub> ,...,
+   d<sub>n</sub>,e<sub>i1</sub> ,...,
+   e<sub>i mi</sub>}</code></em>]</code>
+  </p></li></ul></div><p>
+  </p></dd><dt><span class="term">
+<code class="literal"><em class="parameter"><code>g<sub>ij</sub></code></em></code>
+</span></dt><dd><p>
+Process argument
+<code class="literal"><em class="parameter"><code>g<sub>ij</sub></code></em></code>
+, which is a data term 
+in <code class="literal">T[S,<em class="parameter"><code>{d<sub>1</sub> ,...,
+   d<sub>n</sub>,e<sub>i1</sub> ,...,
+   e<sub>i mi</sub>}</code></em>]</code>
+of sort 
+<code class="literal"><em class="parameter"><code>D<sub>j</sub></code></em></code>
+</p></dd><dt><span class="term">
+<code class="literal"><em class="parameter"><code>h<sub>i</sub></code></em></code>
+</span></dt><dd><p>
+Condition
+<code class="literal"><em class="parameter"><code>
+h<sub>i</sub>
+</code></em></code>, which is a data term 
+in <code class="literal">T[S,<em class="parameter"><code>{d<sub>1</sub> ,...,
+   d<sub>n</sub>,e<sub>i1</sub> ,...,
+   e<sub>i mi</sub>}</code></em>]</code>
+of sort <span class="type">Bool</span>
+</p></dd></dl></div><p>
+,and a vector of closed data terms, whose sorts are one by one equal to 
+the sorts of the process parameters. 
+This vector of closed data terms defines the initial state.
+An LPE can be seen as an inductive definition of a state space,
+which belongs to the process described by the <acronym class="acronym">mCRL</acronym> specification. 
+</p></div><div class="refsect1" lang="en" xml:lang="en"><a id="id402120"></a><h2>Last update</h2><p><code class="literal">16 December 2008</code> by Bert Lisser <code class="email">&lt;<a class="email" href="mailto:B.Lisser@cwi.nl">B.Lisser@cwi.nl</a>&gt;</code> 
+
+</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="rn01.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="rn01.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="rn02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Syntax Check and Linearization of mCRL Specifications </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Linear Process Equations</td></tr></table></div></body></html>

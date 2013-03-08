@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>invcheck</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><link rel="home" href="index.html" title="Manual Pages of the mCRL toolset (2.17.8)" /><link rel="up" href="rn02.html" title="Linear Process Equations" /><link rel="prev" href="rn02re05.html" title="decluster" /><link rel="next" href="rn02re07.html" title="invelm" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">invcheck</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="rn02re05.html">Prev</a> </td><th width="60%" align="center">Linear Process Equations</th><td width="20%" align="right"> <a accesskey="n" href="rn02re07.html">Next</a></td></tr></table><hr /></div><div class="refentry" lang="en" xml:lang="en"><a id="invcheck"></a><div class="titlepage"></div><div class="refnamediv"><h2>Name</h2><p>invcheck — 
+Checks whether a formula is an invariant of an LPE
+</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p><code class="command">invcheck</code>   <code class="option">-invariant</code> 
+<em class="replaceable"><code>file</code></em>
+  [<code class="option">-generate</code>] [<code class="option">-all</code>] [<code class="option">-verbose</code>] [<code class="option">-help</code>] [<code class="option">-help-all</code>] [<code class="option">-version</code>] [<code class="option"><a class="link" href="rn06re27.html" title="Data Options">Data Options</a></code>] [<code class="option"><a class="link" href="rn06re28.html" title="Rewriter Options">Rewriter Options</a></code>] [<code class="option"><em class="parameter"><code>input</code></em>.tbf</code>]</p></div></div><div class="refsect1" lang="en" xml:lang="en"><a id="id407458"></a><h2>Description</h2><p>
+This filter reads from 
+<code class="filename"><em class="replaceable"><code>input</code></em>.tbf</code> (or 
+<code class="filename"> stdin </code> if not given) an <a class="link" href="rn01re01.html#lpe" title="Linear Process Equation">LPE</a> 
+in <code class="literal">.tbf </code> format,reads a conjectured invariant 
+<code class="literal"><em class="parameter"><code>phi</code></em></code> from
+<code class="filename"><em class="replaceable"><code>file</code></em></code>.
+ <span class="command"><strong>invcheck</strong></span> reports on
+<code class="filename">stderr</code> for which summands the invariant 
+holds. If <code class="option">-generate</code> is absent, <code class="option">-verbose</code> 
+is turned on automatically, otherwise there would no output on 
+<code class="filename">stderr</code> at all.
+</p><p>
+Given process parameters <em class="parameter"><code>d</code></em>, 
+initial state <em class="parameter"><code>init</code></em>, and summands
+</p><table class="simplelist" border="0" summary="Simple list"><tr><td><code class="literal"><em class="parameter"><code>
+<code class="literal">sum</code> (e<sub>i</sub>,
+a<sub>i</sub>(f<sub>i</sub>) .
+P(g<sub>i</sub>)
+<code class="literal">&lt;|</code> h<sub>i</sub> <code class="literal">|&gt;</code> <code class="literal">delta</code> )
+</code></em></code></td></tr></table><p>
+then <span class="command"><strong>invcheck</strong></span> tries to prove
+<em class="parameter"><code><code class="literal"><em class="parameter"><code>phi</code></em></code>(init)</code></em> and  
+for all <em class="parameter"><code>i</code></em> the universal closure of:
+<code class="literal"><em class="parameter"><code><code class="literal"><em class="parameter"><code>phi</code></em></code>(d) <code class="literal"><span class="command"><strong>and</strong></span></code>
+h<sub>i</sub>(d, e<sub>i</sub>)
+<code class="literal"><span class="command"><strong>implies</strong></span></code> <code class="literal"><em class="parameter"><code>phi</code></em></code>(g<sub>i</sub>(d, e<sub>i</sub>))
+</code></em></code>.
+The first proves the invariant initially holds, the second that it is
+preserved by all transitions.
+The tool terminates as soon as a counter example is found, unless the
+<code class="option">-all</code> flag is given.
+</p></div><div class="refsect1" lang="en" xml:lang="en"><a id="id407676"></a><h2>Options</h2><div class="variablelist"><dl><dt><span class="term"><code class="option">-invariant</code> <em class="parameter"><code>file</code></em></span></dt><dd><p>
+   Read an invariant from <em class="parameter"><code>file</code></em>.
+   This file should contain exactly one formula, i.e of type Bool.
+   The formula may contain the process parameters of the LPE as free variables,
+   but no other variables. This flag is obligatory.
+    </p></dd><dt><span class="term"><code class="option">-generate</code></span></dt><dd><p>
+   Generate the invariance formulae and write them to 
+   <code class="filename">stdout</code>  in the format understood by
+   <span class="command"><strong>formcheck</strong></span>.
+   They are not checked but merely generated. The main reason is that the
+   formulae could be translated and submitted to other theorem provers,
+   like PVS or Isabelle. 
+    </p></dd><dt><span class="term"><code class="option">-all</code> </span></dt><dd><p>
+  Do not terminate as-soon-as invariant violation is found
+  </p></dd><dt><span class="term"><code class="option">-print</code></span></dt><dd><p>
+  Print BDDs for failed summands in ASCII
+  on <code class="filename">stderr</code>
+  </p></dd><dt><span class="term"><code class="option">-print-dot</code></span></dt><dd><p>
+  Print BDDs for failed summands in dot-format 
+  on <code class="filename">stdout</code>
+  </p></dd><dt><span class="term"><code class="option">-counter</code></span></dt><dd><p>
+  Print counter examples
+  </p></dd><dt><span class="term"><code class="option">-verbose</code> </span></dt><dd><p>
+  Indicate to <code class="filename">stderr</code> which summands holds
+  </p></dd><dt><span class="term"><code class="option">-help</code></span></dt><dd><p>
+    Display help information
+    </p></dd><dt><span class="term"><code class="option">-help-all</code></span></dt><dd><p>
+    Display all help information
+    </p></dd><dt><span class="term"><code class="option">-version</code></span></dt><dd><p>
+    Get the version number of this release
+    </p></dd></dl></div></div><div class="refsect1" lang="en" xml:lang="en"><a id="id407866"></a><h2>Limitations</h2><p>
+Besides the limitations of the prover, it should be noted that
+<span class="command"><strong>invcheck</strong></span> doesn't perform induction-loading.
+The invariant should hold "as is". Invariants that need a simultaneous
+induction proof should be put in conjunction in one formula-file.
+Furthermore, it is not possible to express invariants containing 
+quantifiers. These can often be avoided by adding more functions in the
+specification. For instance, the  invariant on list <em class="parameter"><code>L</code></em>:
+<code class="literal"><code class="literal"><span class="command"><strong>forall</strong></span></code> l. l <code class="literal"><span class="command"><strong>in</strong></span></code> L <code class="literal"><span class="command"><strong>implies</strong></span></code> l &lt; 5 </code>
+should be replaced by
+<code class="literal">max(L)&lt;5</code>, after specifying the function
+<code class="literal">max</code> which returns the maximum value in a list. 
+</p></div><div class="refsect1" lang="en" xml:lang="en"><a id="id407939"></a><h2>Last update</h2><p><code class="literal">16 December 2008</code> by Bert Lisser <code class="email">&lt;<a class="email" href="mailto:B.Lisser@cwi.nl">B.Lisser@cwi.nl</a>&gt;</code> 
+
+</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="rn02re05.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="rn02.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="rn02re07.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">decluster </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> invelm</td></tr></table></div></body></html>

@@ -1,0 +1,176 @@
+<refentry id="ltsmin">
+<refmeta>
+<refentrytitle>ltsmin</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>ltsmin</refname>
+<refpurpose>Minimizes labeled transition systems</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>ltsmin</command> 
+<arg><group choice="plain">
+<arg choice="plain"><option>-s</option></arg>
+<arg choice="req">
+     <arg choice="plain"><option>-b</option></arg>
+     <arg choice="opt"><option>-cycle</option></arg>
+     <arg choice="opt"><option>-indir</option></arg>
+     <arg choice="opt"><option>-c</option></arg>
+     <arg choice="opt"><option>-i</option></arg>     
+</arg>
+<arg choice="plain"><option>-w</option></arg>
+<arg choice="plain"><option>-tsa</option></arg>
+<arg choice="plain"><option>-trace</option></arg>
+</group></arg>
+<arg><option>-statm</option></arg>
+<arg><option>-postsort</option></arg>
+<arg><option>-o</option><replaceable>output.ext2</replaceable>
+</arg>
+<arg><option>-segments</option> <replaceable>N</replaceable>
+</arg>
+<arg choice="plain">
+<replaceable>input.ext1</replaceable>
+</arg>
+<arg choice="opt">
+<replaceable>output.ext2</replaceable>
+</arg>
+</cmdsynopsis>
+&ext1;
+&ext2;
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+Reduces a labeled transition system defined in
+<filename><replaceable>input.</replaceable>ext1</filename>.
+The reduced labeled transition system will be eventually written in
+<filename><replaceable>output.</replaceable>ext2</filename>. 
+The format of the output
+is determined by the extension of the file name.
+Allowed extensions are:
+&ext3;
+</para>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+<varlistentry><term><option>-s</option></term>
+<listitem>
+<para>
+Apply strong bisimulation reduction
+</para>
+</listitem>
+
+</varlistentry>
+<varlistentry><term><option>-b</option></term>
+<listitem>
+<para>
+Apply branching bisimulation reduction
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><option>-cycle</option></term>
+<listitem>
+<para>
+Apply tau cycle reduction
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><option>-indir</option></term>
+<listitem>
+<para>
+Apply tau indirection reduction
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><option>-c</option></term>
+<listitem>
+<para>
+Apply tau cycle elimination before reduction
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><option>-i</option></term>
+<listitem>
+<para>
+Apply tau indirection elimination before reduction
+preprocessing step for branching bisimulation
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><option>-w</option></term>
+<listitem>
+<para>
+Apply weak bisimulation reduction
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><option>-tsa</option></term>
+<listitem>
+<para>
+Appy tau star a reduction
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><option>-trace</option></term>
+<listitem>
+<para>
+Compute smallest deterministic LTS, which is trace equivalence
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><option>-statm</option></term>
+<listitem>
+<para>
+Enable peak memory checking
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><option>-postsort</option></term>
+<listitem>
+<para>
+Sort the transitions per state before writing
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><option>-o</option> 
+<filename><replaceable>output.ext2</replaceable></filename>
+</term>
+<listitem>
+<para>
+Write transition system to 
+<filename><replaceable>output.ext2</replaceable></filename>
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><option>-segments</option> 
+<replaceable>N</replaceable>
+</term>
+<listitem>
+<para>
+Write output in <literal> .dir </literal> format 
+with <replaceable> N </replaceable> segments.
+Has no influence if output  is not in  
+<literal> .dir </literal> format.
+</para>
+</listitem>
+</varlistentry>
+
+</variablelist>
+</refsect1>
+&ltsmin.xml;
+</refentry>

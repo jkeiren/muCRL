@@ -1,0 +1,90 @@
+#  SVC -- the SVC (Systems Validation Centre) file format library
+#
+#  Copyright (C) 2000  Stichting Mathematisch Centrum, Amsterdam,
+#                      The  Netherlands
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU Lesser General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+# $Id: Makefile.in,v 1.2 2008/02/04 14:52:49 bertl Exp $
+
+.SUFFIXES:  .c .o
+
+SHELL     = /bin/sh
+ARCH      = @host_cpu@
+VERSION   = 1.2
+DATE      = `date`
+RM	  = @RM@
+CC        = @CC@ 
+AR        = ar
+LD        = @CC@
+GZIP      = gzip
+TAR       = gtar
+CFLAGS    = @CFLAGS@ 
+CPPFLAGS  = @CPPFLAGS@
+DEFS      = -DVERSION="\"$(VERSION)"\" -DDATE="\"$(DATE)"\"
+LIBS      = @LIBS@
+LDFLAGS   = 
+ARFLAGS   = cr
+
+datarootdir 	= @datarootdir@
+prefix          = @prefix@
+srcdir          = @srcdir@
+top_srcdir      = @top_srcdir@
+exec_prefix     = @exec_prefix@
+includedir      = @includedir@
+mandir          = @mandir@
+distdir         = @distdir@
+libexecdir      = @libexecdir@
+
+
+DISTFILES   = README AUTHORS ChangeLog INSTALL TODO LICENSE configure configure.in install-sh Makefile.in config.sub config.guess
+DISTSUBDIRS = src man
+
+
+
+all: 
+	(cd src; $(MAKE) all)
+
+install: ALWAYS
+	(cd src; $(MAKE) install);\
+        (cd man; $(MAKE) install)
+
+uninstall: ALWAYS
+	(cd src; $(MAKE) uninstall);\
+        (cd man; $(MAKE) uninstall)
+
+ALWAYS:
+
+
+dist: distdir
+	(cd $(distdir)/..; $(TAR)  cf $(distdir).tar `basename $(distdir)`); \
+	$(GZIP)  $(distdir).tar;\
+	rm -rf $(distdir);
+
+distdir: $(DISTFILES)
+	rm -rf $(distdir);
+	mkdir $(distdir);
+	@for file in $(DISTFILES); do\
+	   cp $(srcdir)/$$file $(distdir); \
+        done;
+	@for subdir in $(DISTSUBDIRS); do\
+           mkdir $(distdir)/$$subdir; \
+           (cd $$subdir; \
+           $(MAKE) top_distdir=$(distdir) distdir=$(distdir)/$$subdir distdir;) \
+        done;
+clean:
+	$(RM) config.cache config.log config.status;\
+	cd src; $(MAKE) clean
+

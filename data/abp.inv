@@ -1,0 +1,48 @@
+% first express that S,K,R will send the correct datum d12:
+
+and(implies(  % S has correct value d when going to send
+  or(eq(s0,x2p1(x2p0(one))),
+  or(eq(s0,x2p0(x2p0(one))),
+  or(eq(s0,x2p0(one)),
+     eq(s0,one)))),
+  eq(d,d12)),
+and(implies(  % K has correct value d14 when going to send
+  or(eq(s1,x2p1(one)),
+     eq(s1,x2p0(one))),
+  eq(d14,d)),
+and(implies(  % R has correct value d13 when going to send
+  or(eq(s8,x2p0(x2p1(one))),
+     eq(s8,x2p0(one))),
+  eq(d13,d)),
+
+
+% S idle   if s0 in: x2p0(x2p0(one)), one
+% K idle   if s1 in: x2p0(x2p0(one))
+% L idle   if s7 in: x2p0(x2p0(one))
+% R idle   if s8 in: x2p1(x2p0(x2p0(one))), x2p1(x2p1(one)), x2p0(x2p0(one))
+
+% next express that at most one of S,K,L,R is active:
+
+   
+and(or(eq(s0,x2p0(x2p0(one))),      % either S or K is idle
+    or(eq(s0,one),
+       eq(s1,x2p0(x2p0(one))))),
+and(or(eq(s0,x2p0(x2p0(one))),      % either S or L is idle
+    or(eq(s0,one),
+       eq(s7,x2p0(x2p0(one))))),
+and(or(eq(s0,x2p0(x2p0(one))),      % either S or R is idle
+    or(eq(s0,one),
+    or(eq(s8,x2p1(x2p0(x2p0(one)))),
+    or(eq(s8,x2p1(x2p1(one))),
+       eq(s8,x2p0(x2p0(one))))))),
+and(or(eq(s1,x2p0(x2p0(one))),      % either K or L is idle
+       eq(s7,x2p0(x2p0(one)))),
+and(or(eq(s1,x2p0(x2p0(one))),      % either K or R is idle
+    or(eq(s8,x2p1(x2p0(x2p0(one)))),
+    or(eq(s8,x2p1(x2p1(one))),
+       eq(s8,x2p0(x2p0(one)))))),
+and(or(eq(s7,x2p0(x2p0(one))),      % either L or R is idle
+    or(eq(s8,x2p1(x2p0(x2p0(one)))),
+    or(eq(s8,x2p1(x2p1(one))),
+       eq(s8,x2p0(x2p0(one)))))),
+T)))))))))

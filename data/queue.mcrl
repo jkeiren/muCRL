@@ -1,0 +1,67 @@
+% This file contains the description of a simple queue process
+% that can read an unbounded quantity of data, and deliver this
+% in sequence.
+
+sort   D
+func   d1,d2: -> D
+map   eq:D#D -> Bool
+
+rew
+eq(d1,d1)=T
+eq(d2,d2)=T
+eq(d1,d2)=F
+eq(d2,d1)=F
+
+
+sort Bool
+
+func T,F:-> Bool
+map  and:Bool#Bool -> Bool
+not:Bool -> Bool
+eq:Bool#Bool->Bool
+
+rew
+and(T,T)=T
+and(F,T)=F
+and(T,F)=F
+and(F,F)=F
+
+not(F)=T
+not(T)=F
+
+eq(T,T)=T
+eq(T,F)=F
+eq(F,T)=F
+eq(F,F)=T
+
+sort queue
+
+func empty:->queue
+     in:D#queue->queue
+map  ne:queue->Bool
+     toe:queue->D
+     untoe:queue->queue
+
+var d:D q:queue e:D
+rew
+ne(empty)=F
+ne(in(d,q))=T
+
+toe(empty)=d1
+toe(in(d,empty))=d
+toe(in(d,in(e,q)))=toe(in(e,q))
+
+untoe(empty)=empty
+untoe(in(d,empty))=empty
+untoe(in(d,in(e,q)))=in(d,untoe(in(e,q)))
+
+act s1:D r1:D r2:D s2:D c:D
+
+comm s1|r2=c
+
+proc Q(q:queue)=sum(d:D,r1(d).Q(in(d,q))) +
+            ( s1(toe(q)).Q(untoe(q)) <| ne(q) |> delta )
+
+init Q(empty)
+
+ 

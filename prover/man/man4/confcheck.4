@@ -1,0 +1,71 @@
+.TH CONFCHECK 4 19/03/2001
+.SH NAME
+confcheck \- Detects and marks confluent tau-summands of a linear process (LPO)
+
+.SH SYNOPSIS
+.B confcheck
+[-invariant
+.I 
+inv-file\c
+] [OPTIONS]
+
+.SH OPTIONS 
+.IP \-mark
+marks confluent tau-summands as ctau; writes LPO to stdout
+.IP \-generate
+writes confluence formulae to stdout, without checking them
+.IP \-summand\ <n>
+checks confluence of n'th summand only (should be a tau)
+.IP \-all
+doesn't terminate on detection of the first non-confluence
+.IP \-silent
+suppresses information on stderr
+.IP \-print
+prints the resulting BDDs (use for small examples only)
+.IP \-counter
+prints counter-examples to the confluence formulae
+.IP \-help
+prints a help message
+
+.in 0.75i
+Option -generate cannot be used in combination with -mark.
+Option -silent is only useful in combination with another option
+that generates output, such as -mark, -generate, -print or -counter.
+
+.SH DESCRIPTION
+.B confcheck
+is a tool that checks and reports which tau-summands are confluent
+with all other actions (including this tau-summand), possibly assuming that
+.I inv-file
+contains an invariant property. The invariant should be checked
+separately, for instance by invcheck. If the -mark option is given,
+each confluent tau-summand is changed into ctau. This is useful for
+the
+.I instantiator -confluent ctau.
+With the -counter and -print options, one gets some diagnostic
+information in case a tau-summand is not confluent.  With the -summand
+\<n\> and -all options, one can influence the number of considered
+cases.  With the -generate flag, the confluence formulas are generated
+in the format understood by formcheck. These can then be solved by another
+prover.
+
+.SH FILES
+.IP inv-file
+A file containing a formula, which is a term of type Bool, containing
+the LPO parameters as free variables.
+.IP stdin
+An LPO in tbf-format.
+.IP stdout
+An LPO in tbf-format, only generated with option -mark.  Or, a list of
+declarations and formulae, only generated with option -generate.
+.IP stderr
+A report on confluent tau-summands; suppressed by -silent
+
+.SH SEE ALSO
+
+prover(4), formcheck(4), invcheck(4)
+
+.SH AUTHOR
+Jaco van de Pol <vdpol@cwi.nl>
+.LP
+Please send all complaints, comments and bug fixes to me. 

@@ -1,0 +1,126 @@
+
+<refentry id="rewr">
+<refmeta>
+<refentrytitle>rewr</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>rewr</refname>
+<refpurpose>
+Rewrites an Linear Process Equation
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>rewr</command> 
+&common1;
+<arg><option>-monitor</option></arg>
+<arg><option>-prover</option></arg>
+<arg><option>-invariant</option> 
+<replaceable>file</replaceable></arg>
+<arg><option>-compile</option></arg>
+<arg><option>-no-compile</option></arg>
+<arg><option><link linkend="libmcrl">Data Options</link></option></arg>
+<arg><option><link linkend="rw">Rewriter Options</link></option></arg>
+<arg><option><parameter>input</parameter>.tbf</option></arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+This filter reads from 
+<filename><replaceable>input</replaceable>.tbf</filename> (or 
+<filename> stdin </filename> if not given) an &lpe; 
+in <literal>.tbf </literal> format and transforms
+it to an LPE which is equivalent to it by rewriting.
+It writes the rewritten LPE to <filename>stdout</filename>.
+</para>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+<!--<title>Options</title>-->
+&common2;
+<varlistentry>
+  <term><option>-monitor</option>
+  </term>
+  <listitem>
+    <para>
+    Display progressing information
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-prover</option> </term>
+  <listitem>
+  <para>
+  Rewrite conditions will using BDD techniques
+  </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-invariant</option>
+  <filename><replaceable>file</replaceable></filename>
+  </term>
+  <listitem>
+  <para>
+  Like <option>-prover</option>, in addition the invariant term 
+  <parameter>I</parameter>
+  written in  <filename><replaceable>file</replaceable></filename> 
+  will be used by: 
+  <itemizedlist>
+  <listitem>
+    <para>
+    recognizing each condition as conjunction of terms 
+    <literal><parameter>b<subscript>i</subscript></parameter></literal> 
+    </para>
+  </listitem>
+  <listitem><para>
+    searching some <parameter>i</parameter> and <parameter>j</parameter> with
+    <parameter>i</parameter> not equal <parameter>j</parameter> at which holds:
+    <literal><parameter>b<subscript>j</subscript></parameter></literal>
+    <literal><command>and</command></literal>
+    <literal><parameter>I</parameter></literal>
+    <literal>-></literal>
+    <literal><parameter>b<subscript>i</subscript></parameter></literal>
+  and
+  </para></listitem>
+  <listitem><para>
+    removing <literal><parameter>b<subscript>i</subscript></parameter></literal>
+    from the conjuction if the latter formula holds for <parameter>i</parameter> 
+    and <parameter>j</parameter>
+  </para></listitem>
+</itemizedlist>
+Repeat the last two steps until such parameters 
+<parameter>i</parameter> and <parameter>j</parameter>
+cannot be found.
+  </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-compile</option></term>
+  <listitem>
+  <para>
+  Only the rewrite system will be compiled and written to
+  <filename><replaceable>input</replaceable>.so</filename>. 
+  </para>
+  <remark>It is obligatory that the last argument is a file name</remark>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-no-compile</option></term>
+  <listitem>
+  <para>
+  <filename><replaceable>input</replaceable>.so</filename> containing the 
+  compiled rewrite system belonging   
+  to <filename><replaceable>input</replaceable>.tbf</filename> will be used, 
+  instead of generating one.
+  </para>
+  <remark>It is obligatory that the last argument is a file name</remark>
+  </listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+&rewr.xml;
+</refentry>

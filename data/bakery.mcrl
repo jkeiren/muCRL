@@ -1,0 +1,67 @@
+% This file describes the original bakery protocol as described by
+% Lamport for two parties that want to gain mutual access.
+% The processes are called P(T) and P(F). 
+% The state space of this system is infinite, and as such it is
+% a good and simple example to apply symbolic methods in the
+% broadest sense.
+
+
+sort Bool
+func T,F:->Bool
+map  and,or,eq:Bool#Bool->Bool
+     not:Bool->Bool
+var  b: Bool
+rew  and(T,b)=b
+     and(b,T)=b
+     and(b,F)=F
+     and(F,b)=F
+     or(T,b)=T
+     or(b,T)=T
+     or(b,F)=b
+     or(F,b)=b
+     eq(b,b)=T
+     eq(F,T)=F
+     eq(T,F)=F
+     not(T)=F
+     not(F)=T
+
+sort Nat
+func 0:->Nat
+     S:Nat->Nat
+map  eq,lt:Nat#Nat->Bool
+
+var  n1,n2:Nat
+rew  eq(0,0)=T
+     eq(S(n1),0)=F
+     eq(0,S(n2))=F
+     eq(S(n1),S(n2))=eq(n1,n2)
+     lt(n1,0)=F
+     lt(0,S(n2))=T
+     lt(S(n1),S(n2))=lt(n1,n2)
+
+act send,get,c,d : Bool#Nat  % d is an unused dummy
+    request,enter,leave : Bool
+comm get | send = c
+
+proc P(b:Bool)=
+        request(b).P0(b,0)+
+        send(b,0).P(b)
+
+     P0(b:Bool,n:Nat)=
+        sum(m:Nat,get(not(b),m).P1(b,S(m)))+
+        send(b,n).P0(b,n)
+               
+     P1(b:Bool,n:Nat)=
+        sum(m:Nat,get(not(b),m).
+             (C1(b,n)<|or(lt(n,m),eq(m,0))|>P1(b,n)))+
+        send(b,n).P1(b,n)
+
+     C1(b:Bool,n:Nat)=
+        enter(b).C2(b,n)+
+        send(b,n).C1(b,n)
+
+     C2(b:Bool,n:Nat)=
+        leave(b).P(b)+
+        send(b,n).C2(b,n)               
+
+init hide({d},encap({get,send},P(T)||P(F)))

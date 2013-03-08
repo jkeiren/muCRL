@@ -1,0 +1,124 @@
+
+<refentry id="tbfupdate">
+<refmeta>
+<refentrytitle>tbfupdate</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>tbfupdate</refname>
+<refpurpose>Renaming of actions directed by conditional renaming rules
+</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>tbfupdate</command> 
+<arg choice="req"><option>-edit</option> 
+<replaceable>file</replaceable></arg>
+<arg><option><link linkend="libmcrl">Data Options</link></option></arg>
+<arg><option>-monitor</option></arg>
+&common1;
+<arg choice="plain"><option><parameter>input</parameter>
+</option></arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+This filter reads from 
+<filename><replaceable>input</replaceable>.tbf</filename> (or 
+<filename> stdin </filename> if not given) an &lpe; 
+in <literal>.tbf </literal> format, renames the actions mentioned in
+&renaming.lnk; rules defined in
+<filename><replaceable>file</replaceable></filename>.
+The output LPE will be written to <filename>stdout</filename>.
+</para>
+<para>
+The renaming rules must have the following format:
+<cmdsynopsis>
+<arg choice="plain"><replaceable>term1</replaceable>
+-&gt;<replaceable>term2</replaceable>
+<arg>&lt;
+<replaceable>condition</replaceable>
+</arg>
+</arg>
+</cmdsynopsis>
+
+<cmdsynopsis>
+<command><replaceable>condition</replaceable><token>::=</token></command>
+<arg choice="plain"> <replaceable>eq</replaceable>
+     <arg rep="repeat" choice="plain">
+         <arg choice="req">&amp; <replaceable>eq</replaceable></arg>
+     </arg>
+</arg>
+</cmdsynopsis>
+
+<cmdsynopsis>
+<command><replaceable>eq</replaceable><token>::=</token></command>
+<arg choice="plain"><replaceable>variable</replaceable> = 
+<replaceable>term</replaceable></arg>
+</cmdsynopsis>
+
+Variables in <parameter>term1</parameter> will be interpreted
+as matching variables. The matched subterm will be assigned
+to them in the matching phase. These variables can be used in
+<parameter>term2</parameter>
+and <parameter>condition</parameter>.
+<parameter>condition</parameter> is a conjunction of equalities.
+The first encountered match will be applied.
+If the matching rule has a condition then the summand will be split
+into a summand  whose guard is
+a conjunction of its original guard and the condition,
+and a summand whose guard is
+a conjunction of its original guard and the negated condition.
+The next matching rule will split this last summand.
+File <filename>abp.edt</filename> contains an example.
+<remark>A transformed summand which contains renamed action <literal>delta</literal>
+will not be written, 
+except if the flag <option>-delta</option> is present.
+</remark>
+</para>
+</refsect1>
+<refsect1>
+<title>Options</title> 
+<variablelist>
+
+<varlistentry>
+  <term><option>-edit</option> 
+  <filename><replaceable>file</replaceable></filename>
+  </term>
+  <listitem>
+   <para>
+   This flag is obligatory. The &renaming.lnk; rules are defined in 
+   <filename><replaceable>file</replaceable></filename>.
+   </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-monitor</option>
+  </term>
+  <listitem>
+    <para>
+    Display progressing information
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-delta</option>
+  </term>
+  <listitem>
+    <para>
+    Summands with renamed action <literal>delta</literal> will be written 
+    too.
+    </para>
+  </listitem>
+</varlistentry>
+&common2;
+
+</variablelist>
+</refsect1>
+&tbfupdate.xml;
+</refentry>

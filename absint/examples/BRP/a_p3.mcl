@@ -1,0 +1,3 @@
+['.*_may.*'*. 's4_may(.*,in_setOf(I_nok,empty_setOf_Ind))'] 
+mu X. (<'.*_must.*'> true and [not (('s1_must(in_setOf(I_nok,empty_setOf_Ind))' or 's1_must(in_setOf(I_dk,empty_setOf_Ind))') or '.*_may.*')] X)
+

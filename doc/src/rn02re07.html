@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>invelm</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><link rel="home" href="index.html" title="Manual Pages of the mCRL toolset (2.17.8)" /><link rel="up" href="rn02.html" title="Linear Process Equations" /><link rel="prev" href="rn02re06.html" title="invcheck" /><link rel="next" href="rn02re08.html" title="msim" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">invelm</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="rn02re06.html">Prev</a> </td><th width="60%" align="center">Linear Process Equations</th><td width="20%" align="right"> <a accesskey="n" href="rn02re08.html">Next</a></td></tr></table><hr /></div><div class="refentry" lang="en" xml:lang="en"><a id="invelm"></a><div class="titlepage"></div><div class="refnamediv"><h2>Name</h2><p>invelm — 
+Eliminates summands with guards contradicting an invariant
+</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p><code class="command">invelm</code>  [<code class="option">-help</code>] [<code class="option">-help-all</code>] [<code class="option">-version</code>] [<code class="option">-invariant</code> 
+<em class="replaceable"><code>file</code></em>
+] [<code class="option">-simplify</code>] [<code class="option">-rewrite</code>] [<code class="option">-splitsums</code>] [<code class="option">-summand</code> <em class="replaceable"><code>n</code></em>] [<code class="option">-witness</code>] [<code class="option">-print</code>] [<code class="option">-print-dot</code>] [<code class="option">-counter</code>] [<code class="option">-help-rewrite</code>] [<code class="option">-help-simplify</code>] [<code class="option"><a class="link" href="rn06re27.html" title="Data Options">Data Options</a></code>] [<code class="option"><a class="link" href="rn06re28.html" title="Rewriter Options">Rewriter Options</a></code>] [<code class="option"><em class="parameter"><code>input</code></em>.tbf</code>]</p></div></div><div class="refsect1" lang="en" xml:lang="en"><a id="id408811"></a><h2>Description</h2><p>
+This filter reads from 
+<code class="filename"><em class="replaceable"><code>input</code></em>.tbf</code> (or 
+<code class="filename"> stdin </code> if not given) an <a class="link" href="rn01re01.html#lpe" title="Linear Process Equation">LPE</a> 
+in <code class="literal">.tbf </code> format, reads an invariant 
+<code class="literal"><em class="parameter"><code>phi</code></em></code> from
+<code class="filename"><em class="replaceable"><code>file</code></em></code> and
+eliminates summands with guards contradicting that invariant.
+Invariant <code class="literal"><em class="parameter"><code>phi</code></em></code> must be a term of type <span class="type">Bool</span> in the 
+signature of the input LPE, which may contain process parameters of 
+the LPE as free variables, but no other free variables.
+It is assumed that this term is an invariant of the LPE.
+If <code class="option">-invariant</code> is missing, it is set to '<code class="literal">T</code>'.
+This is especially useful with <code class="option">-simplify</code>.
+</p><p>
+When the guard of some summand is '<code class="literal">F</code>' it will never be executed,
+so it can be eliminated.
+But even when the summand is satisfiable, it might happen that all states
+where the guard holds are unreachable. Such a summand will be never executed
+either. Given an invariant <code class="literal"><em class="parameter"><code>phi</code></em></code>, approximating the set of reachable states,
+<span class="command"><strong>invelm</strong></span>  eliminates such summands.
+</p><p>
+<span class="command"><strong>invelm</strong></span> eliminates all summands 
+<em class="parameter"><code>i</code></em> from the input <a class="link" href="rn01re01.html#lpe" title="Linear Process Equation">LPE</a>
+such that 
+<code class="literal"><em class="parameter"><code><code class="literal"><em class="parameter"><code>phi</code></em></code> <code class="literal"><span class="command"><strong>and</strong></span></code> h<sub>i</sub>
+</code></em></code> is provable equivalent to '<code class="literal">F</code>'.
+</p><p>
+If the guard is different from '<code class="literal">F</code>', it is kept unaltered, 
+except when <code class="option">-simplify</code> is used.
+</p><p>
+The LPE will be written to <code class="filename">stdout</code>.
+</p><p class="remark"><i><span class="remark">
+Note that it is not checked whether the provided invariant actually 
+holds. Application of <span class="command"><strong>invelm</strong></span> is only sound after 
+checking the invariant, for instance by using 
+<a class="link" href="rn02re06.html" title="invcheck">invcheck</a>.
+</span></i></p></div><div class="refsect1" lang="en" xml:lang="en"><a id="id409005"></a><h2>Options</h2><div class="variablelist"><dl><dt><span class="term"><code class="option">-help</code></span></dt><dd><p>
+    Display help information
+    </p></dd><dt><span class="term"><code class="option">-help-all</code></span></dt><dd><p>
+    Display all help information
+    </p></dd><dt><span class="term"><code class="option">-version</code></span></dt><dd><p>
+    Get the version number of this release
+    </p></dd><dt><span class="term"><code class="option">-invariant</code> <em class="parameter"><code>file</code></em></span></dt><dd><p>
+   Read an invariant from <em class="parameter"><code>file</code></em>.
+   If this option is missing, then  invariant '<code class="literal">T</code>' will be assumed.
+    </p></dd><dt><span class="term"><code class="option">-simplify</code></span></dt><dd><p>
+  Rewrite each conjunction of guard and invariant to a BDD
+  </p><p>
+  The effect of this option is to make global knowledge (provided by the
+  invariant) locally available in each guard. This may be helpful for other
+  tools that use the prover, such as confcheck. However, static analysis
+  tools (e.g. constelm, parelm, sumelm) may perform worse, because BDDs
+  are syntactically harder, and all variables of the invariant tend to occur
+  in all summands.
+  </p></dd><dt><span class="term"><code class="option">-rewrite</code></span></dt><dd><p>
+  The rewrite system is modified as follows:
+  
+  </p><div class="itemizedlist"><ul type="disc"><li><p>
+  Parameters of the <a class="link" href="rn01re01.html#lpe" title="Linear Process Equation">LPE</a> are viewed as constants (maps)
+  </p></li><li><p>
+  Certain facts from the invariant are viewed as rewrite rules
+  </p></li></ul></div><p>
+  
+  These rewrite rules are added to the existing rewrite rules, 
+  and applied to all summands. The abstract datatype is not changed.
+  The new rules are displayed on <code class="filename">stderr </code> 
+  (except with <code class="option">-silent</code>)
+  </p><p>
+  As an example, if the invariant is of the form:
+  </p><pre class="programlisting">
+    and(eq(x,plus(y,z)),
+    and(c,
+    and(not(b),
+    and(eq(length(l),S(0))
+    and(or(a,d),
+        not(or(gt(x,y),e)))))))
+  </pre><p>
+  Then the following rules are added
+  </p><pre class="programlisting">
+    x -&gt; plus(y,z)
+    c -&gt; T
+    b -&gt; F
+    length(l) -&gt; S(0)
+    gt(y,z) -&gt; F
+    e -&gt; F
+  </pre><p>
+  Typically, applying <span class="command"><strong>parelm</strong></span> subsequently, 
+  will eliminate <code class="literal">x,c,b</code> and <code class="literal">e</code>.
+  </p></dd><dt><span class="term"><code class="option">-splitsums</code> </span></dt><dd><p>
+  Split summands with guard <code class="literal">or( , )</code>
+  in multiple summands
+  </p></dd><dt><span class="term"><code class="option">-summand</code> <em class="parameter"><code>n</code></em></span></dt><dd><p>
+   Eliminate/simplify only summand <em class="parameter"><code>n</code></em>
+    </p></dd><dt><span class="term"><code class="option">-witness</code></span></dt><dd><p>
+  Provides a witness for summands that seem to be reachable
+  </p></dd><dt><span class="term"><code class="option">-silent</code> </span></dt><dd><p>
+  Suppress information per summand
+  </p></dd><dt><span class="term"><code class="option">-print</code></span></dt><dd><p>
+  Print resulting BDDs
+  </p></dd><dt><span class="term"><code class="option">-print-dot</code></span></dt><dd><p>
+  Print resulting BDDs in 
+  <code class="literal">.dot</code> format to 
+  <code class="literal">stdout</code> instead of LPE.
+  </p></dd><dt><span class="term"><code class="option">-help-rewrite</code></span></dt><dd><p>
+  Print more help on <code class="option">-rewrite</code> flag
+  </p></dd><dt><span class="term"><code class="option">-help-simplify</code></span></dt><dd><p>
+  Print more help on <code class="option">-simplify</code> flag
+  </p></dd></dl></div></div><div class="refsect1" lang="en" xml:lang="en"><a id="id409325"></a><h2>Limitations</h2><p>
+This tool is incomplete, because the invariant might be <code class="constant">T</code> for some
+unreachable states. Even with an appropiate invariant, the prover might not 
+find a contradiction, which can be inspected by using <code class="option">-witness</code>.
+</p></div><div class="refsect1" lang="en" xml:lang="en"><a id="id409350"></a><h2>Last update</h2><p><code class="literal">16 December 2008</code> by Bert Lisser <code class="email">&lt;<a class="email" href="mailto:B.Lisser@cwi.nl">B.Lisser@cwi.nl</a>&gt;</code> 
+
+</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="rn02re06.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="rn02.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="rn02re08.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">invcheck </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> msim</td></tr></table></div></body></html>

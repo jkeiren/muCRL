@@ -1,0 +1,10 @@
+<cmdsynopsis>
+<command><replaceable>ext1</replaceable><token>::=</token></command>
+<group choice="plain">
+<arg choice="plain">svc</arg>
+<arg choice="plain">bcg</arg>
+<arg choice="plain">aut</arg>
+<arg choice="plain">dir</arg>
+<arg choice="plain">dmp</arg>
+</group>
+</cmdsynopsis>

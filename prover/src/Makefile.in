@@ -1,0 +1,164 @@
+.SUFFIXES:  .c .o
+
+SHELL     = /bin/sh
+ARCH      = @ARCH@
+VERSION   = @VERSION@
+DATE      = `date`
+RM	  = @RM@
+CC        = @CC@
+top_srcdir      = @top_srcdir@
+
+INSTALL     = @INSTALL@
+INSTALL_PRG = @INSTALL_PROGRAM@
+INSTALL_DAT = @INSTALL_DATA@
+CFLAGS    =   @CFLAGS@
+CPPFLAGS  =   -I. -I$(top_srcdir)/src @CPPFLAGS@
+LDFLAGS   =   @LDFLAGS@
+LIBS      = -L. -L$(top_srcdir)/src -lstategraph -lprover -lmcrl @LIBS@ -lm 
+
+prefix          = @prefix@
+srcdir          = @srcdir@
+exec_prefix     = @exec_prefix@
+datarootdir 	= @datarootdir@
+includedir      = @includedir@
+mandir          = @mandir@
+bindir          = @bindir@
+libdir          = @libdir@
+distdir         = @distdir@
+libexecdir      = @libexecdir@
+datadir         = @datadir@
+noprintdirectory= @noprintdirectory@
+atermlib	= @atermlib@
+
+@SET_MAKE@
+
+SUBDIR		= prover/src
+DISTFILES	= Makefile.in GNUmakefile prover.c formcheck.c invcheck.c invelm.c \
+		  confcheck.c signature.c signature.h prover.h reachelm.c \
+		  usechange.c usechange.h confelm.c stategraph.c libstategraph.c lpo.c lpo1.h lpo2.h lpo3.h \
+		  finset.c finset.h stateview.sh
+PROGRAMS	= formcheck invcheck invelm confcheck reachelm confelm stategraph
+LIBRARIES	= libprover.a libstategraph.a
+INCLUDES	= signature.h prover.h lpo1.h lpo2.h lpo3.h usechange.h finset.h
+
+HASH            = -DHASH
+DEFS		= $(HASH) -DVERSION=\"$(VERSION)\" -DMCRLLIB @DEFS@
+
+all:		formcheck invcheck invelm confcheck reachelm confelm stategraph
+
+clean:
+		$(RM) *.o $(LIBRARIES) core core.* $(PROGRAMS) 
+
+signature.o:	signature.c signature.h Makefile
+		$(CC) $(CFLAGS) $(DEFS) $(CPPFLAGS) -c $*.c
+
+usechange.o:	usechange.c usechange.h Makefile
+		$(CC) $(CFLAGS) $(DEFS) $(CPPFLAGS) -c $*.c
+
+libstategraph.o:	libstategraph.c prover.h signature.h usechange.h Makefile
+		$(CC) $(CFLAGS) $(DEFS) $(CPPFLAGS) -c $*.c
+
+libstategraph.a:	libstategraph.o  usechange.o lpo.o finset.o 
+		ar -rs $@ libstategraph.o usechange.o lpo.o finset.o
+
+stategraph.o:	stategraph.c Makefile
+		$(CC) $(CFLAGS) $(DEFS) $(CPPFLAGS) -c $*.c
+
+stategraph:	stategraph.o $(LIBRARIES) $(top_srcdir)/src/libmcrl.a
+		@(cd ../../src && $(MAKE) $(noprintdirectory) libmcrl.a)
+		$(CC) $(LDFLAGS) -lm $(DEFS) stategraph.o -o stategraph $(LIBS)
+
+prover.o:	prover.c prover.h signature.h Makefile
+		$(CC) $(CFLAGS) $(DEFS) $(CPPFLAGS) -c $*.c
+
+libprover.a:	prover.o signature.o
+		ar -rs $@ prover.o signature.o
+
+formcheck:	$(LIBRARIES) formcheck.o
+		$(CC) $(LDFLAGS) $(DEFS) formcheck.o -o formcheck $(LIBS)
+
+formcheck.o:	formcheck.c prover.h signature.h Makefile
+		$(CC) $(CFLAGS) $(DEFS) $(CPPFLAGS)  -c $*.c
+
+invcheck:	$(LIBRARIES) invcheck.o $(top_srcdir)/src/libmcrl.a
+		@(cd ../../src && $(MAKE) $(noprintdirectory) libmcrl.a)&
+		$(CC) $(LDFLAGS) $(DEFS) invcheck.o -o invcheck $(LIBS)
+
+invcheck.o:	invcheck.c prover.h signature.h Makefile
+		$(CC) $(CFLAGS) $(DEFS) $(CPPFLAGS) -c $*.c
+
+invelm:		$(LIBRARIES) invelm.o $(top_srcdir)/src/libmcrl.a
+		@(cd ../../src && $(MAKE) $(noprintdirectory) libmcrl.a)
+		$(CC) $(LDFLAGS) $(DEFS) invelm.o -o invelm $(LIBS)
+
+invelm.o:	invelm.c prover.h signature.h Makefile
+		$(CC) $(CFLAGS) $(DEFS)  $(CPPFLAGS)  -c $*.c
+
+confcheck:	$(LIBRARIES) confcheck.o  $(top_srcdir)/src/libmcrl.a
+		@(cd ../../src && $(MAKE) $(noprintdirectory) libmcrl.a)
+		$(CC) $(LDFLAGS) $(DEFS) confcheck.o -o confcheck $(LIBS)
+
+confcheck.o:	confcheck.c prover.h signature.h usechange.h Makefile
+		$(CC) $(CFLAGS) $(DEFS) $(CPPFLAGS) -c $*.c 
+
+reachelm:	$(LIBRARIES) reachelm.o $(top_srcdir)/src/libmcrl.a
+		@(cd ../../src && $(MAKE) $(noprintdirectory) libmcrl.a)
+		$(CC) $(LDFLAGS) $(DEFS) reachelm.o -o reachelm $(LIBS)
+
+reachelm.o:	reachelm.c prover.h signature.h usechange.h finset.h Makefile
+		$(CC) $(CFLAGS) $(DEFS) $(CPPFLAGS)  -c $*.c
+
+confelm:	$(LIBRARIES) confelm.o $(top_srcdir)/src/libmcrl.a
+		@(cd ../../src && $(MAKE) $(noprintdirectory) libmcrl.a)
+		$(CC) $(LDFLAGS)  $(DEFS) confelm.o -o confelm $(LIBS)
+
+confelm.o:	confelm.c prover.h signature.h usechange.h lpo1.h finset.h Makefile
+		$(CC) $(CFLAGS) $(DEFS) $(CPPFLAGS) -c $*.c
+
+mcrl2pvs:	$(LIBRARIES) mcrl2pvs.o signature.o $(top_srcdir)/src/libmcrl.a
+		@(cd ../../src && $(MAKE) $(noprintdirectory) libmcrl.a)
+		$(CC) $(LDFLAGS)  $(DEFS) mcrl2pvs.o signature.o -o mcrl2pvs $(LIBS)
+
+mcrl2pvs.o:	mcrl2pvs.c Makefile
+		$(CC) $(CFLAGS) $(DEFS) $(CPPFLAGS) -c $*.c
+
+lpo.o:		lpo.c lpo1.h lpo2.h lpo3.h finset.h Makefile
+		$(CC) $(CFLAGS) $(DEFS) $(CPPFLAGS) -c $*.c
+
+finset.o:	finset.c finset.h Makefile
+		$(CC) $(CFLAGS) $(DEFS) $(CPPFLAGS) -c $*.c
+
+dist:
+		mkdir $(distdir)/$(SUBDIR)
+		cp $(DISTFILES) $(distdir)/$(SUBDIR)
+
+install:
+		$(MAKE) all
+		$(MAKE) libprover.a libstategraph.a
+		$(INSTALL) -d $(includedir)
+		@for file in $(INCLUDES); do \
+		    $(INSTALL_DAT) $$file $(includedir); \
+		done
+		$(INSTALL) -d $(bindir)
+		@for file in $(PROGRAMS); do \
+		    $(INSTALL_PRG) $$file $(bindir); \
+		done
+		$(INSTALL) -d $(datadir)
+		cp stateview.sh $(datadir)
+		$(INSTALL) -d $(libdir)
+		$(INSTALL_DAT) libprover.a $(libdir)
+		$(INSTALL_DAT) libstategraph.a $(libdir)
+
+uninstall:
+		if test -d $(bindir); then \
+		(cd $(bindir);$(RM) $(PROGRAMS)) ;\
+		fi
+		if test -d $(includedir); then \
+		(cd $(includedir);$(RM) $(INCLUDES)) ;\
+		fi
+		if test -d $(libdir); then \
+		(cd $(libdir);$(RM) $(LIBRARIES)) ;\
+		fi
+		if test -d $(datadir); then \
+		(cd $(datadir);$(RM) stateview.sh) ;\
+		fi

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>tbfupdate</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><link rel="home" href="index.html" title="Manual Pages of the mCRL toolset (2.17.8)" /><link rel="up" href="rn07.html" title="Example" /><link rel="prev" href="rn07re30.html" title="alternating bit protocol" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">tbfupdate</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="rn07re30.html">Prev</a> </td><th width="60%" align="center">Example</th><td width="20%" align="right"> </td></tr></table><hr /></div><div class="refentry" lang="en" xml:lang="en"><a id="renaming"></a><div class="titlepage"></div><div class="refnamediv"><h2>Name</h2><p>renaming of actions — Renames actions in Alternating Bit Protocol 
+</p></div><div class="refsect1" lang="en" xml:lang="en"><a id="id434658"></a><h2>Renaming Actions in <a class="link" href="rn07re30.html" title="alternating bit protocol">abp</a></h2><pre class="programlisting">
+% Renaming of actions in example <a class="link" href="rn07re30.html" title="alternating bit protocol">abp</a> with intention to remove sum 
+% variables and renaming tau_... to tau.
+
+% The extra rewrite rule
+%       var x:D 
+%       rew  and(not(eq(x,d2)),not(eq(x,d1)))=F
+% must be added for removing sum variables
+
+r1(X)-&gt;r1(d1)&lt;|X=d1
+r1(X)-&gt;r1(d2)&lt;|X=d2
+s4(X)-&gt;s4(d1)&lt;|X=d1
+s4(X)-&gt;s4(d2)&lt;|X=d2
+tau_s6e-&gt;tau
+tau_s6n-&gt;tau
+tau_s3e-&gt;tau
+tau_s3dn-&gt;tau
+c3(X,Y)-&gt;c3(d1, Y)&lt;|X=d1
+c3(X,Y)-&gt;c3(d2, Y)&lt;|X=d2
+c2(X,Y)-&gt;c2(d1, Y)&lt;|X=d1
+c2(X,Y)-&gt;c2(d2, Y)&lt;|X=d2
+</pre></div><div class="refsect1" lang="en" xml:lang="en"><a id="id435357"></a><h2>Last update</h2><p><code class="literal">16 December 2008</code> by Bert Lisser <code class="email">&lt;<a class="email" href="mailto:B.Lisser@cwi.nl">B.Lisser@cwi.nl</a>&gt;</code> 
+
+</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="rn07re30.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="rn07.html">Up</a></td><td width="40%" align="right"> </td></tr><tr><td width="40%" align="left" valign="top">alternating bit protocol </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

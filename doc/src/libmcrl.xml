@@ -1,0 +1,167 @@
+<refentry id="libmcrl">
+<refmeta>
+<refentrytitle>Data Options</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>Data options</refname>
+<refpurpose>Options concerning reading, preprocessing, and writing data
+</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+<cmdsynopsis> 
+<arg choice="opt"><option>-verbose</option></arg>
+<group choice="opt">
+<arg choice="plain"><option>-ascii</option></arg>
+<arg choice="plain"><option>-taf</option></arg>
+<arg choice="plain"><option>-baf</option></arg>
+</group>
+<group choice="opt">
+<arg choice="plain"><option>-no-extend-adt</option></arg>
+<arg choice="plain"><option>-extend-adt</option></arg>
+<arg choice="plain"><option>-may-extend-adt</option></arg>
+</group>
+<arg choice="opt"><option>-mcrl-hash</option></arg>
+<arg choice="opt"><option>-reorder-rules</option></arg>
+<arg choice="opt"><option>-add</option>
+     <replaceable>file</replaceable>
+     </arg>
+<arg choice="opt"><option>-rem</option>
+     <replaceable>file</replaceable></arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+Options concerning reading, preprocessing, and writing data.
+</para>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+<varlistentry>
+  <term><option>-verbose</option>
+  </term>
+  <listitem>
+   <para>
+   Print information messages during run
+   </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-ascii</option>
+  </term>
+  <listitem>
+   <para>
+   Write <literal>.tbf</literal> file in ascii code
+   </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-taf</option>
+  </term>
+  <listitem>
+   <para> 
+  As <option>ascii</option>, however in shared representation 
+   </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-baf</option>
+  </term>
+  <listitem>
+   <para>
+   Write  <literal>.tbf</literal> file in binary format in shared 
+   representation 
+   </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-no-extend-adt</option>
+  </term>
+  <listitem>
+   <para>
+   Absolutely forbidden to extend the abstract data type
+   </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-extend-adt</option>
+  </term>
+  <listitem>
+   <para>
+   Extend the abstract data type with standard functions 
+   and its equations
+   </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-may-extend-adt</option>
+  </term>
+  <listitem>
+   <para>
+   Only if it is strict necessary (default)
+   </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-mcrl-hash</option>
+  </term>
+  <listitem>
+   <para>
+   Use hash table during printing
+   </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-reorder-rules</option>
+  </term>
+  <listitem>
+   <para>
+   Rewrite rules will be reordered such
+   that the rules with closed rhs's occur first
+   </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+      <term><option>-add</option> 
+      <filename><replaceable>file</replaceable></filename></term>
+      <listitem>
+      <para>
+      Read extra data objects (functions, sorts, rewrite rules) 
+      written in <literal>.mcrl</literal> format from 
+      <filename><replaceable>file</replaceable></filename>.
+      These objects will be added to the input abstract 
+      data type
+      </para>
+      </listitem>
+    </varlistentry>
+    
+    <varlistentry>
+      <term><option>-rem</option>
+      <filename><replaceable>file</replaceable></filename>
+      </term>
+      <listitem>
+      <para>
+      Read extra rewrite rules 
+      written in <literal>.mcrl</literal> format from 
+      <filename><replaceable>file</replaceable></filename>.
+      These rewrite rules will be removed from the input abstract 
+      data type
+      </para>
+      </listitem>
+    </varlistentry>
+    
+</variablelist>
+</refsect1>
+&libmcrl.xml;
+</refentry>

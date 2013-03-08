@@ -1,0 +1,3 @@
+['.*_may.*'*. 's4_may(.*,in_setOf(I_ok,empty_setOf_Ind))'] <'.*_must.*'*.  
+('s1_must(in_setOf(I_ok,empty_setOf_Ind))' or 's1_must(in_setOf(I_dk,empty_setOf_Ind))')> true
+

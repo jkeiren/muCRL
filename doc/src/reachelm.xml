@@ -1,0 +1,116 @@
+
+<refentry id="reachelm">
+<refmeta>
+<refentrytitle>reachelm</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>reachelm</refname>
+<refpurpose>
+Eliminates summands by proving that they are not reachable
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>reachelm</command> 
+&common1;
+<arg><option>-summand</option> <replaceable>n</replaceable></arg>
+<arg><option>-silent</option></arg>
+<arg><option>-print</option></arg>
+<arg><option>-counter</option></arg>
+<arg><option><link linkend="libmcrl">Data Options</link></option></arg>
+<arg><option><link linkend="rw">Rewriter Options</link></option></arg>
+<arg><option><replaceable>input</replaceable>.tbf</option></arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+This filter reads from 
+<filename><replaceable>input</replaceable>.tbf</filename> (or 
+<filename> stdin </filename> if not given) an &lpe; 
+in <literal>.tbf </literal> format and tries
+to remove summands.
+</para>
+<para>
+<command>reachelm</command> marks in a breadth-first search all summands that
+might be enabled in the initial state or by enabled summands.
+All unmarked summands are removed. The output reflects a minimal
+execution from the initial state to the preserved summands.
+</para> 
+<para>
+Given parameters <parameter>x</parameter>, and summands
+<simplelist>
+<member><literal><parameter>
+&tsum; (e<subscript>i</subscript>,
+a<subscript>i</subscript>(f<subscript>i</subscript>) .
+P(g<subscript>i</subscript>)
+&lef; h<subscript>i</subscript> &rig; &delta; )
+</parameter></literal></member>
+<member><literal><parameter>
+&tsum; (e<subscript>j</subscript>,
+a<subscript>j</subscript>(f<subscript>j</subscript>) .
+P(g<subscript>j</subscript>)
+&lef; h<subscript>j</subscript> &rig; &delta; )
+</parameter></literal></member>
+</simplelist>
+</para>
+<para>
+summand 
+<parameter>j</parameter> is enabled by summand 
+<parameter>i</parameter> if:
+<literal><parameter>
+&exists; x,e<subscript>i</subscript> . ( 
+h<subscript>i</subscript>(x,e<subscript>i</subscript>)
+&implies; 
+&exists; e<subscript>j</subscript> .  
+h<subscript>j</subscript>(g<subscript>i</subscript>(x,e<subscript>i</subscript>),e<subscript>j</subscript>)
+)
+</parameter></literal>
+</para>
+<para>
+The LPE will be written to <filename>stdout</filename>.
+</para>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+<!--<title>Options</title>-->
+&common2;
+<varlistentry>
+  <term><option>-summand</option> <parameter>n</parameter></term>
+  <listitem>
+    <para>
+   Try to remove only summand <parameter>n</parameter>
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-silent</option> </term>
+  <listitem>
+  <para>
+  Suppress information per summand
+  </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-print</option></term>
+  <listitem>
+  <para>
+  Print resulting BDDs (use for small examples only)
+  </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-counter</option></term>
+  <listitem>
+  <para>
+  Print counter examples
+  </para>
+  </listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+&reachelm.xml;
+</refentry>

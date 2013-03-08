@@ -1,0 +1,195 @@
+#$Id: Makefile.in,v 1.24 2007/06/29 13:30:57 bertl Exp $
+SHELL           = /bin/sh
+.SUFFIXES:      .c .o
+
+ARCH 	=	@ARCH@
+
+srcdir		= .
+top_srcdir	= @top_srcdir@
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+datarootdir 	= @datarootdir@
+bindir		= @bindir@
+libdir		= @libdir@
+includedir	= @includedir@
+datadir		= @datadir@
+distdir		= @distdir@
+libexecdir	= @libexecdir@
+exampledir	= @exampledir@
+mandir		= @mandir@
+docdir		= @docdir@
+SUBDIR          = explicit/src
+
+
+RM		= @RM@
+CC		= @CC@
+CC99		= @CC99@
+DEFS		= @DEFS@ -DEXECDIR=\"$(libexecdir)\" 
+CFLAGS 		= @CFLAGS@ 
+CPPFLAGS 	= -I. -I$(top_srcdir) -I$(top_srcdir)/src  -I$(top_srcdir)/svc/src @CPPFLAGS@
+LIBS	=	-L. -L$(top_srcdir)/src -lexplicit \
+		-lmcrl -lstep @LIBS@ -lm
+
+VERSION		= @VERSION@
+LDFLAGS		= @LDFLAGS@
+INSTALL         = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA    = @INSTALL_DATA@
+PROGRAMS	= lts2dot dmp2dir
+DAEMONS		= server dinstantiate dbstart mgrstart mgrd dirsegment fork
+EXPLICIT	= fifo.o fifo0.o fifo1.o term_db0.o vector_db0.o \
+		  ltree.o utl.o array.o \
+		  messages.o options.o label.o bitset.o set.o \
+		  dlts.o lts.o aut-io.o data_io.o stringdbs.o \
+		  seglts.o generichash4.o generichash8.o memstat.o \
+		  stringindex.o tree_db0.o
+
+OBJECTS		= $(EXPLICIT) discover.o  explore.o server.o fork.o dinstantiate.o \
+		  stepper.o dbstart.o mgrstart.o mgr.o lts2dot.o \
+		  instantiators.o dmp2dir.o dirsegment.o mgrd.o summary.o
+
+SOURCES		= fifo.c fifo0.c fifo1.c term_db0.c vector_db0.c \
+		  ltree.c utl.c aut-io.c array.c \
+		  messages.c options.c label.c bitset.c set.c \
+		  dlts.c lts.c data_io.c stringdbs.c seglts.c \
+		  generichash4.c generichash8.c memstat.c lts2dot.c \
+		  stringindex.c tree_db0.c 
+
+INCLUDES	= messages.h options.h label.h bitset.h set.h dlts.h \
+		  xlts.h data_io.h stringdbs.h seglts.h generichash.h \
+		  memstat.h aut-io.h array.h \
+		  fifo.h fifo0_p.h fifo1_p.h fifo_p.h utl.h vector_db.h \
+		  term_db.h tree_db.h db.h mgr.h stringindex.h \
+		  param0.h ltree.h term_parse.h discover.h explore.h \
+                  mgr_inst.h mgr_fork.h inst_fork.h mgr_db.h
+
+all:		server lts2dot dmp2dir dirsegment
+		@if test "@DEVELOPMENT@" = "yes";then \
+			$(MAKE) instantiators; \
+			$(MAKE) summary; \
+			$(MAKE) dbstart; \
+			$(MAKE) mgrstart; \
+			$(MAKE) fork; \
+                        $(MAKE) dinstantiate; \
+			$(MAKE) mgr; \
+			$(MAKE) mgrd; \
+		fi		
+install:        
+		$(MAKE) all
+		$(INSTALL) -d $(includedir)
+		@for file in $(INCLUDES); do \
+			$(INSTALL_DATA) $$file $(includedir); \
+		done
+		$(INSTALL) -d $(libdir)
+		$(INSTALL_DATA) libexplicit.a $(libdir)
+		$(INSTALL) -d $(bindir)
+		@for file in $(PROGRAMS); do \
+			$(INSTALL_PROGRAM) $$file $(bindir); \
+		done
+		$(INSTALL) -d $(libexecdir)
+		$(INSTALL_PROGRAM) server $(libexecdir)
+		$(INSTALL_PROGRAM) dirsegment $(libexecdir)
+		@if test "@DEVELOPMENT@" = "yes";then \
+		        $(INSTALL_PROGRAM) dbstart $(libexecdir); \
+		        $(INSTALL_PROGRAM) mgrstart $(libexecdir); \
+		        $(INSTALL_PROGRAM) fork $(libexecdir); \
+		        $(INSTALL_PROGRAM) dinstantiate $(libexecdir); \
+		        $(INSTALL_PROGRAM) summary $(bindir); \
+		        $(INSTALL_PROGRAM) mgrd $(libexecdir); \
+		        $(INSTALL_PROGRAM) mgr $(bindir); \
+		        $(INSTALL_PROGRAM) instantiators $(bindir); \
+		fi		
+		
+uninstall:
+		if test -d $(bindir); then \
+		(cd $(bindir); $(RM) $(PROGRAMS) instantiators summary) ;\
+		fi
+		if test -d $(libexecdir); then \
+		(cd $(libexecdir);$(RM) $(DAEMONS) $(SHELLSCRIPTS)) ;\
+		fi
+		if test -d $(includedir); then \
+		(cd $(includedir); $(RM) $(INCLUDES)) ;\
+		fi
+		if test -d $(libdir); then \
+		(cd $(libdir); $(RM) libexplicit.a) ;\
+		fi
+
+libexplicit.a:	$(EXPLICIT) Makefile
+		$(RM) $@
+		ar -sr $@ $(EXPLICIT)
+
+lib:		libexplicit.a
+		$(INSTALL) -d $(libexecdir)
+		$(INSTALL_DATA) libexplicit.a $(libdir)
+                
+dinstantiate:	dinstantiate.o discover.o libexplicit.a 
+		$(CC) $(LDFLAGS) -o $@ dinstantiate.o discover.o $(LIBS)
+
+instantiators:	instantiators.o discover.o read.h libexplicit.a
+		$(CC) $(LDFLAGS) -o $@ instantiators.o discover.o $(LIBS)
+
+summary:	summary.o libexplicit.a
+		$(CC) $(LDFLAGS) -o $@ summary.o $(LIBS)
+
+lts2dot:	lts2dot.o libexplicit.a 
+		$(CC) $(LDFLAGS) -o $@ lts2dot.o $(LIBS)
+
+dmp2dir:	dmp2dir.o libexplicit.a 
+		$(CC) $(LDFLAGS) -o $@ dmp2dir.o $(LIBS)
+
+dirsegment:	dirsegment.o libexplicit.a 
+		$(CC) $(LDFLAGS) -o $@ dirsegment.o $(LIBS)
+
+dbstart:	dbstart.o discover.o libexplicit.a 
+		$(CC) $(LDFLAGS) -o $@ dbstart.o  discover.o $(LIBS)
+
+mgrstart:	mgrstart.o libexplicit.a 
+		$(CC) $(LDFLAGS) -o $@ mgrstart.o  $(LIBS)
+
+fork:		fork.o  libexplicit.a 
+		$(CC) $(LDFLAGS) -o $@ fork.o $(LIBS)
+
+mgr:		mgr.o libexplicit.a 
+		$(CC) $(LDFLAGS) -o $@ mgr.o $(LIBS)
+
+mgrd:		mgrd.o libexplicit.a 
+		$(CC) $(LDFLAGS) -o $@ mgrd.o $(LIBS)
+
+
+server:		server.o stepper.o explore.o libexplicit.a
+		$(CC) $(LDFLAGS) -o $@ server.o stepper.o explore.o $(LIBS)
+
+term_parse.h:
+		flex term_parse.l
+
+read.h:		read.l
+		flex read.l
+
+print:
+		enscript -Ec -2r  server.c stepper.c fifo0.c ltree.c
+
+dist:
+		mkdir $(distdir)/$(SUBDIR)
+		cp Makefile.in \
+		dinstantiate.c dbstart.c fork.c \
+		server.c stepper.c mgrstart.c mgrd.c mgr.c instantiators.c \
+	        dmp2dir.c summary.c \
+		dirsegment.c discover.c explore.c $(SOURCES) $(INCLUDES) sede.h \
+		sede_dinstantiate.h \
+		term_parse.l read.l $(distdir)/$(SUBDIR)
+
+clean:
+		$(RM) $(OBJECTS) libexplicit.a core core.* $(PROGRAMS) $(DAEMONS)
+		if test ! -f  $(top_srcdir)/tarball; then \
+		    $(RM) term_parse.h; \
+		fi
+
+.c.o:
+		$(CC) $(DEFS) $(CFLAGS) $(CPPFLAGS) -c $*.c
+
+dinstantiate.o:	  dinstantiate.c sede_dinstantiate.h sede.h $(INCLUDES) Makefile
+
+instantiators.o:	instantiators.c read.h $(INCLUDES) Makefile
+
+
+$(OBJECTS):	$(INCLUDES) Makefile

@@ -1,0 +1,47 @@
+# $Id: Makefile.in,v 1.3 2004/11/23 12:36:17 uid523 Exp $
+
+.SUFFIXES:  .c .o
+
+SHELL     = /bin/sh
+ARCH      = @host_cpu@
+VERSION   = 1.1
+DATE      = `date`
+
+prefix          = @prefix@
+srcdir          = @srcdir@
+top_srcdir      = @top_srcdir@
+exec_prefix     = @exec_prefix@
+includedir      = @includedir@
+mandir          = @mandir@
+distdir         = @distdir@
+libexecdir      = @libexecdir@
+datarootdir 	= @datarootdir@
+
+all: 
+	@if test -r src/Makefile; \
+	then (cd src; $(MAKE) all); \
+	fi
+
+install:
+	@if test -r src/Makefile; \
+	then (cd src; $(MAKE) install) ; \
+	fi
+
+uninstall:
+	if test -r src/Makefile; \
+	then (cd src; $(MAKE) uninstall); \
+	fi
+
+dist: 
+	mkdir $(distdir)/absint
+	cp Makefile.in README $(distdir)/absint
+	(cd src; $(MAKE) dist) && \
+	(cd doc; $(MAKE) dist)
+	if test -d examples; \
+	then (cp -rf examples $(distdir)/absint); \
+	fi
+
+clean:
+	if test -r src/Makefile; \
+	then (cd src; $(MAKE) clean); \
+	fi

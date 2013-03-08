@@ -1,0 +1,127 @@
+% $Id: onebit.mcrl,v 1.1 2001/05/21 11:56:36 bertl Exp $
+% This file describes the onebit sliding window protocol as documented
+% M.A. Bezem and J.F. Groote. A correctness proof of a one bit sliding
+% window protocol in µCRL. The Computer Journal, 37(4): 289-307, 1994. 
+% This sliding window protocol is a bidirectional sliding windown protocol
+% with piggy backing, where the window sizes at the receiving and
+% sending side have size 1.
+
+sort Bool
+func T,F:->Bool
+map not:Bool->Bool
+     and,or:Bool#Bool->Bool
+
+var  b:Bool
+rew  not(T)=F
+     not(F)=T
+     not(not(b))=b
+     and(T,b)=b
+     and(b,T)=b
+     and(F,b)=F
+     and(b,F)=F
+     or(T,b)=T
+     or(b,T)=T
+     or(F,b)=b
+     or(b,F)=b
+
+sort nat
+
+func 0:-> nat
+     S:nat->nat
+map P:nat-> nat
+     plus:nat#nat->nat
+     if:Bool#nat#nat->nat
+     eq:nat#nat->Bool
+     1,2:-> nat
+
+var  n,m:nat
+rew  P(0)=0
+     P(S(n))=n
+     plus(n,0)=n
+     plus(n,S(m))=S(plus(n,m))
+     eq(0,0)=T
+     eq(0,S(n))=F
+     eq(S(n),0)=F
+     eq(S(n),S(m))=eq(n,m)
+     1=S(0)
+     2=S(1)
+
+sort D bit Frame
+func e0,e1:->bit
+     dat0,dat1:->D
+     frame:D#bit#bit->Frame
+
+map inv:bit-> bit
+     dat:Frame-> D
+     bit1,bit2:Frame-> bit
+     eq:bit#bit->Bool
+     eq:Frame#Frame->Bool
+     f_dum:->Frame
+     eq:D#D->Bool
+
+var  d,d':D b1,b1',b2,b2':bit
+rew  inv(e0)=e1
+     inv(e1)=e0
+     dat(frame(d,b1,b2))=d
+     bit1(frame(d,b1,b2))=b1
+     bit2(frame(d,b1,b2))=b2
+     eq(e0,e0)=T
+     eq(e1,e1)=T
+     eq(e1,e0)=F
+     eq(e0,e1)=F
+     eq(frame(d,b1,b2),frame(d',b1',b2'))=
+               and(eq(d,d'),and(eq(b1,b1'),eq(b2,b2')))
+     eq(dat0,dat0)=T
+     eq(dat0,dat1)=F
+     eq(dat1,dat0)=F
+     eq(dat1,dat1)=T
+     eq(d,d)=T
+
+sort status
+
+func read,choice,del:->status
+map eq_read,eq_choice,eq_del:status-> Bool
+rew  eq_read(read)=T
+     eq_read(choice)=F
+     eq_read(del)=F
+     eq_choice(read)=F
+     eq_choice(choice)=T
+     eq_choice(del)=F
+     eq_del(read)=F
+     eq_del(choice)=F
+     eq_del(del)=T
+
+act  ra,sb,rc,sd:D 
+     rcl scl i-del i-lost ccl
+     r,s,c,s2,r2,c2,s4,r4,c4:Frame
+
+comm rcl|scl=ccl 
+     r|s=c
+     r2|s2=c2
+     r4|s4=c4
+
+proc S(ready:Bool,rec:Bool,sts:Bool,d:D,e:D,p:bit,q:bit)=
+       sum(d:D,ra(d).S(F,rec,F,d,e,inv(p),q)) <| ready|> delta +
+       delta <| rec|> sb(e).S(ready,T,sts,d,e,p,q) +
+       rcl.S(ready,rec,F,d,e,p,q)+
+       sum(f:D, sum(b1:bit,sum(b2:bit,
+           r4(frame(f,b1,b2)).
+              (S(eq(b2,p),F,sts,d,f,p,inv(q))
+                     <| and(rec,eq(b1,inv(q))) |>
+               S(eq(b2,p),rec,sts,d,e,p,q))))) +
+       delta <| sts |> s(frame(d,p,q)).S(ready,rec,T,d,e,p,q)
+
+proc Tim= scl.Tim
+
+proc C(f:Frame,st:status)=
+       sum(f:Frame,r(f).C(f,choice))<| eq_read(st)|>delta+
+       (i-del.C(f,del)+i-lost.C(f,read))<| eq_choice(st)|>delta+
+       s2(f).C(f,read)<| eq_del(st)|>delta
+
+init hide ({c4,c2,ccl,c}, encap({r2,s2,r4,s4},
+         rename({sb->sd},encap({r,s,rcl,scl},
+           S(T,T,T,dat0,dat0,e0,e0)|| Tim|| C(f_dum,read)))|| 
+         rename({ra->rc,s2->s4,r4->r2},
+           encap({r,s,rcl,scl},S(T,T,T,dat0,dat0,e0,e0)||
+                       Tim|| C(frame(dat0,e0,e1) ,read)))))
+

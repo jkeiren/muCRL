@@ -1,0 +1,188 @@
+% This file contains the linearized 
+% Dolev, Klawe and Rodeh leader election
+% protocol in a ring as described in TCS:
+% L.-AA. Fredlund, J.F. Groote and H. Korver.
+% Formal Verification of a Leader Election 
+% Protocol in Process Algebra.
+% Theoretical Computer Science, 177:459-486, 1997. 
+
+
+%%%%%%%%%%%  Bool
+
+sort Bool
+func T,F:->Bool
+map  not:Bool->Bool
+     and,or,eq:Bool#Bool->Bool
+var  b:Bool
+rew  not(T)=F
+     not(F)=T
+     and(T,b)=b
+     and(F,b)=F
+     and(b,T)=b
+     and(b,F)=F
+     or(T,b)=T
+     or(F,b)=b
+     or(b,T)=T
+     or(b,F)=b
+     eq(b,T)=b
+     eq(b,F)=not(b)
+     eq(T,b)=b
+     eq(F,b)=not(b)
+
+%%%%%%%%%%%  nat
+
+sort nat
+func 0:->nat
+     S:nat->nat
+
+map  1,2,3,4,5,6:-> nat
+     eq: nat#nat -> Bool
+     gt,geq,lt,leq: nat#nat -> Bool
+     if: Bool#nat#nat -> nat
+     prev:nat#nat -> nat %minus 1 modulo n
+     max:nat#nat -> nat
+
+var  n,m: nat
+rew  1=S(0)
+     2=S(1)
+     3=S(2)
+     4=S(3)
+     5=S(4)
+     6=S(5)
+     eq(0,0)=T
+     eq(S(n),0)=F
+     eq(0,S(n))=F
+     eq(S(n),S(m))=eq(n,m)
+     gt(0,0)=F
+     gt(S(n),0)=T
+     gt(0,S(n))=F
+     gt(S(n),S(m))=gt(n,m)
+     geq(n,m)=or(gt(n,m),eq(n,m))
+     lt(n,m)=gt(m,n)
+     leq(n,m)=geq(m,n)
+     if(T,n,m)=n
+     if(F,n,m)=m
+     prev(0,S(n))=n
+     prev(S(n),m)=n
+     max(0,n)=n
+     max(n,0)=n
+     max(S(n),S(m))=S(max(n,m))
+
+
+%%%%%%%%%%%  Queues
+
+sort Queue
+func emq:->  Queue
+     qin:nat# Queue-> Queue
+map  
+     untoe: Queue-> Queue
+     toe: Queue-> nat
+     eq: Queue# Queue->Bool
+     empty: Queue-> Bool
+     if:Bool#Queue#Queue->Queue
+
+var  d,e:nat
+     q,r: Queue
+
+rew  if(T,q,r)=q
+     if(F,q,r)=r  
+
+     untoe(emq)=emq
+     untoe(qin(d,emq))=emq
+     untoe(qin(d,qin(e,q)))=qin(d,untoe(qin(e,q)))
+       
+     toe(emq)=0
+     toe(qin(d,emq))=d
+     toe(qin(d,qin(e,q)))=toe(qin(e,q))
+       
+     eq(emq,emq)=T
+     eq(emq,qin(d,q))=F
+     eq(qin(d,q),emq)=F
+     eq(qin(d,q),qin(e,r))=and(eq(d,e),eq(q,r))
+       
+     empty(emq)=T
+     empty(qin(d,q))=F 
+
+%%%%%%%   Table
+sort Table
+func emt:->Table
+     in:nat#nat#nat#nat#Queue#Table->Table
+
+map  get_d,get_e,get_s : nat#Table -> nat
+     get_q : nat#Table ->  Queue
+     upd_d,upd_e,upd_s: nat#nat#Table -> Table 
+     upd_q: Queue#nat#Table -> Table 
+     in_q: nat#nat # Table -> Table 
+     toe: nat#Table -> nat 
+     untoe: nat#Table->Table
+     empty: nat#Table->Bool
+     if: Bool#Table#Table->Table
+
+var  d,e,f,s,v,i,j:nat
+     TB,TB':Table
+     q,q': Queue
+rew  if(T,TB,TB')=TB
+     if(F,TB,TB')=TB'
+
+%     get_d(i,emt)=0
+     get_d(i,in(j,d,e,s,q,TB))=if(eq(i,j),d,get_d(i,TB))
+%     get_e(i,emt)=0
+     get_e(i,in(j,d,e,s,q,TB))=if(eq(i,j),e,get_e(i,TB))
+%     get_s(i,emt)=0
+     get_s(i,in(j,d,e,s,q,TB))=if(eq(i,j),s,get_s(i,TB))
+%     get_q(i,emt)=emq
+     get_q(i,in(j,d,e,s,q,TB))=if(eq(i,j),q,get_q(i,TB))
+
+%     upd_d(v,i,emt)=in(i,v,0,0,emq,emt)
+     upd_d(v,i,in(j,d,e,s,q,TB))=if(eq(i,j),
+       in(j,v,e,s,q,TB),in(j,d,e,s,q,upd_d(v,i,TB)))
+%     upd_e(v,i,emt)=in(i,0,v,0,emq,emt)
+     upd_e(v,i,in(j,d,e,s,q,TB))=if(eq(i,j),
+       in(j,d,v,s,q,TB),in(j,d,e,s,q,upd_e(v,i,TB)))
+%     upd_s(v,i,emt)=in(i,0,0,v,emq,emt)
+     upd_s(v,i,in(j,d,e,s,q,TB))=if(eq(i,j),
+       in(j,d,e,v,q,TB),in(j,d,e,s,q,upd_s(v,i,TB)))
+%     upd_q(q',i,emt)=in(i,0,0,0,q',emt)
+     upd_q(q',i,in(j,d,e,s,q,TB))=if(eq(i,j),
+       in(j,d,e,s,q',TB),in(j,d,e,s,q,upd_q(q',i,TB)))
+     untoe(i,TB)=upd_q(untoe(get_q(i,TB)),i,TB)    
+     toe(i,TB)=toe(get_q(i,TB))
+     empty(i,TB)=empty(get_q(i,TB))
+     in_q(d,i,TB)=upd_q(qin(d,get_q(i,TB)),i,TB)
+
+act leader
+    put,get:nat#nat
+
+proc X(TB:Table,n:nat)=
+       sum(j:nat,put(j,get_d(j,TB)).
+          X(upd_s(1,j,in_q(get_d(j,TB),j,TB)),n)
+         <|and(eq(get_s(j,TB),0),lt(j,n))|>delta)+
+       sum(j:nat,get(j,toe(prev(j,n),TB)).
+          X(untoe(prev(j,n),upd_e(toe(prev(j,n),TB),j,upd_s(2,j,TB))),n)
+         <|and(eq(get_s(j,TB),1),and(not(empty(prev(j,n),TB)),lt(j,n)))|>delta)+
+       sum(j:nat,leader.
+          X(upd_s(6,j,TB),n)
+         <|and(eq(get_s(j,TB),2),and(eq(get_d(j,TB),get_e(j,TB)),lt(j,n)))|>delta)+
+       sum(j:nat,put(j,get_e(j,TB)).
+          X(upd_s(3,j,in_q(get_e(j,TB),j,TB)),n)
+         <|and(eq(get_s(j,TB),2),and(
+              not(eq(get_d(j,TB),get_e(j,TB))),lt(j,n)))|>delta)+
+       sum(j:nat,get(j,toe(prev(j,n),TB)).
+          X(untoe(prev(j,n),upd_d(get_e(j,TB),j,upd_s(0,j,TB))),n)
+         <|and(gt(get_e(j,TB),max(get_d(j,TB),toe(prev(j,n),TB))),
+             and(eq(get_s(j,TB),3),and(not(empty(prev(j,n),TB)),lt(j,n))))|>delta)+
+       sum(j:nat,get(j,toe(prev(j,n),TB)).
+          X(untoe(prev(j,n),upd_s(4,j,TB)),n)
+         <|and(leq(get_e(j,TB),max(get_d(j,TB),toe(prev(j,n),TB))),
+             and(eq(get_s(j,TB),3),and(not(empty(prev(j,n),TB)),lt(j,n))))|>delta)+
+       sum(j:nat,get(j,toe(prev(j,n),TB)).
+          X(untoe(prev(j,n),upd_d(toe(prev(j,n),TB),j,upd_s(5,j,TB))),n)
+         <|and(eq(get_s(j,TB),4),and(not(empty(prev(j,n),TB)),lt(j,n)))|>delta)+
+       sum(j:nat,put(j,get_d(j,TB)).
+          X(in_q(get_d(j,TB),j,upd_s(4,j,TB)),n)
+         <|and(eq(get_s(j,TB),5),lt(j,n))|>delta)
+
+init hide({put,get},X(in(0,2,0,0,emq,
+       in(1,1,0,0,emq,
+       in(2,3,0,0,emq,emt))),3))
+

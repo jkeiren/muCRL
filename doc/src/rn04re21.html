@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>ltscp</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><link rel="home" href="index.html" title="Manual Pages of the mCRL toolset (2.17.8)" /><link rel="up" href="rn04.html" title="Labeled Transition Systems" /><link rel="prev" href="rn04re20.html" title="dmp2dir" /><link rel="next" href="rn04re22.html" title="ltsmin" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">ltscp</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="rn04re20.html">Prev</a> </td><th width="60%" align="center">Labeled Transition Systems</th><td width="20%" align="right"> <a accesskey="n" href="rn04re22.html">Next</a></td></tr></table><hr /></div><div class="refentry" lang="en" xml:lang="en"><a id="ltscp"></a><div class="titlepage"></div><div class="refnamediv"><h2>Name</h2><p>ltscp — Copies labeled transition systems</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p><code class="command">ltscp</code>  [<code class="option">-bfs</code>] [<code class="option">-sort</code>] [<code class="option">-postsort</code>] [<code class="option">-segments</code> <em class="replaceable"><code>N</code></em>]  <code class="option"><code class="filename"><em class="replaceable"><code>input.ext1</code></em>
+</code>
+</code>   <code class="option"><code class="filename"><em class="replaceable"><code>output.ext2</code></em>
+</code>
+</code> </p></div><div class="cmdsynopsis"><p><code class="command"><em class="replaceable"><code>ext1</code></em><span class="token">::=</span></code>    svc  |   bcg  |   aut  |   dir  |   dmp  </p></div><div class="cmdsynopsis"><p><code class="command"><em class="replaceable"><code>ext2</code></em><span class="token">::=</span></code>    svc  |   bcg  |   aut  |   dir  |   fsm  |   fc2  </p></div></div><div class="refsect1" lang="en" xml:lang="en"><a id="id422980"></a><h2>Description</h2><p>
+Copies a labeled transition system from 
+<code class="filename"><em class="replaceable"><code>input.</code></em>ext1</code> to
+<code class="filename"><em class="replaceable"><code>output.</code></em>ext2</code>. 
+The format of output
+is determined by the extension of the file name.
+Allowed extensions are:
+
+</p><div class="variablelist"><dl><dt><span class="term">
+<code class="option">svc</code>
+</span></dt><dd><p>
+State information is discarded
+</p></dd><dt><span class="term">
+<code class="option">bcg</code>
+</span></dt><dd><p>
+Ceasar Aldebaran format (binary)
+</p></dd><dt><span class="term">
+<code class="option">aut</code>
+</span></dt><dd><p>
+Ceasar Aldebaran format (ASCII)
+</p></dd><dt><span class="term">
+<code class="option">dir</code>
+</span></dt><dd><p>
+Prototype for SVC II, focussing on distributed tools
+</p></dd><dt><span class="term">
+<code class="option">fsm</code>
+</span></dt><dd><p>
+Write support only
+</p></dd><dt><span class="term">
+<code class="option">fc2</code>
+</span></dt><dd><p>
+Write support only
+</p></dd><dt><span class="term">
+<code class="option">dmp</code>
+</span></dt><dd><p>
+The incremental file format used by
+<span class="command"><strong><a class="link" href="rn03re19.html" title="instantiators">instantiators</a></strong></span> and 
+<span class="command"><strong><a class="link" href="">instantiator1</a></strong></span> for dumping and loading
+state spaces.
+Read support only.
+</p></dd></dl></div><p>
+
+
+</p></div><div class="refsect1" lang="en" xml:lang="en"><a id="id423347"></a><h2>Options</h2><div class="variablelist"><dl><dt><span class="term"><code class="option">-bfs</code></span></dt><dd><p>
+Reorder the lts into bfs exploration order
+</p></dd><dt><span class="term"><code class="option">-sort</code></span></dt><dd><p>
+Sort the transitions per state
+</p></dd><dt><span class="term"><code class="option">-postsort</code></span></dt><dd><p>
+Sort the transitions per state before writing
+</p></dd><dt><span class="term"><code class="option">-segments</code> 
+<em class="replaceable"><code>N</code></em>
+</span></dt><dd><p>
+Write output in <code class="literal"> .dir </code> format 
+with <em class="replaceable"><code> N </code></em> segments.
+Has no influence if output  is not in  
+<code class="literal"> .dir </code> format.
+</p></dd></dl></div></div><div class="refsect1" lang="en" xml:lang="en"><a id="id423438"></a><h2>Last update</h2><p><code class="literal">16 December 2008</code> by Bert Lisser <code class="email">&lt;<a class="email" href="mailto:B.Lisser@cwi.nl">B.Lisser@cwi.nl</a>&gt;</code> 
+
+</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="rn04re20.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="rn04.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="rn04re22.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">dmp2dir </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> ltsmin</td></tr></table></div></body></html>

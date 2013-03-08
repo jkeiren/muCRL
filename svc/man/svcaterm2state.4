@@ -1,0 +1,54 @@
+.\"  SVC -- the SVC (Systems Validation Centre) file format library
+.\"
+.\"  Copyright (C) 2000  Stichting Mathematisch Centrum, Amsterdam,
+.\"                      The  Netherlands
+.\"
+.\"  This program is free software; you can redistribute it and/or
+.\"  modify it under the terms of the GNU General Public License
+.\"  as published by the Free Software Foundation; either version 2
+.\"  of the License, or (at your option) any later version.
+.\"
+.\"  This program is distributed in the hope that it will be useful,
+.\"  but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"  GNU General Public License for more details.
+.\"
+.\"  You should have received a copy of the GNU General Public License
+.\"  along with this program; if not, write to the Free Software
+.\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+.\"
+.\" $Id: svcaterm2state.4,v 1.2 2001/01/04 15:26:32 izak Exp $
+.TH SVCaterm2State 4 15/5/2000
+.SH NAME
+SVCaterm2State \- convert for a state the corresponding aterm to its index
+
+.SH SYNOPSIS
+#include <svc.h>
+
+SVCstateIndex SVCaterm2State(SVCfile 
+.I *file, 
+ATerm 
+.I term\c
+);
+
+.SH DESCRIPTION
+
+The SVCaterm2State() function returns for the 
+.I term
+representing a state in
+.I file
+the corresponding index, or a value <0 if no corresponding index exists.
+
+.SH ERRORS
+
+The SVCaterm2State() function fails if...
+
+.SH SEE ALSO
+
+SVCstate2ATerm(4), SVCnewState (4)
+
+.SH AUTHOR
+Izak van Langevelde <izak@cwi.nl>
+.LP
+Please send all complaints, comments and bug fixes to the author. 
+

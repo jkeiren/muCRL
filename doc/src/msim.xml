@@ -1,0 +1,129 @@
+
+<refentry id="msim">
+<refmeta>
+<refentrytitle>msim</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>msim</refname>
+<refpurpose>Interactive simulation of a system described by an &lpe; 
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>msim</command> 
+&common1;
+<arg><option><link linkend="step">Stepper Options</link></option></arg>
+<arg><option><link linkend="rw">Rewriter Options</link></option></arg>
+<arg><option><link linkend="libmcrl">Data Options</link></option></arg>
+<arg choice="plain"><option><parameter>input</parameter>.tbf</option></arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+Reads from 
+<filename><replaceable>input</replaceable>.tbf</filename> an LPE 
+in <literal>.tbf </literal> format.
+A typical session consists of the following steps:
+<itemizedlist>
+<listitem><para>
+Start msim by typing 
+<command> msim 
+<filename><parameter>file</parameter>.tbf</filename> 
+</command>  
+</para></listitem>
+<listitem><para>
+Initiate the simulation by clicking the button <guibutton>Start</guibutton> 
+</para></listitem>
+<listitem><para>
+Continue the simulation by selecting actions 
+in <guimenu>Menu display</guimenu> 
+</para></listitem>
+<listitem><para>
+Finish the simulation by clicking the button <guibutton>Quit</guibutton>.
+</para></listitem>
+</itemizedlist>
+</para>
+<refsect2>
+<title>Start msim</title>
+<para>
+The simulator msim is invoked by:
+<command> msim 
+<filename><parameter>file</parameter>.tbf</filename> 
+</command>.
+The simulator will present a window that allows interactive simulation of the 
+system described in the argument 
+<filename><parameter>file</parameter>.tbf</filename>.
+The argument <filename><parameter>file</parameter>.tbf</filename> 
+must be a LPE, which is the output file of the tool <command>&mcrl.lnk;</command>. 
+</para>
+</refsect2>
+
+<refsect2>
+<title>Initiate the simulation</title>
+<para>
+Initiate the simulation by clicking the button <guibutton>Start</guibutton>.  
+If all goes well the simulator presents a list of actions 
+in <guimenu>Menu display</guimenu>. 
+Otherwise an error message will appear in the message window 
+(bottom of the screen).
+</para>
+</refsect2>
+
+<refsect2>
+<title>Continue the simulation</title>
+<para>
+The main window offers the following possibilities:
+<itemizedlist>
+<listitem><para>Single step through the system by selecting actions 
+in the <guimenu>Menu display</guimenu></para></listitem> 
+<listitem><para>A trace to the <parameter>current state</parameter> can be written 
+by clicking the button <guibutton>Save</guibutton> in
+<filename><parameter>file</parameter>.trc/<parameter>name</parameter></filename> 
+</para></listitem>
+<listitem><para>A trace can be read 
+by clicking the button <guibutton>Load</guibutton> from
+<filename><parameter>file</parameter>.trc/<parameter>name</parameter></filename>. 
+The <parameter>current state</parameter> becomes the state to which that 
+trace leads.  
+</para></listitem>
+<listitem><para>The previous state can be made current by clicking 
+the button <guibutton>Undo</guibutton></para></listitem> 
+<listitem><para>Redo undone actions by clicking the button <guibutton>Undo</guibutton>
+</para></listitem>
+<listitem><para>Display the current state vector by clicking 
+the button <guibutton>State</guibutton> 
+(the interpretation of this description requires both experience 
+and knowledge of the linearisation process)
+</para></listitem>
+<listitem><para>Display the value of a certain function by clicking the button
+<guibutton>Term</guibutton> and entering the function in a popped up input window
+named <literal>Term</literal>
+</para></listitem>
+</itemizedlist>
+</para>
+</refsect2>
+<refsect2>
+<title>Finish or restart the simulation</title>
+<para>
+<itemizedlist>
+<listitem><para>To finish the simulation click <guibutton>Quit</guibutton></para></listitem>
+<listitem><para>To restart the simulation click <guibutton>Start</guibutton></para></listitem>
+<listitem><para>To restart the simulation with another specification, 
+change File and Directory and click <guibutton>Start</guibutton></para></listitem>
+</itemizedlist>
+</para>
+</refsect2>
+
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+<!--<title>Options</title>-->
+&common2;
+</variablelist>
+</refsect1>
+&msim.xml;
+</refentry>

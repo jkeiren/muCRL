@@ -1,0 +1,59 @@
+.TH REACHELM 4 06/06/2001
+.SH NAME
+reachelm \- Tries to remove each summand of a linear process (LPO)
+by proving the negation of its guard to be an invariant.
+
+.SH SYNOPSIS
+.B reachelm
+[OPTIONS]
+
+.SH OPTIONS 
+.IP \-summand\ <n>
+tries to remove n'th summand only
+.IP \-silent
+suppress information per summand
+.IP \-print
+prints resulting BDDs (use for small examples only)
+.IP \-counter
+prints counter-examples
+.IP \-version
+prints the version number
+.IP \-help
+prints a help message
+
+
+.SH DESCRIPTION
+.B reachelm
+is a tool that tries to remove summands, by proving that their guards
+can never be true. This is done by proving that the negation of the
+guard holds initially, and is invariant under each transition.
+Given parameters x, and summands
+
+  i: sum(y,.. <| bi(x,y) |> delta)
+  j: sum(z,.. X(g(x,z)) <| bj(x,z) |> delta)
+
+the negation of the guard of summand i is invariant 
+under summand j if the following formula holds:
+
+    FORALL x,z. ((FORALL y. NOT bi(x,y)) & bj(x,z))
+                IMPLIES (FORALL y. NOT bi(g(x,z),y))
+
+Instead, we prove the stronger (and easier):
+
+    FORALL x,y,z. ((NOT bi(x,y)) & bj(x,z)) 
+                  IMPLIES NOT bi(g(x,z),y)
+
+.SH FILES
+.IP stdin
+An LPO in tbf-format.
+.IP stdout
+An LPO in tbf-format.
+
+.SH SEE ALSO
+
+prover(4), invelm(4)
+
+.SH AUTHOR
+Jaco van de Pol <vdpol@cwi.nl>
+.LP
+Please send all complaints, comments and bug fixes to me. 

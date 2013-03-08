@@ -1,0 +1,19 @@
+Parallel composition is being translated... done.
+Parallel composition is being translated... done.
+Parallel composition is being translated... done.
+Parallel composition is being translated... done.
+Parallel composition is being translated... done.
+Instantiator: Start compiling ...
+Instantiator: .... end compiling.
+Instantiator: The chosen parameters are:
+S0:"Enum9" R0:"Enum9" K0:"Enum4" L0:"Enum4" T20:"Enum5" 
+Instantiator: Estimated average number of summands: 2.72 (min = 1 max = 6)
+Instantiator: Number of nodes in optimalization tree: 8181
+Instantiator: Average number of summands: 1.74
+Instantiator: Finished.
+Instantiator: Explored 10550 states, generated 12170 transitions, and 51 levels
+mcrl_open: using ``/ufs/modcheck/cadp/src/open_caesar/generator.c''
+mcrl_open: running ``generator brp.bcg'' for ``./brp.tbf''
+mcrl_open: Opened ./brp.tbf
+mcrl_open: JITty Rewriter initialised with hashing (strategy strictleft)
+TRUE

@@ -1,0 +1,11 @@
+% This is a simpel mCRL process with an a loop and
+% a b loop in parallel
+
+sort Bool
+func T,F:->Bool
+
+act a b
+proc X=a.X
+     Y=b.Y
+
+init X||Y

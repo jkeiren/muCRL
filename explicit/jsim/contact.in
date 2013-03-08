@@ -1,0 +1,5 @@
+#!/bin/sh
+#$Id: contact.in,v 1.6 2007/06/29 13:30:57 bertl Exp $
+prefix=@prefix@
+datarootdir=@datarootdir@
+@JAVA@ -jar @javadir@/jsim.jar $*

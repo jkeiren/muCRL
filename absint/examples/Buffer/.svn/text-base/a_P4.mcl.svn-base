@@ -1,0 +1,4 @@
+(*
+* Producer can write is the buffer is empty
+*)
+['.*_may'*."empty_buffer_may"] <'W_must(in_setOf(A_abs_D,empty_setOf_abs_D))'> true

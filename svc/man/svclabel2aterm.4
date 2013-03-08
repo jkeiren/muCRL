@@ -1,0 +1,54 @@
+.\"  SVC -- the SVC (Systems Validation Centre) file format library
+.\"
+.\"  Copyright (C) 2000  Stichting Mathematisch Centrum, Amsterdam,
+.\"                      The  Netherlands
+.\"
+.\"  This program is free software; you can redistribute it and/or
+.\"  modify it under the terms of the GNU General Public License
+.\"  as published by the Free Software Foundation; either version 2
+.\"  of the License, or (at your option) any later version.
+.\"
+.\"  This program is distributed in the hope that it will be useful,
+.\"  but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"  GNU General Public License for more details.
+.\"
+.\"  You should have received a copy of the GNU General Public License
+.\"  along with this program; if not, write to the Free Software
+.\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+.\"
+.\" $Id: svclabel2aterm.4,v 1.2 2001/01/04 15:26:34 izak Exp $
+.TH SVClabel2Aterm 4 15/5/2000
+.SH NAME
+SVClabel2ATerm \- convert for a label the aterm corresponding to its index 
+
+.SH SYNOPSIS
+#include <svc.h>
+
+ATerm SVClabel2ATerm(SVCfile 
+.I *file, 
+SVClabelIndex 
+.I index\c
+);
+
+.SH DESCRIPTION
+
+The SVClabel2ATerm() function returns for the 
+.I index
+of an action label in
+.I file
+the corresponding ATerm, or NULL if no corresponding ATerm exists.
+
+.SH ERRORS
+
+The SVClabel2ATerm() function fails if...
+
+.SH SEE ALSO
+
+SVCaterm2Label(4), SVCnewLabel (4)
+
+.SH AUTHOR
+Izak van Langevelde <izak@cwi.nl>
+.LP
+Please send all complaints, comments and bug fixes to the author. 
+

@@ -1,0 +1,95 @@
+
+<refentry id="constelm">
+<refmeta>
+<refentrytitle>constelm</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+<refnamediv>
+<refname>constelm</refname>
+<refpurpose>
+Elimination of constant process parameters
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>constelm</command> 
+&common1;
+<arg><option>-monitor</option></arg>
+<arg><option>-no-singleton</option></arg>
+<arg><option>-no-condition</option></arg>
+<arg><option><link linkend="libmcrl">Data Options</link></option></arg>
+<arg><option><link linkend="rw">Rewriter Options</link></option></arg>
+<arg><option><parameter>input</parameter>.tbf</option></arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+This filter reads from 
+<filename><replaceable>input</replaceable>.tbf</filename> (or 
+<filename> stdin </filename> if not given) an &lpe; 
+in <literal>.tbf </literal> format, 
+removes process parameters which are constant
+in the reachable state space and rewrites the LPE.
+It writes the LPE to <filename>stdout</filename>.
+It does the following steps:
+<itemizedlist>
+<listitem><para> 
+Mark all process parameters and rewrite the initial state vector
+</para></listitem>
+<listitem><para>
+Substitute in all occurrences of marked process parameters
+its initial values and rewrite all data arguments
+</para></listitem>
+<listitem><para> 
+Unmark the process parameter of which one of its process arguments
+is not equal to its initial value, and undo the substitutions
+in all occurrences of this process parameter (assign the original value)
+</para></listitem>
+<listitem><para>
+Repeat the previous two steps until no process parameters 
+become unmarked
+</para></listitem>
+<listitem><para>
+Remove all marked parameters 
+</para></listitem>
+</itemizedlist>
+</para>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+<!--<title>Options</title>-->
+&common2;
+<varlistentry>
+  <term><option>-monitor</option>
+  </term>
+  <listitem>
+    <para>
+    Display progressing information
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-no-singleton</option> </term>
+  <listitem>
+  <para> 
+  No removal of data variables which
+  have sorts of cardinality one
+  </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-no-condition</option>
+  </term>
+  <listitem>
+  <para>
+  No check if conditions are rewritten to <literal>false</literal>.
+  Saves computing time.
+  </para>
+  </listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+&constelm.xml;
+</refentry>

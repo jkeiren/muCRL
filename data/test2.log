@@ -1,0 +1,80 @@
+Parallel composition is being translated... done.
+Parallel composition is being translated... done.
+Parallel composition is being translated... done.
+Parallel composition is being translated... done.
+Rewr: Equation  "eq#Bool#Bool"("v","v") = "T#" is  added
+Rewr: eq(Bool,Bool) is  eq-function
+Rewr: eq(error,error) is  eq-function
+Rewr: eq(bit,bit) is  eq-function
+Rewr: eq(State,State) is  eq-function
+Rewr: "bit" is an enumerated sort
+Rewr: "error" is an enumerated sort
+Rewr: "Bool" is an enumerated sort
+Rewr: "if#Bool#Bool#Bool" is a case function(["T#","F#"])
+Rewr: The map "if#Bool#Bool#Bool" is "if-then-else" function
+Rewr: There is 1 "not"-equation added
+Rewr: JITty Rewriter initialised with hashing (strategy strictleft)
+Rewr: Read 26 summands
+Rewr: Written 26 summands
+Stategraph: JITty Rewriter initialised with hashing (strategy strictleft)
+Stategraph: Read 26 summands and 11 parameters
+Stategraph: Identified 5 clusters
+Stategraph: Removed 0 summands
+......
+Stategraph: Removed 0 more summands
+Stategraph: Computing data-flow
+Stategraph: Doing Data Flow Analysis
+Stategraph: Building Result LPO
+Stategraph: Changed initial value of 1 parameters
+Stategraph: Changed 35 next state parameters in the remaining summands
+Stategraph: Written 26 summands
+Invcheck: JITty Rewriter initialised with hashing (strategy strictleft)
+Init OK ..........................
+Yes! invariant holds for all summands!
+Rewr: JITty Rewriter initialised with hashing (strategy strictleft)
+Rewr: Summand 1 is rewritten 
+Rewr: Summand 2 is rewritten 
+Rewr: Summand 3 is rewritten 
+Rewr: Summand 4 is rewritten 
+Rewr: Summand 5 is rewritten 
+Rewr: Summand 6 is rewritten 
+Rewr: Summand 7 is rewritten 
+Rewr: Summand 8 is rewritten 
+Rewr: Summand 9 is rewritten (invariant is used)
+Rewr: Summand 10 is rewritten (invariant is used)
+Rewr: Summand 11 is rewritten (invariant is used)
+Rewr: Summand 12 is rewritten (invariant is used)
+Rewr: Summand 13 is rewritten (invariant is used)
+Rewr: Summand 14 is rewritten (invariant is used)
+Rewr: Summand 15 is rewritten 
+Rewr: Summand 16 is rewritten 
+Rewr: Summand 17 is rewritten 
+Rewr: Summand 18 is rewritten 
+Rewr: Summand 19 is rewritten 
+Rewr: Summand 20 is rewritten (invariant is used)
+Rewr: Summand 21 is rewritten 
+Rewr: Summand 22 is rewritten 
+Rewr: Summand 23 is rewritten 
+Rewr: Summand 24 is rewritten 
+Rewr: Summand 25 is rewritten 
+Rewr: Summand 26 is rewritten (invariant is used)
+Rewr: Read 26 summands
+Rewr: Written 26 summands
+Parelm: Number of parameters of input LPO: 11
+Parelm: Parameter "d" (sort "D") is removed
+Parelm: Parameter "d14" (sort "D") is removed
+Parelm: Parameter "d13" (sort "D") is removed
+Parelm: Parameter "d12" (sort "D") is removed
+Parelm: In total 4 parameters have been removed
+Parelm: Number of parameters of output LPO: 7
+Sumelm: JITty Rewriter initialised with hashing (strategy strictleft)
+Sumelm: Sort "error" has only constructor: e
+Sumelm: Read 26 summands
+Sumelm: Number of parameters of input LPO: 7
+Sumelm: Variable "d11" (sort "D") in the sum operator of summand 17 has been deleted
+Sumelm: Variable "d11" (sort "D") in the sum operator of summand 24 has been deleted
+Sumelm: Number of summands in which proc parameters are changed: 0
+Sumelm: Number of summands in which sum variables are changed: 2
+Sumelm: Number of summands which are changed: 2
+Sumelm: Written 26 summands
+Sumelm: Number of parameters of output LPO: 7

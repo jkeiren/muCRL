@@ -1,0 +1,19 @@
+% This is a simple mCRL process with an infinite state 
+% space. 
+
+sort Bool
+func T,F:->Bool
+
+map  and:Bool#Bool->Bool
+
+var  b:Bool
+rew  and(b,T)=b
+     and(b,b)=b
+
+sort nat
+func 0:->nat S:nat->nat
+
+act a,b:nat
+proc X(n:nat)=sum(m:nat,a(n).b(m).X(S(n)))
+
+init X(0)

@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN" "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
+<!ENTITY % param SYSTEM "param.xml">
+%param;
+<!ENTITY lef                 "<literal>&lt;|</literal>">
+<!ENTITY rig                 "<literal>|&gt;</literal>">
+<!ENTITY tsum                 "<literal>sum</literal>">
+<!ENTITY delta               "<literal>delta</literal>">
+<!ENTITY tau               "<literal>tau</literal>">
+<!ENTITY deltah              "<literal>delta<subscript>H</subscript></literal>">
+<!ENTITY taui             "<literal>tau<subscript>I</subscript></literal>">
+<!ENTITY and                 "<literal><command>and</command></literal>">
+<!ENTITY or                  "<literal><command>or</command></literal>">
+<!ENTITY not                 "<literal><command>not</command></literal>">
+<!ENTITY implies             "<literal><command>implies</command></literal>">
+<!ENTITY forall              "<literal><command>forall</command></literal>">
+<!ENTITY exists              "<literal><command>exists</command></literal>">
+<!ENTITY in              "<literal><command>in</command></literal>">
+<!ENTITY phi              "<literal><parameter>phi</parameter></literal>">
+<!ENTITY bool                  "<type>Bool</type>">
+<!ENTITY true                "<constant>T</constant>">
+<!ENTITY false               "<constant>F</constant>">
+<!ENTITY lpe               '<link linkend="lpe">LPE</link>'>
+<!ENTITY example1               '<link linkend="abp">example</link>'>
+<!ENTITY abp1               '<link linkend="abp">Alternating Bit Protocol</link>'>
+<!ENTITY mapsto                 '<literal>-&gt;</literal>'>
+<!ENTITY % dates SYSTEM "dates.xml">
+<!ENTITY toolmcrl SYSTEM "mcrl.xml">
+<!ENTITY binary SYSTEM "binary.xml">
+<!ENTITY instantiators SYSTEM "instantiators.xml">
+<!ENTITY instantiator SYSTEM "instantiator.xml">
+<!ENTITY decluster SYSTEM "decluster.xml">
+<!ENTITY ext1 SYSTEM "ext1.xml">
+<!ENTITY ext2 SYSTEM "ext2.xml">
+<!ENTITY ext3 SYSTEM "ext3.xml">
+<!ENTITY dmp2dir SYSTEM "dmp2dir.xml">
+<!ENTITY ltscp SYSTEM "ltscp.xml">
+<!ENTITY ltsmin SYSTEM "ltsmin.xml">
+<!ENTITY ltscmp SYSTEM "ltscmp.xml">
+<!ENTITY lts2dot SYSTEM "lts2dot.xml">
+<!ENTITY common1 SYSTEM "common1.xml">
+<!ENTITY common2 SYSTEM "common2.xml">
+<!ENTITY rewr SYSTEM "rewr.xml">
+<!ENTITY stategraph SYSTEM "stategraph.xml">
+<!ENTITY constelm SYSTEM "constelm.xml">
+<!ENTITY parelm SYSTEM "parelm.xml">
+<!ENTITY structelm SYSTEM "structelm.xml">
+<!ENTITY sumelm SYSTEM "sumelm.xml">
+<!ENTITY msim SYSTEM "msim.xml">
+<!ENTITY reachelm SYSTEM "reachelm.xml">
+<!ENTITY invcheck SYSTEM "invcheck.xml">
+<!ENTITY confcheck SYSTEM "confcheck.xml">
+<!ENTITY invelm SYSTEM "invelm.xml">
+<!ENTITY pp SYSTEM "pp.xml">
+<!ENTITY tbfinfo SYSTEM "tbfinfo.xml">
+<!ENTITY tbfupdate SYSTEM "tbfupdate.xml">
+<!ENTITY librw SYSTEM "librw.xml">
+<!ENTITY libmcrl SYSTEM "libmcrl.xml">
+<!ENTITY libstep SYSTEM "libstep.xml">
+<!ENTITY finish SYSTEM "finish.xml">
+<!ENTITY finish1 SYSTEM "finish1.xml">
+<!ENTITY finish2 SYSTEM "finish2.xml">
+<!ENTITY end SYSTEM "end.xml">
+<!ENTITY mucalculus SYSTEM "mucalculus.xml">
+<!ENTITY MCparseModalFormula SYSTEM "MCparseModalFormula.xml">
+<!ENTITY abp SYSTEM "abp.xml">
+<!ENTITY renaming SYSTEM "renaming.xml">
+%dates;
+]>
+
+<book>
+<title>Manual Pages of the mCRL toolset (2.17.8)</title>
+<reference>
+<title>Syntax Check and Linearization of mCRL Specifications</title>
+&toolmcrl;
+</reference>
+<reference>
+<title>Linear Process Equations</title>
+&binary;
+&confcheck;
+&constelm;
+&decluster;
+&invcheck;
+&invelm;
+&msim;
+&parelm;
+&pp;
+&reachelm;
+&rewr;
+&sumelm;
+&stategraph;
+&structelm;
+&tbfinfo;
+&tbfupdate;
+</reference>
+<reference>
+<title>Explicit State Space Exploration</title>
+<!--<partintro><remark>An overview of the tools</remark></partintro>-->
+&instantiator;
+&instantiators;
+</reference>
+<reference>
+<title>Labeled Transition Systems</title>
+&dmp2dir;
+&ltscp;
+&ltsmin;
+&ltscmp;
+&lts2dot;
+</reference>
+<reference>
+<title>Model checking</title>
+&MCparseModalFormula;
+&mucalculus;
+</reference>
+<reference>
+<title>Common options</title>
+&libmcrl;
+&librw;
+&libstep;
+</reference>
+<reference>
+<title>Example</title>
+&abp;
+&renaming;
+</reference>
+</book>

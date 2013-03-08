@@ -1,0 +1,278 @@
+SHELL           = /bin/sh
+.SUFFIXES:      .c .o
+
+ARCH    =       @ARCH@
+
+srcdir          = @srcdir@
+top_srcdir      = @top_srcdir@
+prefix          = @prefix@
+exec_prefix     = @exec_prefix@
+datarootdir 	= @datarootdir@
+bindir          = @bindir@
+libdir          = @libdir@
+includedir      = @includedir@
+datadir         = @datadir@
+distdir         = @distdir@
+libexecdir      = @libexecdir@
+exampledir      = @exampledir@
+javadir		= @javadir@
+docdir          = @docdir@
+atermlib	= @atermlib@
+aterminclude	= @aterminclude@
+noprintdirectory= @noprintdirectory@
+ATERM           = @ATERM@
+
+RM		= @RM@
+CC              = @CC@
+CFLAGS          = @CFLAGS@
+CPPFLAGS        = -I$(top_srcdir) -I-
+DEFS            = @DEFS@ -DBINDIR=\"$(bindir)\"
+VERSION		= @VERSION@
+LIBS		= @LIBS@
+
+INSTALL		= @INSTALL@
+INSTALL_PROGRAM	= @INSTALL_PROGRAM@
+INSTALL_DATA	= @INSTALL_DATA@
+
+GNU_SOURCES      = unix.c
+OBJECTS         = unix.o
+INCLUDES        = sysdep.h
+
+@SET_MAKE@
+
+all:		ALWAYS
+		$(MAKE) libmcrlunix.a
+		@if test "$(atermlib)" = "$(libdir)"; \
+		then (cd $(ATERM); $(MAKE)); \
+		fi
+		@if test "@SVC@" =  "yes"; \
+		then (cd svc; $(MAKE)); \
+		fi
+		(cd lin; $(MAKE))
+		(cd data; $(MAKE))
+		@if test "@SVCTOOLS@" =  "yes"; \
+		then (cd svctools; $(MAKE)); \
+		fi
+		@if test "@SIMULATOR@" =  "yes"; \
+		then (cd src; $(MAKE)); \
+		else (cd src; $(MAKE) withoutsim); \
+		fi
+		@if test "@PROVER@" =  "yes"; \
+		then (cd prover; $(MAKE)); \
+		fi
+		@if test "@CHECKER@" =  "yes" -a -r checker/Makefile; \
+		then (cd checker; $(MAKE)); \
+		fi
+		@if test "@ABSINT@" =  "yes" -a -r absint/Makefile; \
+		then (cd absint; $(MAKE)); \
+		fi
+		@if test "@GRAPPA@" =  "yes"; \
+		then (cd java; $(MAKE)); \
+		fi
+		@if test "@CAESAR@" = "yes"; \
+		then (cd mcrlopen; $(MAKE)); \
+		fi
+		@if test "@EXPLICIT@" = "yes"; then \
+		    (cd explicit;$(MAKE)); \
+		fi
+		@if test "@IMPLICIT@" = "yes"; then \
+		    (cd implicit;$(MAKE)); \
+		fi
+		@echo "Making for $(ARCH) is completed successfully"
+
+ALWAYS:
+
+install:	ALWAYS
+		$(MAKE) all
+		@$(INSTALL) -d $(includedir)
+		@for file in $(INCLUDES); do \
+                    $(INSTALL_DATA) $$file $(includedir); \
+	        done
+		$(INSTALL_DATA) config.h $(includedir)
+		@$(INSTALL) -d $(libdir)
+		$(INSTALL_DATA) libmcrlunix.a $(libdir)
+		@if test "$(atermlib)" = "$(libdir)"; \
+		then (cd $(ATERM); $(MAKE) install); \
+		fi
+		@if test "@SVC@" =  "yes"; \
+		then (cd svc; $(MAKE) install); \
+		fi
+		@(cd lin; $(MAKE) install)
+		@(cd data; $(MAKE) install)
+		@(cd doc; $(MAKE) install)
+		@if test "@SVCTOOLS@" =  "yes"; \
+		then (cd svctools; $(MAKE) install); \
+		fi
+		@if test "@SIMULATOR@" =  "yes"; \
+		then (cd src; $(MAKE) install); \
+		else (cd src; $(MAKE) install0); \
+		fi
+		@if test "@PROVER@" =  "yes"; \
+		then (cd prover; $(MAKE) install); \
+		fi
+		@if test "@CHECKER@" =  "yes" -a -r checker/Makefile; \
+		then (cd checker; $(MAKE) install); \
+		fi
+		@if test "@ABSINT@" =  "yes" -a -r absint/Makefile; \
+		then (cd absint; $(MAKE) install); \
+		fi
+		@if test "@GRAPPA@" =  "yes"; \
+		then (cd java; $(MAKE) install); \
+		fi
+		@if test "@CAESAR@" = "yes"; \
+		then (cd mcrlopen; $(MAKE) install); \
+		fi
+		@if test "@EXPLICIT@" = "yes"; then \
+		    (cd explicit;$(MAKE) install); \
+		fi
+		@if test "@IMPLICIT@" = "yes"; then \
+		    (cd implicit;$(MAKE) install); \
+		fi
+		@echo "Installing for $(ARCH) is completed successfully"
+ 
+
+lib:		ALWAYS
+		$(MAKE) libmcrlunix.a
+				
+uninstall:	ALWAYS
+		@if test "$(atermlib)" = "$(libdir)"; \
+		then (cd $(ATERM); $(MAKE) uninstall); \
+		fi
+		(cd lin; $(MAKE) uninstall)
+		(cd src; $(MAKE) uninstall)
+		(cd data; $(MAKE) uninstall)
+		if test -d doc -a -r doc/Makefile; then \
+		    (cd doc; $(MAKE) uninstall); \
+		fi;
+		if test -d prover -a -r prover/Makefile; then \
+		    (cd prover; $(MAKE) uninstall); \
+		fi;
+		if test -d checker -a -r checker/Makefile; then \
+		    (cd checker;$(MAKE) uninstall); \
+		fi
+		if test -d absint -a -r absint/Makefile; then \
+		    (cd absint;$(MAKE) uninstall); \
+		fi
+		if test -d mcrlopen -a -r mcrlopen/Makefile; then \
+		    (cd mcrlopen;$(MAKE) uninstall); \
+		fi
+		if test -d svc -a -r svc/Makefile; then \
+		    (cd svc;$(MAKE) uninstall); \
+		fi
+		if test -d svctools -a -r svctools/Makefile; then \
+		    (cd svctools;$(MAKE) uninstall); \
+		fi
+		if test -d explicit -a -r explicit/Makefile; then \
+		    (cd explicit;$(MAKE) uninstall); \
+		fi
+		if test -d implicit -a -r implicit/Makefile; then \
+		    (cd implicit;$(MAKE) uninstall); \
+		fi
+		if test -d java -a -r java/Makefile; then \
+		    (cd java;$(MAKE) uninstall); \
+		fi
+		if test -d $(includedir); then \
+		    (cd $(includedir); $(RM) config.h); \
+		fi;
+		if test -d $(includedir); then \
+                (cd $(includedir); $(RM) $(INCLUDES)) ;\
+	        fi
+		if test -d $(libdir); then \
+		(cd $(libdir); $(RM) libmcrlunix.a) ;\
+		fi
+                
+libmcrlunix.a:    $(OBJECTS) Makefile
+		ar -sr $@ $(OBJECTS)
+
+$(OBJECTS):    $(INCLUDES) Makefile
+                
+dist:
+		rm -rf $(distdir)
+		mkdir $(distdir)
+		mkdir $(distdir)/doc
+		cp configure.ac Makefile.in config.hin configure config.sub \
+		config.guess install-sh ClassPresent.class TestJava.class \
+		LICENSE INSTALL ClassPresent.java TestJava.java $(INCLUDES) \
+		$(GNU_SOURCES) $(distdir)
+		touch $(distdir)/tarball
+		(cd aterm;$(MAKE) dist)
+		(cd aterm2;$(MAKE) dist)
+		(cd lin;$(MAKE) dist)
+		if test -d svc; \
+		then (cd svc;$(MAKE) -e distdir=$(distdir)/svc distdir); \
+		fi;
+		if test -d svctools; \
+		then (cd svctools;$(MAKE) -e distdir=$(distdir)/svctools distdir); \
+		fi;
+		if test -d prover; \
+		then (cd prover;$(MAKE) dist); \
+		fi;
+		(cd src;$(MAKE) dist)
+		if test "@CAESAR@" = "yes"; \
+		then (cd mcrlopen;$(MAKE) dist); \
+		fi;
+		(cd data;$(MAKE) dist)
+		(cd doc;$(MAKE) dist)
+		if test -d java -a -r java/Makefile; \
+		then (cd java;$(MAKE) dist); \
+		fi;
+		if test -d checker -a -r checker/Makefile; \
+		then (cd checker;$(MAKE) dist); \
+		fi;
+		if test -d absint; \
+		then (cd absint;$(MAKE) dist); \
+		fi;
+		if test "@EXPLICIT@" = "yes" -a -z "$${ftp}"; \
+		then (cd explicit;$(MAKE) dist); \
+		fi;
+		if test "@IMPLICIT@" = "yes" -a -z "$${ftp}"; \
+		then (cd implicit;$(MAKE) dist); \
+		fi;
+		rm -f "$(distdir).tar"
+		rm -f "$(distdir).tar.gz"
+		chmod -R a+r $(distdir)
+		(cd $(distdir)/..; tar cf "$(distdir).tar" `basename $(distdir)` )
+		gzip "$(distdir).tar"
+		chmod a+r "$(distdir).tar.gz"
+		mv "$(distdir).tar.gz" ${HOME}
+
+distftp:	
+		$(MAKE) -e ftp=1 dist
+
+clean:
+		$(RM) config.cache config.log config.status $(OBJECTS) \
+		libmcrlunix.a
+		(cd aterm;$(MAKE) clean)
+		(cd aterm2;$(MAKE) clean)
+		(cd lin;$(MAKE) clean)
+		(cd src;$(MAKE) clean)
+		if test -d svc; then \
+		    (cd svc;$(MAKE) clean); \
+		fi
+		if test -d svctools; then \
+		    (cd svctools;$(MAKE) clean); \
+		fi
+		if test -d prover -a -r prover/Makefile; then \
+		    (cd prover;$(MAKE) clean); \
+		fi
+		if test -d checker -a -r checker/Makefile; then \
+		    (cd checker;$(MAKE) clean); \
+		fi
+		if test -d absint -a -r absint/Makefile; then \
+		    (cd absint;$(MAKE) clean); \
+		fi
+		if test -d doc -a -r doc/Makefile; then \
+		    (cd doc;$(MAKE) clean); \
+		fi
+		if test -d explicit -a -r explicit/Makefile; then \
+		    (cd explicit;$(MAKE) clean); \
+		fi
+		if test -d implicit -a -r implicit/Makefile; then \
+		    (cd implicit;$(MAKE) clean); \
+		fi
+
+test:
+		(cd data; $(MAKE) -s test)
+
+.c.o:
+		$(CC) $(DEFS) $(CFLAGS) $(CPP_FLAGS) -c $*.c

@@ -1,0 +1,69 @@
+% This is a simple example of a mutual exclusion protocol.
+% There are two processes. In order to enter a critical section
+% a request is carried out by a request action. By an enter
+% action it is indicated that the process may enter the critical
+% section, and by a leave action it is indicated that the
+% critical section is left.
+
+sort Bool
+func T,F:->Bool
+
+map not: Bool-> Bool
+    eq,and,or: Bool # Bool -> Bool
+var b: Bool
+rew not(T)=F
+    not(F)=T
+    eq(T,b)=b
+    eq(F,b)=not(b)
+    and(T,b)=b
+    and(F,b)=F
+    or(T,b)=T
+    or(F,b)=b
+
+act  enter, leave, request, no_op:Bool
+     setflag, setflag_, csetflag: Bool # Bool
+     getflag, getflag_, cgetflag: Bool # Bool
+     setturn, setturn_, csetturn: Bool
+     getturn, getturn_, cgetturn: Bool
+     
+
+comm setflag| setflag_=csetflag
+     getflag| getflag_=cgetflag
+     setturn| setturn_=csetturn
+     getturn| getturn_=cgetturn
+     
+
+proc P(id:Bool)=
+         request(id).
+         setflag_(id,T).
+         setturn_(not(id)).
+         P1(id)
+
+     P1(id:Bool)=
+         sum(b:Bool,getflag_(not(id),b).
+          (CRIT(id)<|not(b)|>
+            sum(b:Bool,getturn_(b).
+              (CRIT(id)<|eq(b,id)|> no_op(id).P1(id)))))
+              
+     CRIT(id:Bool)=
+         enter(id).
+         leave(id).
+         setflag_(id,F).
+         P(id)
+     
+     Turn(b:Bool)=
+         sum(b:Bool,setturn(b).Turn(b))+
+         getturn(b).Turn(b)
+
+     Flag(b1:Bool,b2:Bool)=
+         sum(b:Bool,setflag(T,b).Flag(b,b2))+
+         sum(b:Bool,setflag(F,b).Flag(b1,b))+
+         getflag(T,b1).Flag(b1,b2)+
+         getflag(F,b2).Flag(b1,b2)
+
+    MUTEX = hide({ no_op, cgetflag, csetturn,cgetturn},
+      encap({setflag, setflag_,getflag, getflag_,
+               setturn, setturn_,getturn, getturn_},
+          P(T) || P(F) || Turn(T) || Flag(F,F)))
+
+init MUTEX

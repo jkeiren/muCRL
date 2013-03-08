@@ -1,0 +1,1021 @@
+% This is the translation of a conference protocol first specified
+% in LOTOS by Axel Belinfante and Jan Tretmans. It generates a state
+% space far too big for any tool to handle (for tools at 18/1/1999). 
+% Linearisation and simulation works fine. Especially note the tool
+% small2 that removes appr. 50% of the parameters of the linearized
+% process expression.
+%
+% More information can be obtained  at belinfan@cs.utwente.nl or
+% tretmans@cs.utwente.nl
+% (*
+%  * LOTOS spec of the conference protocol entity
+%  * together with the UDP layer
+%  *
+%  * $Id: commprot.mcrl,v 1.1 2001/05/21 11:56:34 bertl Exp $
+%  *)
+%
+% 
+% specification ConferenceProtocolEntitySpecification[CFSAP_in, CFSAP_out, udp_in, udp_out] : noexit
+% 
+% library CFsp, SetElement, Set, Boolean, FBoolean, NaturalNumber
+% endlib
+
+sort Bool
+func T,F:->Bool
+
+map and,or:Bool#Bool->Bool
+    not:Bool->Bool
+
+var b:Bool
+rew not(T)=F
+    not(F)=T
+    and(T,b)=b
+    and(b,T)=b
+    and(F,b)=F
+    and(b,F)=F
+    or(T,b)=T
+    or(b,T)=T
+    or(F,b)=b
+    or(b,F)=b
+
+sort Nat
+func 0:->Nat
+     S:Nat ->Nat
+
+map 1,2,3,4,5,6,7,8,9:->Nat
+    ne,eq,lt:Nat#Nat->Bool
+
+var m,n:Nat
+rew 1=S(0)
+    2=S(1)
+    3=S(2)
+    4=S(3)
+    5=S(4)
+    6=S(5)
+    7=S(6)
+    8=S(7)
+    9=S(8)
+    eq(0,0)=T
+    eq(S(m),0)=F
+    eq(0,S(m))=F
+    eq(S(m),S(n))=eq(m,n)
+    lt(m,0)=F
+    lt(0,S(m))=T
+    lt(S(m),S(n))=lt(m,n)
+    ne(m,n)=not(eq(m,n))
+
+% (***************************************************************************************)
+% (****************** standard definitions ***********************************************)
+% (***************************************************************************************)
+
+sort CFPartnerSet
+func emptyCPS :-> CFPartnerSet
+     Insert : CFPartner # CFPartnerSet -> CFPartnerSet
+map  IsUDPaddrIn:UDPAddress # CFPartnerSet -> Bool
+     if : Bool # CFPartnerSet # CFPartnerSet -> CFPartnerSet
+     IsIn : CFPartner # CFPartnerSet -> Bool
+
+var  c1,c2:UDPAddress
+     s,s':CFPartnerSet
+     u:UserTitle
+     f,f':CFPartner
+rew  IsUDPaddrIn(c1,emptyCPS)=F
+     IsUDPaddrIn(c1,Insert(Pair(c2,u),s))=or(eq(c1,c2),IsUDPaddrIn(c1,s))
+     if(T,s,s')=s
+     if(F,s,s')=s'
+     IsIn(f,emptyCPS)=F
+     IsIn(f,Insert(f',s))=or(eq(f,f'),IsIn(f,s))
+
+% 
+% (* definition of queue and operations on queues *)
+% type Queue is SetElement
+sort Queue
+func empty:-> Queue                            % the empty queue
+func add: CFsp#Queue -> Queue               % add element on top of queue
+
+map  dda:      CFsp# Queue -> Queue         % add element on bottom of queue
+     concat:   Queue# Queue   -> Queue         % concatenates two queues
+     head:     Queue          -> CFsp       % gets first element of a queue
+     tail:     Queue          -> Queue         % removes first element of a queue
+     last:     Queue          -> CFsp       % gets last element of a queue
+     inita:    Queue          -> Queue         % removes last element of a queue
+     IsEmpty:  Queue          -> Bool         % receives TRUE when queue is empty
+     NotEmpty: Queue          -> Bool         % receives TRUE when queue is not empty
+
+var x,y,z: CFsp 
+    q, q1, q2: Queue
+rew last(add(x, empty))      = x
+    last(add(x, add(y, q)))  = last(add(y, q))
+    head(add(x, empty))      = x
+    head(add(x, add(y, q)))  = x
+    dda(y, empty)            = add(y, empty)
+    dda(y, add(x, empty))    = add(x, add(y, empty))
+    dda(y, add(x, add(z,q))) = add(x, dda(y, add(z,q)))
+    tail(empty)              = empty
+    tail(add(x, empty))      = empty
+    tail(add(x, add(y, q)))  = add(y, q)
+    inita(empty)             = empty
+    inita(add(x, empty))     = empty
+    inita(add(x, add(y, q))) = add(x, inita(add(y, q)))
+    concat(empty, q)         = q
+    concat(add(y, empty), q) = add(y, q)
+    concat(add(y, add(z,q1)), q2)   = add(y, add(z, concat(q1, q2)))
+    IsEmpty(empty)           = T
+    IsEmpty(add(x, q))       = not(T)
+    NotEmpty(q)              = not(IsEmpty(q))
+
+sort UDPspQ
+func emptyUDPspQ:-> UDPspQ                            % the empty queue
+     add: UDPsp#UDPspQ -> UDPspQ               % add element on top of queue
+
+map  dda:      UDPsp# UDPspQ -> UDPspQ         % add element on bottom of queue
+     concat:   UDPspQ# UDPspQ   -> UDPspQ         % concatenates two queues
+     head:     UDPspQ          -> UDPsp       % gets first element of a queue
+     tail:     UDPspQ          -> UDPspQ         % removes first element of a queue
+     last:     UDPspQ          -> UDPsp       % gets last element of a queue
+     inita:    UDPspQ          -> UDPspQ         % removes last element of a queue
+     IsEmpty:  UDPspQ          -> Bool         % receives TRUE when queue is empty
+     NotEmpty: UDPspQ          -> Bool         % receives TRUE when queue is not empty
+
+var x,y,z: UDPsp
+    q, q1, q2: UDPspQ
+rew last(add(x, emptyUDPspQ))      = x
+    last(add(x, add(y, q)))  = last(add(y, q))
+    head(add(x, emptyUDPspQ))      = x
+    head(add(x, add(y, q)))  = x
+    dda(y, emptyUDPspQ)            = add(y, emptyUDPspQ)
+    dda(y, add(x, emptyUDPspQ))    = add(x, add(y, emptyUDPspQ))
+    dda(y, add(x, add(z,q))) = add(x, dda(y, add(z,q)))
+    tail(emptyUDPspQ)              = emptyUDPspQ
+    tail(add(x, emptyUDPspQ))      = emptyUDPspQ
+    tail(add(x, add(y, q)))  = add(y, q)
+    inita(emptyUDPspQ)             = emptyUDPspQ
+    inita(add(x, emptyUDPspQ))     = emptyUDPspQ
+    inita(add(x, add(y, q))) = add(x, inita(add(y, q)))
+    concat(emptyUDPspQ, q)         = q
+    concat(add(y, emptyUDPspQ), q) = add(y, q)
+    concat(add(y, add(z,q1)), q2)   = add(y, add(z, concat(q1, q2)))
+    IsEmpty(emptyUDPspQ)           = T
+    IsEmpty(add(x, q))       = not(T)
+    NotEmpty(q)              = not(IsEmpty(q))
+
+
+sort UOQ
+func emptyUOQ:-> UOQ                            % the empty queue
+func add: CFsp#UOQ -> UOQ               % add element on top of queue
+
+map  dda:      CFsp# UOQ -> UOQ         % add element on bottom of queue
+     concat:   UOQ# UOQ   -> UOQ         % concatenates two queues
+     head:     UOQ          -> CFsp       % gets first element of a queue
+     tail:     UOQ          -> UOQ         % removes first element of a queue
+     last:     UOQ          -> CFsp       % gets last element of a queue
+     inita:    UOQ          -> UOQ         % removes last element of a queue
+     IsEmpty:  UOQ          -> Bool         % receives TRUE when queue is empty
+     NotEmpty: UOQ          -> Bool         % receives TRUE when queue is not empty
+
+var x,y,z: CFsp
+    q, q1, q2: UOQ
+rew last(add(x, emptyUOQ))      = x
+    last(add(x, add(y, q)))  = last(add(y, q))
+    head(add(x, emptyUOQ))      = x
+    head(add(x, add(y, q)))  = x
+    dda(y, emptyUOQ)            = add(y, emptyUOQ)
+    dda(y, add(x, emptyUOQ))    = add(x, add(y, emptyUOQ))
+    dda(y, add(x, add(z,q))) = add(x, dda(y, add(z,q)))
+    tail(emptyUOQ)              = emptyUOQ
+    tail(add(x, emptyUOQ))      = emptyUOQ
+    tail(add(x, add(y, q)))  = add(y, q)
+    inita(emptyUOQ)             = emptyUOQ
+    inita(add(x, emptyUOQ))     = emptyUOQ
+    inita(add(x, add(y, q))) = add(x, inita(add(y, q)))
+    concat(emptyUOQ, q)         = q
+    concat(add(y, emptyUOQ), q) = add(y, q)
+    concat(add(y, add(z,q1)), q2)   = add(y, add(z, concat(q1, q2)))
+    IsEmpty(emptyUOQ)           = T
+    IsEmpty(add(x, q))       = not(T)
+    NotEmpty(q)              = not(IsEmpty(q))
+
+
+sort LOQ
+func emptyLOQ:-> LOQ                            % the empty queue
+func add: LOQItem#LOQ -> LOQ               % add element on top of queue
+
+map  dda:      LOQItem# LOQ -> LOQ         % add element on bottom of queue
+     concat:   LOQ# LOQ   -> LOQ         % concatenates two queues
+     head:     LOQ          -> LOQItem       % gets first element of a queue
+     tail:     LOQ          -> LOQ         % removes first element of a queue
+     last:     LOQ          -> LOQItem       % gets last element of a queue
+     inita:    LOQ          -> LOQ         % removes last element of a queue
+     IsEmpty:  LOQ          -> Bool         % receives TRUE when queue is empty
+     NotEmpty: LOQ          -> Bool         % receives TRUE when queue is not empty
+
+var x,y,z: LOQItem
+    q, q1, q2: LOQ
+rew last(add(x, emptyLOQ))      = x
+    last(add(x, add(y, q)))  = last(add(y, q))
+    head(add(x, emptyLOQ))      = x
+    head(add(x, add(y, q)))  = x
+    dda(y, emptyLOQ)            = add(y, emptyLOQ)
+    dda(y, add(x, emptyLOQ))    = add(x, add(y, emptyLOQ))
+    dda(y, add(x, add(z,q))) = add(x, dda(y, add(z,q)))
+    tail(emptyLOQ)              = emptyLOQ
+    tail(add(x, emptyLOQ))      = emptyLOQ
+    tail(add(x, add(y, q)))  = add(y, q)
+    inita(emptyLOQ)             = emptyLOQ
+    inita(add(x, emptyLOQ))     = emptyLOQ
+    inita(add(x, add(y, q))) = add(x, inita(add(y, q)))
+    concat(emptyLOQ, q)         = q
+    concat(add(y, emptyLOQ), q) = add(y, q)
+    concat(add(y, add(z,q1)), q2)   = add(y, add(z, concat(q1, q2)))
+    IsEmpty(emptyLOQ)           = T
+    IsEmpty(add(x, q))       = not(T)
+    NotEmpty(q)              = not(IsEmpty(q))
+
+
+
+% (* definition of the second element for use in the definition of pair *)
+% type SndElement is SetElement renamedby
+%      sortnames SndElement for CFsp
+% endtype
+% 
+% (* definition of a pair (2-tuple) and operations on pairs *)
+% type Pair is SetElement, SndElement, NaturalNumber
+
+sort Pair
+func Pair : CFsp# PDU -> Pair
+map  fst  : Pair                -> CFsp
+     snd  : Pair                -> PDU
+     ne,eq : Pair# Pair          -> Bool
+     % lt : Pair, Pair          -> Bool  Niet nodig.
+var  e1 : CFsp 
+     e2 : PDU
+     p1, p2 : Pair
+rew  fst(Pair(e1, e2)) = e1
+     snd(Pair(e1, e2)) = e2
+     eq(p1,p2)=and(eq(fst(p1),fst(p2)),eq(snd(p1),snd(p2)))
+     ne(p1,p2) = not(eq(p1,p2))      
+     
+
+%     fst(p1) ne fst(p2)  => p1 lt p2 = fst(p1) lt fst(p2) 
+%     fst(p1) eq fst(p2)  => p1 lt p2 = snd(p1) lt snd(p2) 
+
+% (***************************************************************************************)
+% (******************* type definitions **************************************************)
+% (***************************************************************************************)
+% 
+% (* definition of PDU field: PDU-type *)
+% type PduType is NaturalNumber, Boolean
+sort PduType
+func J, A, L, D : -> PduType  % the PDU types
+map  eq, ne, lt : PduType# PduType -> Bool
+     NatNum     : PduType -> Nat
+var x, y : PduType
+rew NatNum(J) = 0
+    NatNum(L) = S(NatNum(J))
+    NatNum(A) = S(NatNum(L))
+    NatNum(D) = S(NatNum(A))
+    eq(x,y) = eq(NatNum(x),NatNum(y))
+    ne(x,y) = ne(NatNum(x),NatNum(y))
+    lt(x,y) = lt(NatNum(x),NatNum(y))
+
+% (* type definition of locally stored SP parameter: User Title *)
+% type UserTitleOpt is NaturalNumber, Boolean, UserTitle
+
+sort UserTitleOpt
+func noUt :  -> UserTitleOpt
+     yesUt : UserTitle -> UserTitleOpt
+map eq, ne, lt : UserTitleOpt# UserTitleOpt -> Bool
+        NatNum : UserTitleOpt         -> Nat
+        UtOf : UserTitleOpt         -> UserTitle
+var x, y : UserTitleOpt
+     z : UserTitle
+rew  eq(x,y) = eq(NatNum(x),NatNum(y))
+     ne(x,y) = ne(NatNum(x),NatNum(y))
+     lt(x,y) = lt(NatNum(x),NatNum(y))
+     NatNum(noUt) = 0
+     NatNum(yesUt(z)) = S(0)
+     UtOf(yesUt(z)) = z
+
+% (* type definition of locally stored SP parameter: Conference Identifier *)
+% type ConfIdentOpt is NaturalNumber, Boolean, ConfIdent
+
+sort ConfIdentOpt
+func noCi : -> ConfIdentOpt
+     yesCi : ConfIdent -> ConfIdentOpt
+
+map  eq, ne, lt : ConfIdentOpt# ConfIdentOpt -> Bool
+     NatNum : ConfIdentOpt         -> Nat
+     CiOf : ConfIdentOpt         -> ConfIdent
+var  x, y : ConfIdentOpt
+     z : ConfIdent
+rew  eq(x,y) = eq(NatNum(x),NatNum(y))
+     ne(x,y) = ne(NatNum(x),NatNum(y))
+     lt(x,y) = lt(NatNum(x),NatNum(y))
+     NatNum(noCi) = 0
+     NatNum(yesCi(z)) = S(0)
+     CiOf(yesCi(z)) = z
+
+% (********************************************************************************************)
+% (****************** Definition of Service Primitives and PDUs *******************************)
+% (********************************************************************************************)
+% 
+% (* definition of conference service SPs and operations on these SPs *)
+% type ConfServPrim is (* Message, *) UserTitle, Nat, Nat, NaturalNumber, Boolean
+
+sort CFsp
+func datareq   : DataField              -> CFsp       % datareq(message) *)
+     dataind   : UserTitle#DataField    -> CFsp       % dataind(user title, message) *)
+     join      : UserTitle#ConfIdent    -> CFsp       % join(user title, conference identifier) *)
+     leave     :                         -> CFsp       % leave() *)
+map  IsDataReq : CFsp                    -> Bool       % discriminate datareq SP *)
+     IsDataInd : CFsp                    -> Bool       % discriminate dataind SP *)
+     IsJoin    : CFsp                    -> Bool       % discriminate join SP *)
+     IsLeave   : CFsp                    -> Bool       % discriminate leave SP *)
+     MsgOf     : CFsp                    -> DataField  % get message from datareq and dataind SPs *)
+     UtOf      : CFsp                    -> UserTitle  % get user title from join and dataind SPs *)
+     CiOf      : CFsp                    -> ConfIdent  % get conference identifier from join SP *)
+     eq, ne, lt : CFsp# CFsp             -> Bool
+
+var u, v:UserTitle
+    c, d:ConfIdent
+    m, n :DataField
+    sp1, sp2:CFsp
+rew IsDataReq(datareq(m))    = T
+    IsDataReq(dataind(u, m)) = F
+    IsDataReq(join(u, c))    = F
+    IsDataReq(leave)         = F
+    IsDataInd(datareq(m))    = F
+    IsDataInd(dataind(u, m)) = T
+    IsDataInd(join(u, c))    = F
+    IsDataInd(leave)         = F
+    IsJoin(datareq(m))       = F
+    IsJoin(dataind(u, m))    = F
+    IsJoin(join(u, c))       = T
+    IsJoin(leave)            = F
+    IsLeave(datareq(m))      = F
+    IsLeave(dataind(u, m))   = F
+    IsLeave(join(u, c))      = F
+    IsLeave(leave)           = T
+    MsgOf(datareq(m))     = m
+    MsgOf(dataind(u, m))  = m
+    UtOf(dataind(u, m)) = u
+    UtOf(join(u, c))    = u
+    CiOf(join(u, c))    = c
+    eq(datareq(m),datareq(n)) = eq(m,n)
+    eq(dataind(u,m),dataind(v,n)) = and(eq(m,n),eq(u,v))
+    eq(join(u,c),join(v,d)) =  and(eq(c,d),eq(u,v))
+    eq(leave,leave) = T
+     
+    eq(datareq(m),dataind(v,n)) = F
+    eq(datareq(m),join(v,d)) = F
+    eq(datareq(m),leave) = F
+
+    eq(dataind(u,m),datareq(n)) = F
+    eq(dataind(u,m),join(v,d)) = F
+    eq(dataind(u,m),leave) = F
+      
+    eq(join(u,c),datareq(n)) = F
+    eq(join(u,c),dataind(v,n)) = F
+    eq(join(u,c),leave) = F
+    
+    eq(leave,datareq(n)) = F
+    eq(leave,dataind(v,n)) = F
+    eq(leave,join(v,d)) = F
+
+    lt(datareq(m),datareq(n)) = lt(m,n)
+    lt(dataind(u,m),dataind(v,n)) = and(lt(m,n),lt(u,v))
+    lt(join(u,c),join(v,d)) =  and(lt(c,d),lt(u,v))
+    lt(leave,leave) = F
+    
+    lt(datareq(m),dataind(v,n)) = T
+    lt(datareq(m),join(v,d)) = T
+    lt(datareq(m),leave) = T
+
+    lt(dataind(u,m),datareq(n)) = F
+    lt(dataind(u,m),join(v,d)) = T
+    lt(dataind(u,m),leave) = T
+    
+    lt(join(u,c),datareq(n)) = F
+    lt(join(u,c),dataind(v,n)) = F
+    lt(join(u,c),leave) = T
+    
+    lt(leave,datareq(n)) = F
+    lt(leave,dataind(v,n)) = F
+    lt(leave,join(v,d)) = F
+    
+    ne(sp1,sp2) = not(eq(sp1,sp2))
+
+
+
+% (* definition of PDUs and operations on these PDUs *)
+% type PDU is PduType, UserTitle, Nat, Nat, Nat, Boolean
+sort PDU
+func PDU_J  : UserTitle # ConfIdent -> PDU
+     PDU_A  : UserTitle # ConfIdent -> PDU
+     PDU_L  : UserTitle # ConfIdent -> PDU
+     PDU_D  : DataFieldLen # DataField -> PDU
+map  TypeOf           : PDU -> PduType
+     UtOf             : PDU -> UserTitle
+     CiOf             : PDU -> ConfIdent
+     DataFieldOf      : PDU -> DataField
+     DataFieldLenOf   : PDU -> DataFieldLen
+     eq, ne, lt : PDU# PDU -> Bool
+
+var  t:PduType 
+     u,v:UserTitle
+     c,cc:ConfIdent
+     df,df1,df2:DataField
+     dl,dl1,dl2:DataFieldLen
+     p1, p2 : PDU
+rew  TypeOf(PDU_J(u, c)) = J
+     TypeOf(PDU_L(u, c)) = L
+     TypeOf(PDU_A(u, c)) = A
+     TypeOf(PDU_D(dl, df)) = D
+     UtOf(PDU_J(u, c)) = u
+     UtOf(PDU_L(u, c)) = u
+     UtOf(PDU_A(u, c)) = u
+     CiOf(PDU_J(u, c)) = c
+     CiOf(PDU_L(u, c)) = c
+     CiOf(PDU_A(u, c)) = c
+     DataFieldOf(PDU_D(dl, df)) = df
+     DataFieldLenOf(PDU_D(dl, df))  = dl
+
+     eq(PDU_J(u,c),PDU_J(v,cc)) =  and(eq(c,cc),eq(u,v))
+     eq(PDU_A(u,c),PDU_A(v,cc)) =  and(eq(c,cc),eq(u,v))
+     eq(PDU_L(u,c),PDU_L(v,cc)) = and(eq(c,cc),eq(u,v))
+     eq(PDU_D(dl1,df1),PDU_D(dl2,df2)) = and(eq(dl1,dl2),eq(df1,df2))
+        
+     eq(PDU_J(u,c),PDU_A(v,cc)) = F
+     eq(PDU_J(u,c),PDU_L(v,cc)) = F
+     eq(PDU_J(u,c),PDU_D(dl2,df2)) = F
+       
+     eq(PDU_A(u,c),PDU_J(v,cc)) = F
+     eq(PDU_A(u,c),PDU_L(v,cc)) = F
+     eq(PDU_A(u,c),PDU_D(dl2,df2)) = F
+       
+     eq(PDU_L(u,c),PDU_J(v,cc)) = F
+     eq(PDU_L(u,c),PDU_A(v,cc)) = F
+     eq(PDU_L(u,c),PDU_D(dl2,df2)) = F
+
+     eq(PDU_D(dl1,df1),PDU_J(v,cc)) = F
+     eq(PDU_D(dl1,df1),PDU_A(v,cc)) = F
+     eq(PDU_D(dl1,df1),PDU_L(v,cc)) = F
+
+     lt(PDU_J(u,c),PDU_J(v,cc)) = and(lt(u,v),lt(c,cc))
+     lt(PDU_A(u,c),PDU_A(v,cc)) = and(lt(u,v),lt(c,cc))
+     lt(PDU_L(u,c),PDU_L(v,cc)) =  and(lt(u,v),lt(c,cc))
+     lt(PDU_D(dl1,df1),PDU_D(dl2,df2)) = and(lt(dl1,dl2),lt(df1,df2))
+       
+     lt(PDU_J(u,c),PDU_A(u,cc)) = T
+     lt(PDU_J(u,c),PDU_L(v,cc)) = T
+     lt(PDU_J(u,c),PDU_D(dl2,df2)) = T
+
+     lt(PDU_A(u,c),PDU_J(v,cc)) = F
+     lt(PDU_A(u,c),PDU_L(v,cc)) = T
+     lt(PDU_A(u,c),PDU_D(dl2,df2)) = T
+     
+     lt(PDU_L(u,c),PDU_J(v,cc)) = F
+     lt(PDU_L(u,c),PDU_A(v,cc)) = F
+     lt(PDU_L(u,c),PDU_D(dl2,df2)) = T
+     
+     lt(PDU_D(dl1,df1),PDU_J(v,cc)) = F
+     lt(PDU_D(dl1,df1),PDU_A(v,cc)) = F
+     lt(PDU_D(dl1,df1),PDU_L(v,cc)) = F
+     
+     ne(p1,p2) = not(eq(p1,p2))
+
+% 
+% (* definition of conference service SPs and operations on these SPs *)
+% type UdpServPrim is PDU, Nat, Boolean, NaturalNumber
+
+sort UDPsp
+func udp_datareq : UDPAddress # PDU -> UDPsp
+     udp_dataind : UDPAddress # PDU -> UDPsp
+map  IsDataReq   : UDPsp           -> Bool
+     IsDataInd   : UDPsp           -> Bool
+     PduOf       : UDPsp           -> PDU
+     SrcOf       : UDPsp           -> UDPAddress
+     DestOf      : UDPsp           -> UDPAddress
+     eq, ne, lt : UDPsp# UDPsp -> Bool
+
+var  sp, sp1, sp2:UDPsp 
+     a:UDPAddress  p:PDU  
+     b:UDPAddress  q:PDU
+rew  IsDataReq(udp_datareq(a,p)) = T
+     IsDataReq(udp_dataind(a,p)) = F
+     IsDataInd(sp)               = not(IsDataReq(sp))
+     PduOf(udp_datareq(a,p))     = p
+     PduOf(udp_dataind(a,p))     = p
+     DestOf(udp_datareq(a,p))    = a
+     DestOf(udp_dataind(a,p))    = a
+     SrcOf(udp_datareq(a,p))     = a
+     SrcOf(udp_dataind(a,p))     = a
+
+     eq(udp_datareq(a,p),udp_datareq(b,q)) = and(eq(a,b),eq(p,q))
+     eq(udp_dataind(a,p),udp_dataind(b,q)) = and(eq(a,b),eq(p,q))
+     eq(udp_datareq(a,p),udp_dataind(b,q)) = F
+     eq(udp_dataind(a,p),udp_datareq(b,q)) = F
+        
+     ne(udp_datareq(a,p),udp_datareq(b,q)) = or(ne(a,b),ne(p,q))
+     ne(udp_dataind(a,p),udp_dataind(b,q)) = or(ne(a,b),ne(p,q))
+     ne(udp_datareq(a,p),udp_dataind(b,q)) = T
+     ne(udp_dataind(a,p),udp_datareq(b,q)) = T
+        
+     lt(udp_datareq(a,p),udp_datareq(b,q)) = and(lt(a,b),lt(p,q))
+     lt(udp_dataind(a,p),udp_dataind(b,q)) = and(lt(a,b),lt(p,q))
+     lt(udp_datareq(a,p),udp_dataind(b,q)) = T 
+     lt(udp_dataind(a,p),udp_datareq(b,q)) = F
+
+
+% (********************************************************************************************)
+% (***************************** Sets and Queues **********************************************)
+% (********************************************************************************************)
+% 
+% (* definition of an address-pair consists of a CFAddress and a Nat *)
+sort AddressPair
+func Pair : CFAddress # UDPAddress -> AddressPair
+map  CFaddrOf : AddressPair -> CFAddress
+     UDPaddrOf : AddressPair -> UDPAddress
+
+var  a1:CFAddress
+     a2:UDPAddress
+rew  CFaddrOf(Pair(a1,a2))=a1
+     UDPaddrOf(Pair(a1,a2))=a2
+
+% 
+% (* definition of an address-pair-set used for configuration set *)
+% type AddressPairSet is Set actualizedby AddressPair using
+%      sortnames  AddressPairSet for Set
+%       AddressPair    for CFsp
+%       Bool           for FBool
+% endtype
+% 
+% (* extending the defintion of an address-pair-set *)
+% type ExtAddressPairSet is AddressPairSet, AddressPair, Boolean
+%      opns NotEmpty     : AddressPairSet -> Bool
+%      IsEmpty      : AddressPairSet -> Bool
+%      eqns forall x:AddressPair, xs:AddressPairSet
+%      ofsort Bool
+%        NotEmpty(xs) = xs ne {}
+%        IsEmpty(xs)  = xs eq {}
+% endtype
+% 
+% (* definition of a conference partner set item: pair of Nat and user title *)
+sort CFPartner
+func Pair : UDPAddress#UserTitle -> CFPartner
+map  AddrOf : CFPartner -> UDPAddress
+     UtOf : CFPartner -> UserTitle
+     eq:CFPartner#CFPartner -> Bool
+var a,a':UDPAddress
+    u,u':UserTitle
+
+rew AddrOf(Pair(a,u))=a
+    UtOf(Pair(a,u))=u
+    eq(Pair(a,u),Pair(a',u'))=and(eq(a,a'),eq(u,u'))
+
+% 
+% (* type definition of a conference partners set *)
+% type CFPartnerSet is Set actualizedby CFPartner using 
+%      sortnames  CFPartnerSet for Set
+%       CFPartner    for CFsp
+%       Bool         for FBool
+%      opnnames   emptyCPS        for {}
+% endtype
+% 
+% (* extending the defintion of a conference partners set *)
+% type ExtCFPartnerSet is CFPartnerSet, Boolean
+%      opns NotEmpty : CFPartnerSet -> Bool
+%      IsEmpty  : CFPartnerSet -> Bool
+%      eqns forall xs:CFPartnerSet
+%      ofsort Bool
+%        NotEmpty(xs) = xs ne emptyCPS
+%        IsEmpty(xs)  = xs eq emptyCPS
+% endtype
+% 
+% (* definition of an operation to check the existence of an UDP address in a *)
+% (* conference partners set *)
+% type IsConferencePartner is CFPartnerSet, CFPartner, Nat, Nat, Boolean
+%      opns _ IsUDPaddrIn _ : Nat, CFPartnerSet -> Bool
+%      eqns forall a, b : Nat, xs:CFPartnerSet, u:Nat
+%      ofsort Bool
+%      a eq b => a IsUDPaddrIn Insert(Pair(b, u), xs) = T
+%      a ne b => a IsUDPaddrIn Insert(Pair(b, u), xs) = a IsUDPaddrIn xs
+%           a IsUDPaddrIn emptyCPS = F
+% endtype
+% 
+% (* definition of an operation to remove the element in a 
+%  * conference partner set with a given UDP address.
+%  * NOTE: we could have defined a GetPartnerByUDPaddr to get the
+%  * conference partner with the given UDPaddr, and then removed it
+%  * using the usual Remove on CFPartnerSet, except for the problem
+%  * that we then would need a 'null' or 'bottom' CFPartner, that can
+%  * be the result of
+%  *    GetPartnerByUDPaddr(anyUDPaddr, emptyCPS)
+%  * For this RemovePartnerByUDPaddr operation we do not need this
+%  * 'bottom' element.
+%  *)
+% type RemoveConferencePartner is CFPartnerSet, CFPartner, Nat, Nat
+map  RemovePartnerByUDPaddr : UDPAddress# CFPartnerSet -> CFPartnerSet
+var  a, b : UDPAddress
+     xs:CFPartnerSet
+     u:UserTitle
+rew  RemovePartnerByUDPaddr(a, Insert(Pair(b, u), xs)) = if(eq(a,b),xs,
+          RemovePartnerByUDPaddr(a, xs))
+     RemovePartnerByUDPaddr(a, emptyCPS) = emptyCPS
+
+
+% (***************************************************************************************)
+% 
+% (* definition of an output-item of the queue for output at the lower SAP *)
+
+sort LOQItem 
+func Pair: UDPaddrSet # PDU -> LOQItem
+map  AddrSetOf: LOQItem -> UDPaddrSet
+     PduOf : LOQItem -> PDU
+
+var  a1: UDPaddrSet a2: PDU
+rew  AddrSetOf(Pair(a1,a2))=a1
+     PduOf(Pair(a1,a2))=a2
+
+% (* type definition of a set of UDP addresses used to contain the destination *)
+% (* addresses for PDUs to be send, which is an element of the output-item of a *)
+% (* queue for output at the lower SAP. *)
+
+sort UDPaddrSet
+func noUDPaddr :-> UDPaddrSet
+     Insert:UDPAddress # UDPaddrSet -> UDPaddrSet
+map  if:Bool # UDPaddrSet # UDPaddrSet -> UDPaddrSet
+     IsIn : UDPAddress # UDPaddrSet -> Bool
+     Remove : UDPAddress # UDPaddrSet -> UDPaddrSet
+     IsEmpty : UDPaddrSet -> Bool
+
+var  a1,a2: UDPaddrSet
+     u,u':UDPAddress
+rew  if(T,a1,a2)=a1
+     if(F,a1,a2)=a2
+     IsIn(u,noUDPaddr)=F
+     IsIn(u,Insert(u',a1))=or(eq(u,u'),IsIn(u,a1))
+     Remove(u,noUDPaddr)=noUDPaddr
+     Remove(u,Insert(u',a1))=if(eq(u,u'),a1,Insert(u',Remove(u,a1)))
+     IsEmpty(noUDPaddr)=T
+     IsEmpty(Insert(u,a1))=F
+
+% 
+% (* extending the defintion of a UDP addresses set *)
+% type ExtUDPaddrSet is UDPaddrSet, Boolean
+%      opns NotEmpty : UDPaddrSet -> Bool
+%      IsEmpty  : UDPaddrSet -> Bool
+%      eqns forall xs:UDPaddrSet
+%      ofsort Bool
+%        NotEmpty(xs) = xs ne noUDPaddr
+%        IsEmpty(xs)  = xs eq noUDPaddr
+% endtype
+% 
+% (* definition of operations to derive remote UDP addresses from the conference *)
+% (* partners set and from the configuration set. *)
+% type MakeRemoteAddrSet is ExtCFPartnerSet, UDPaddrSet, ExtAddressPairSet, AddressPair
+
+map MakeRemoteAddrSet  : CFPartnerSet               -> UDPaddrSet
+    MakeRemoteAddrSet2 : UDPAddress # AddressPairSet -> UDPaddrSet
+var u:UDPAddress
+    x:CFPartner
+    xs:CFPartnerSet 
+    y:AddressPair 
+    ys:AddressPairSet
+rew MakeRemoteAddrSet(Insert(x, xs))       = Insert(AddrOf(x), MakeRemoteAddrSet(xs))
+    MakeRemoteAddrSet(emptyCPS)              = noUDPaddr
+    MakeRemoteAddrSet2(u, emptyset)              = noUDPaddr
+    MakeRemoteAddrSet2(u, Insert(y, ys)) = 
+            if(eq(u,UDPaddrOf(y)), MakeRemoteAddrSet2(u, ys),
+                  Insert(UDPaddrOf(y), MakeRemoteAddrSet2(u, ys)))
+
+
+% (****************************************************************************************)
+% (******************** constant definitions for simulation only **************************)
+% (****************************************************************************************)
+% 
+sort DataField
+func m1, m2, m3, m4    : -> DataField
+map  NatNum : DataField -> Nat
+     eq,lt,ne : DataField # DataField -> Bool
+var  d1,d2:DataField
+rew  NatNum(m1)  = 0
+     NatNum(m2)  = S(NatNum(m1))
+     NatNum(m3)  = S(NatNum(m2))
+     NatNum(m4)  = S(NatNum(m3))
+     eq(d1,d2)=eq(NatNum(d1),NatNum(d2))
+     lt(d1,d2)=lt(NatNum(d1),NatNum(d2))
+     ne(d1,d2)=ne(NatNum(d1),NatNum(d2))
+
+sort UserTitle
+func ut_A,ut_B,ut_C,ut_D : -> UserTitle
+map  NatNum : UserTitle -> Nat
+     eq,lt,ne:UserTitle#UserTitle -> Bool
+var  u1,u2:UserTitle
+rew  NatNum(ut_A)   = 0
+     NatNum(ut_B)   = S(NatNum(ut_A))
+     NatNum(ut_C)   = S(NatNum(ut_B))
+     NatNum(ut_D)   = S(NatNum(ut_C))
+     eq(u1,u2)=eq(NatNum(u1),NatNum(u2))
+     lt(u1,u2)=lt(NatNum(u1),NatNum(u2))
+     ne(u1,u2)=ne(NatNum(u1),NatNum(u2))
+
+sort ConfIdent
+func ci_one, ci_two  : ->  ConfIdent
+map  NatNum :  ConfIdent -> Nat
+     eq,lt,ne:ConfIdent#ConfIdent -> Bool
+var  c1,c2:ConfIdent
+rew  NatNum(ci_one)  = 0
+     NatNum(ci_two) = S(NatNum(ci_one))
+     eq(c1,c2)=eq(NatNum(c1),NatNum(c2))
+     lt(c1,c2)=lt(NatNum(c1),NatNum(c2))
+     ne(c1,c2)=ne(NatNum(c1),NatNum(c2))
+
+sort DataFieldLen
+func l  : -> DataFieldLen
+map  NatNum : DataFieldLen -> Nat
+     eq,lt,ne : DataFieldLen # DataFieldLen -> Bool
+var  d1,d2:DataFieldLen
+rew  NatNum(l)  = 0
+     eq(d1,d2)=eq(NatNum(d1),NatNum(d2))
+     lt(d1,d2)=lt(NatNum(d1),NatNum(d2))
+     ne(d1,d2)=ne(NatNum(d1),NatNum(d2))
+
+sort CFAddress
+func cf4, cf2, cf3, cf1 : -> CFAddress
+map  NatNum: CFAddress -> Nat
+     eq,ne,lt:CFAddress#CFAddress -> Bool
+var  x,y : CFAddress
+rew  NatNum(cf1) = 0
+     NatNum(cf2) = S(NatNum(cf1))
+     NatNum(cf3) = S(NatNum(cf2))
+     NatNum(cf4) = S(NatNum(cf3))
+     eq(x,y)=eq(NatNum(x),NatNum(y))
+     ne(x,y)=ne(NatNum(x),NatNum(y))
+     lt(x,y)=lt(NatNum(x),NatNum(y))
+
+sort UDPAddress
+func udp1, udp2, udp3, udp4 : -> UDPAddress
+map  NatNum:UDPAddress->Nat
+     eq,ne,lt: UDPAddress # UDPAddress -> Bool
+var  x,y : UDPAddress
+rew  NatNum(udp1) = 0
+     NatNum(udp2) = S(NatNum(udp1))
+     NatNum(udp3) = S(NatNum(udp2))
+     NatNum(udp4) = S(NatNum(udp3))
+     eq(x,y)=eq(NatNum(x),NatNum(y))
+     ne(x,y)=ne(NatNum(x),NatNum(y))
+     lt(x,y)=lt(NatNum(x),NatNum(y))
+
+sort AddressPairSet
+func emptyset:->AddressPairSet
+     Insert: AddressPair # AddressPairSet -> AddressPairSet
+map  ConfigurationSet : -> AddressPairSet
+     ChooseConfig : AddressPairSet -> AddressPair
+
+rew  ConfigurationSet = Insert(Pair(cf1, udp1),
+                 Insert(Pair(cf2, udp2),
+                 Insert(Pair(cf3, udp3),
+                 Insert(Pair(cf4, udp4), emptyset))))
+var r : AddressPairSet
+    ap:AddressPair
+rew ChooseConfig(Insert( ap, r)) = ap
+
+% sort UDPaddrSet
+map  TestSet : -> UDPaddrSet
+rew     TestSet = Insert(udp1,
+             Insert(udp2,
+             Insert(udp3, noUDPaddr)))
+
+% sort CFPartnerSet (De typering van onderstaande term is onjuist)
+% map  ConferencePartners : -> CFPartnerSet 
+% rew  ConferencePartners = 
+%              Insert(Pair(udp1, A),
+%              Insert(Pair(udp2, B),
+%              Insert(Pair(udp3, C), emptyCPS)))
+
+
+% (***************************************************************************************)
+% (******************* End of Abstract Data Type Part ************************************)
+% (***************************************************************************************)
+
+
+act  UTin_buffer, UTin_LSI, UTin : CFAddress # CFsp
+     Xin_UpperTestContext, Xin_ConferenceProtocol, Xin,tempXin 
+                                : CFAddress # CFsp
+     Yout_LowerTestContext, Yout_ConferenceProtocol,Yout,tempYout 
+                                : UDPAddress # UDPsp
+     Yin_LowerTestContext, Yin_ConferenceProtocol,tempYin,Yin 
+                                : UDPAddress # UDPsp
+     LTin_UDPLC_LT, LTout_UDPLC_LT : UDPAddress # UDPsp
+     udp_in,udp_out : UDPAddress # UDPsp
+     CFSAP_in_UpperLSI, CFSAP_in_ProtocolFunctions,
+     CFSAP_out_UpperLSI, UTout, CFSAP_out_ProtocolFunctions : CFAddress # CFsp
+     LTin_UDPLC_Y , LTin_UDP , LTin : UDPAddress # UDPsp
+     LTout_UDPLC_Y , LTout_UDP , LTout : UDPAddress # UDPsp
+     udp_in_LowerLSI , udp_in_ProtocolFunctions : UDPAddress #UDPsp
+     udp_out_LowerLSI , udp_out_ProtocolFunctions : UDPAddress # UDPsp
+
+comm UTin_buffer | UTin_LSI = UTin
+     Xin_UpperTestContext| Xin_ConferenceProtocol = Xin
+     Yin_LowerTestContext| Yin_ConferenceProtocol = Yin
+     Yout_LowerTestContext| Yout_ConferenceProtocol = Yout
+     CFSAP_in_UpperLSI | CFSAP_in_ProtocolFunctions = Xin_ConferenceProtocol
+     CFSAP_out_UpperLSI | CFSAP_out_ProtocolFunctions = UTout
+     udp_in_LowerLSI | udp_in_ProtocolFunctions = Yin_ConferenceProtocol
+     udp_out_LowerLSI | udp_out_ProtocolFunctions = Yout_ConferenceProtocol
+     udp_out_ProtocolFunctions | Yout_LowerTestContext = tempYout
+     udp_out_LowerLSI | tempYout =Yout
+     udp_in_ProtocolFunctions | Yin_LowerTestContext = tempYin
+     udp_in_LowerLSI | tempYin =Yin
+     CFSAP_in_ProtocolFunctions | Xin_UpperTestContext  = tempXin
+     CFSAP_in_UpperLSI | tempXin = Xin
+     LTin_UDPLC_Y | LTin_UDP = LTin
+     LTout_UDPLC_Y | LTout_UDP = LTout
+
+
+init SystemUnderTest    %[CFSAP_in, CFSAP_out, udp_in, udp_out]
+
+
+proc SystemUnderTest=       %[UTin, UTout, LTin, LTout]
+  hide({Xin, Yin, Yout},
+   encap({UTin_buffer,UTin_LSI}, 
+    UpperTestContext||               %[UTin, Xin]
+%       |[Xin]|
+        ConferenceProtocolEntity(cf1, udp1)|| %[Xin, UTout, Yin, Yout]
+%       |[Yin, Yout]|
+        LowerTestContext      %[Yin, Yout, LTin, LTout]
+   ))
+
+
+proc ConferenceProtocolEntity     %[CFSAP_in, CFSAP_out, udp_in, udp_out]
+            (myCFaddr:CFAddress, myUDPaddr:UDPAddress)=
+  (  UpperLSI(myCFaddr)||         % [CFSAP_in, CFSAP_out]
+     %|||
+     LowerLSI(myUDPaddr) )        %[udp_in, udp_out]
+     ||
+     ProtocolFunctions            % [CFSAP_in, CFSAP_out, udp_in, udp_out]
+        (emptyLOQ, emptyUOQ, emptyCPS, noUt, noCi, myCFaddr, myUDPaddr)
+
+ 
+proc UpperLSI(myCFaddr:CFAddress)=    % [CFSAP_in, CFSAP_out]
+     sum(addr:CFAddress,sum( sp:CFsp,    
+        CFSAP_in_UpperLSI(addr,sp).NextUpperLSI(myCFaddr)   %[CFSAP_in, CFSAP_out]
+              <|and(IsJoin(sp),eq(myCFaddr,addr))|>delta))
+ 
+proc NextUpperLSI(myCFaddr:CFAddress)=         %[CFSAP_in, CFSAP_out]
+     sum(addr:CFAddress,sum(sp:CFsp,
+       CFSAP_in_UpperLSI(addr,sp).NextUpperLSI(myCFaddr)
+                  <|and(IsDataReq(sp),eq(myCFaddr,addr))|>delta))+
+     sum(addr:CFAddress,sum(sp:CFsp,
+       CFSAP_out_UpperLSI(addr,sp).NextUpperLSI(myCFaddr)
+                  <|and(IsDataInd(sp),eq(myCFaddr,addr))|>delta))+
+     sum(addr:CFAddress,sum(sp:CFsp,
+       CFSAP_in_UpperLSI(addr,sp)<|and(IsLeave(sp),eq(myCFaddr,addr))|>delta)).
+      sum(addr:CFAddress,sum(sp:CFsp,        
+        CFSAP_in_UpperLSI(addr,sp).NextUpperLSI(myCFaddr)
+            <|and(IsJoin(sp),eq(myCFaddr,addr))|>delta)) 
+
+
+proc LowerLSI (myUDPaddr:UDPAddress)=         %[udp_in, udp_out]
+     sum(addr:UDPAddress,sum(sp:UDPsp,
+       udp_in_LowerLSI(addr,sp).LowerLSI(myUDPaddr)
+            <|and(IsDataInd(sp),eq(myUDPaddr,addr))|>delta))+
+     sum(addr:UDPAddress,sum(sp:UDPsp,
+       udp_out_LowerLSI(addr,sp).LowerLSI(myUDPaddr)
+            <|and(IsDataReq(sp),eq(myUDPaddr,addr))|>delta)) 
+
+
+proc ProtocolFunctions(Qyo:LOQ, Qxo:UOQ, CPs:CFPartnerSet, myUt:UserTitleOpt,
+                myCi:ConfIdentOpt, myCFaddr:CFAddress, myUDPaddr:UDPAddress)=
+     sum(addr:CFAddress,sum(sp:CFsp,
+       (CFSAP_in_ProtocolFunctions(addr,sp)<|and(eq(addr,myCFaddr),not(IsDataInd(sp)))|>delta).
+         ( (ProtocolFunctions(add(Pair(MakeRemoteAddrSet2(myUDPaddr, ConfigurationSet),
+                   PDU_J(UtOf(sp), CiOf(sp))), Qyo),Qxo, CPs, yesUt(UtOf(sp)), 
+                       yesCi(CiOf(sp)), myCFaddr, myUDPaddr)<|IsJoin(sp)|> delta
+           )+ 
+           ( ProtocolFunctions(add(Pair(MakeRemoteAddrSet2(myUDPaddr, ConfigurationSet),
+                        PDU_J(UtOf(sp), CiOf(sp))), Qyo), Qxo, emptyCPS, noUt, noCi, myCFaddr,
+                   myUDPaddr)<|IsLeave(sp)|>delta
+           ) +
+           ( ProtocolFunctions(add(Pair(MakeRemoteAddrSet(CPs), PDU_D(l, MsgOf(sp))), Qyo), 
+               Qxo, CPs, myUt, myCi, myCFaddr, myUDPaddr)<|IsDataReq(sp)|>delta 
+           ) 
+         ))) +
+
+
+     sum(addr:UDPAddress,sum(sp:UDPsp,
+        (udp_in_ProtocolFunctions(addr,sp)<| and(IsDataInd(sp),eq(addr,myUDPaddr))|>delta).
+     ( ProtocolFunctions(Qyo, Qxo, CPs, myUt, myCi, myCFaddr, myUDPaddr)<|eq(myCi,noCi)|>delta + 
+        (
+          ( ProtocolFunctions(add(Pair(Insert(SrcOf(sp), noUDPaddr), PDU_A(UtOf(myUt),
+                      CiOf(myCi))), Qyo), Qxo, CPs, myUt, myCi, myCFaddr, myUDPaddr)
+           <|IsUDPaddrIn(SrcOf(sp),CPs)|>
+             ProtocolFunctions(add(Pair(Insert(SrcOf(sp), noUDPaddr), PDU_A(UtOf(myUt),
+                  CiOf(myCi))), Qyo), Qxo, Insert(Pair(SrcOf(sp), UtOf(PduOf(sp))), CPs), 
+                      myUt, myCi, myCFaddr, myUDPaddr)
+          )
+         <|eq(CiOf(PduOf(sp)),CiOf(myCi))|>
+           ProtocolFunctions(Qyo, Qxo, CPs, myUt, myCi, myCFaddr, myUDPaddr)
+        ) <|and(eq(TypeOf(PduOf(sp)),J),ne(myCi,noCi))|>delta + 
+
+        (ProtocolFunctions(Qyo, Qxo, RemovePartnerByUDPaddr(SrcOf(sp), CPs), 
+                         myUt, myCi, myCFaddr, myUDPaddr)
+         <|eq(CiOf(PduOf(sp)),CiOf(myCi))|>
+             ProtocolFunctions(Qyo, Qxo, CPs, myUt, myCi, myCFaddr, myUDPaddr)
+           )
+        <|and(eq(TypeOf(PduOf(sp)),L),ne(myCi,noCi))|>delta+
+
+        (
+          (  ProtocolFunctions(Qyo, Qxo, CPs, myUt, myCi, myCFaddr, myUDPaddr)
+            <|IsUDPaddrIn(SrcOf(sp),CPs)|>
+             ProtocolFunctions(Qyo, Qxo, Insert(Pair(SrcOf(sp), UtOf(PduOf(sp))), CPs), 
+                      myUt, myCi, myCFaddr, myUDPaddr)
+          )
+         <|eq(CiOf(PduOf(sp)),CiOf(myCi))|>
+             ProtocolFunctions(Qyo, Qxo, CPs, myUt, myCi, myCFaddr, myUDPaddr)
+         ) <|and(eq(TypeOf(PduOf(sp)),A),ne(myCi,noCi))|>delta+
+         ( sum(p:CFPartner, %receive from a conference partner 
+              ProtocolFunctions(Qyo, add(dataind(UtOf(p), DataFieldOf(PduOf(sp))), Qxo), 
+                  CPs, myUt, myCi, myCFaddr, myUDPaddr)
+                      <|and(IsIn(p,CPs),eq(AddrOf(p),SrcOf(sp)))|>delta
+           )
+         <|IsUDPaddrIn(SrcOf(sp),CPs)|>
+           ProtocolFunctions(add(Pair(Insert(SrcOf(sp), noUDPaddr), PDU_J(UtOf(myUt),
+                 CiOf(myCi))), Qyo), Qxo, CPs, myUt, myCi, myCFaddr, myUDPaddr)
+          )  <|and(eq(TypeOf(PduOf(sp)),D),ne(myCi,noCi))|>delta
+       ) )) +
+
+         CFSAP_out_ProtocolFunctions(myCFaddr, last(Qxo)).
+             ProtocolFunctions(Qyo,  inita(Qxo), CPs, myUt, myCi, myCFaddr, myUDPaddr)
+                <| NotEmpty(Qxo) |> delta+
+         sum(dest:UDPAddress,
+               udp_out_ProtocolFunctions(myUDPaddr,udp_datareq(dest,  PduOf(last(Qyo)))).
+                  ( ProtocolFunctions(inita(Qyo), Qxo, CPs, myUt, myCi, myCFaddr, myUDPaddr)
+                   <|IsEmpty(Remove(dest, AddrSetOf(last(Qyo))))|>
+                    ProtocolFunctions(dda(Pair(Remove(dest, AddrSetOf(last(Qyo))),
+                      PduOf(last(Qyo))), inita(Qyo)), Qxo, CPs, myUt, myCi, myCFaddr, myUDPaddr)
+                  )
+            <|and(IsIn(dest,AddrSetOf(last(Qyo))),NotEmpty(Qyo))|>delta)
+
+
+proc LowerTestContext=
+     (UDPLC_Y(udp1)||UDPLC_LT(udp2, udp1)||UDPLC_LT(udp3, udp1)||UDPLC_LT(udp4, udp1)) ||
+     (UDP(udp1, emptyUDPspQ)||UDP(udp2, emptyUDPspQ)||UDP(udp3, emptyUDPspQ)||UDP(udp4, emptyUDPspQ))
+
+proc UDP(dest_addr:UDPAddress, q:UDPspQ)=
+     sum(sp:UDPsp,
+       Yout_LowerTestContext(udp1,sp).
+          UDP(dest_addr, add(udp_dataind(udp1, PduOf(sp)), q))
+             <|and(IsDataReq(sp),and(eq(DestOf(sp),dest_addr),ne(udp1,dest_addr)))|>delta)+
+      sum(addr:UDPAddress,sum(sp:UDPsp,
+        LTin_UDP(addr,sp).   
+          UDP(dest_addr, add(udp_dataind(addr, PduOf(sp)), q))
+            <|and(IsDataReq(sp),and(eq(DestOf(sp),dest_addr),
+                  and(eq(udp1,dest_addr), ne(addr,udp1))))|>delta))+
+        Yin_LowerTestContext(dest_addr,last(q)).
+          UDP(dest_addr, inita(q))
+            <|and(NotEmpty(q),eq(dest_addr,udp1))|>delta +
+        LTout_UDP(dest_addr,last(q)).
+          UDP(dest_addr, inita(q))
+            <|and(NotEmpty(q),ne(dest_addr,udp1))|>delta
+
+proc UDPLC_LT(an_addr:UDPAddress, dest_addr:UDPAddress)=
+     sum(addr:UDPAddress,sum(sp:UDPsp,
+       LTin_UDPLC_LT(addr,sp).UDPLC_LT(an_addr, dest_addr)
+          <|and(IsDataReq(sp),and(eq(addr,an_addr),eq(DestOf(sp),dest_addr)))|>delta))+
+     sum(addr:UDPAddress,sum(sp:UDPsp,
+       LTout_UDPLC_LT(addr,sp).UDPLC_LT(an_addr, dest_addr)
+          <|and(IsDataInd(sp),and(eq(addr,an_addr),eq(SrcOf(sp),dest_addr)))|>delta))
+
+proc UDPLC_Y(an_addr:UDPAddress)=
+     sum(addr:UDPAddress,sum(sp:UDPsp,
+       Yout_LowerTestContext(addr,sp).UDPLC_Y(an_addr)
+          <|and(IsDataReq(sp),eq(addr,an_addr))|>delta))+
+     sum(addr:UDPAddress,sum(sp:UDPsp,
+       Yin_LowerTestContext(addr,sp).UDPLC_Y(an_addr)
+          <|and(IsDataInd(sp),eq(addr,an_addr))|>delta))
+
+proc UpperTestContext=       %[UTin, Xin]
+       InputUpperLSI(cf1)|| Buffer(cf1, emptyUOQ)
+
+proc Buffer(my_addr:CFAddress, q:UOQ)=
+      sum(sp:CFsp,UTin_buffer(my_addr,sp).Buffer(my_addr, add(sp, q))
+            <|or(IsJoin(sp),or(IsLeave(sp),IsDataReq(sp)))|>delta) +
+      Xin_UpperTestContext(my_addr,last(q)).Buffer(my_addr, inita(q))
+                <|NotEmpty(q)|>delta
+
+proc InputUpperLSI(myCFaddr:CFAddress)=
+       sum(addr:CFAddress,sum(sp:CFsp,
+         UTin_LSI(addr,sp).NextInputUpperLSI(myCFaddr)
+            <|and(IsJoin(sp),eq(myCFaddr,addr))|>delta))
+
+proc NextInputUpperLSI(myCFaddr:CFAddress)=
+   sum(addr:CFAddress,sum(sp:CFsp,
+        UTin(addr,sp).NextInputUpperLSI(myCFaddr)
+              <|and(IsDataReq(sp),eq(myCFaddr,addr))|>delta)) +
+   sum(addr:CFAddress,sum(sp:CFsp,
+        UTin(addr,sp)<|and(IsLeave(sp),eq(myCFaddr,addr))|>delta)).
+          sum(addr:CFAddress,sum(sp:CFsp,
+             UTin(addr,sp)<|and(IsJoin(sp),eq(myCFaddr,addr))|>delta)). 
+                  NextInputUpperLSI(myCFaddr)

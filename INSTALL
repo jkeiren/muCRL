@@ -1,0 +1,77 @@
+$Id: INSTALL,v 1.2 2004/11/23 12:36:17 uid523 Exp $
+
+The software is distributed under a license agreement in
+the file LICENSE. This licence enforces proper acknowledgement
+of the authors of the software, and excludes any liability or 
+obligation of any kind. The software may only be installed and
+used under this license.
+
+0 Distribution is made for SunOs, Linux, and Darwin. 
+    Verify that your system contains the following software.
+    tcl (7.4 or higher)
+    tk (4.0 or higher)
+  If not and you want use the simulator, 
+  then install those packages first.
+  
+  Verify that the variable OPENWINHOME is defined on a sun.
+
+1 Go to the top directory.
+
+2 Enter the command './configure [ --prefix "install dir" ]'
+   "install dir" is the directory on which you want to install the
+    toolset. The sub directories are lib, bin, include, and share. 
+    The default "install dir" is the home directory if the $USER is not
+    equal to root, /usr/local otherwise .
+    Default  will be used the aterm library version 2.3, which is part of this 
+    distribution. Alternatively a seperate aterm library can be used
+    by entering the command
+      './configure --with-aterm=<parent directory of "lib" and "include">'
+    
+    There is assumed that the tcl/tk libraries are found in the subdirectory
+    "lib" of the parent of the directory in which "wish" is located,
+    the include files belonging to these libraries are expected to be found in
+    the subdirectory "include" which is a neighbour of "lib".
+    If this is not the case then enter the command:
+    './configure [ --prefix "install dir" ] --with-tcldir="tcldir"
+	--with-tkdir="tkdir"'
+    where "tcldir" and "tkdir" are the directories where respectively
+    tcl and tk are installed.
+    
+    If you want the cc compiler instead of gcc, then use the flag:
+    --enable-cc at the call of ./configure.
+
+3 Then type "make install" on  Linux OS or Darwin,  
+  or "gmake install" otherwise.
+
+4 The subdirectories are cleaned by entering the command "make clean".
+  "make uninstall" uninstalls the package.
+  
+5 Tutorials about the mcrl toolset can be found in  ${prefix}/share/doc
+
+6 You can define the following variables in a file named "config.site":
+    CFLAGS, LDFLAGS, DYNFLAGS (extra load flags needed for the rewriter),
+    prefix (the place of "install dir"), TCLDIR, and TKDIR
+    (the places of respectively tcl directory and tk directory)
+    Don't forget to assign to the shell variable CONFIG_SITE
+    the path to config.site. 
+
+7 Complete information about the flag of ./configure can be obtained by
+    ./configure --help
+
+8 A test run can be started by entering "make test" in the top_directory.
+
+9 If you want to use the simulators (msim) with the ability to display control 
+  flow graphs, jsim or you want to to display flow control graphs by the 
+  command "stategraph -stateview" then java.1.4, and dot must be 
+  installed.
+  A link to java: java.sun.com, and
+  a link to dot: www.research.att.com/sw/tools/graphviz
+
+  In the variable PATH must be included a reference to the location of the 
+  program "dot".
+
+  After this: again run "./configure". You will get the message 
+    "Java and grappa are found"
+  and run "make install" thereafter.
+
+

@@ -1,0 +1,30 @@
+----------------------------------------------------------------
+doc:
+----------------------------------------------------------------
+This directory includes three files with documentation:
+- The examplation of the theory.
+- A introduction to the tool, the usage of the applications and some commented examples.
+- An abstraction pattern for the parallel composition of similar processes.
+
+----------------------------------------------------------------
+examples: 
+----------------------------------------------------------------
+This directory includes three different applications with the scripts to run them. Information about the examples can be found in the documentation.
+
+---------------------------------------------------------------- 
+src:
+----------------------------------------------------------------
+This directory includes the source files.
+
+---------------------------------------------------------------- 
+extra:
+----------------------------------------------------------------
+Nothing yet. 
+
+---------------------------------------------------------------- 
+---------------------------------------------------------------- 
+For bugs, suggestions, support... contact:
+Miguel Valero Espada
+miguel@cwi.nl
+----------------------------------------------------------------
+---------------------------------------------------------------- 

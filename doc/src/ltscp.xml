@@ -1,0 +1,84 @@
+<refentry id="ltscp">
+<refmeta>
+<refentrytitle>ltscp</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>ltscp</refname>
+<refpurpose>Copies labeled transition systems</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>ltscp</command> 
+<arg><option>-bfs</option></arg>
+<arg><option>-sort</option></arg>
+<arg><option>-postsort</option></arg>
+<arg><option>-segments</option> <replaceable>N</replaceable></arg>
+<arg choice="plain"><option><filename><replaceable>input.ext1</replaceable>
+</filename>
+</option></arg>
+<arg choice="plain"><option><filename><replaceable>output.ext2</replaceable>
+</filename>
+</option></arg>
+</cmdsynopsis>
+&ext1;
+&ext2;
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+Copies a labeled transition system from 
+<filename><replaceable>input.</replaceable>ext1</filename> to
+<filename><replaceable>output.</replaceable>ext2</filename>. 
+The format of output
+is determined by the extension of the file name.
+Allowed extensions are:
+&ext3;
+</para>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+<varlistentry><term><option>-bfs</option></term>
+<listitem>
+<para>
+Reorder the lts into bfs exploration order
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><option>-sort</option></term>
+<listitem>
+<para>
+Sort the transitions per state
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><option>-postsort</option></term>
+<listitem>
+<para>
+Sort the transitions per state before writing
+</para>
+</listitem>
+
+</varlistentry>
+<varlistentry><term><option>-segments</option> 
+<replaceable>N</replaceable>
+</term>
+<listitem>
+<para>
+Write output in <literal> .dir </literal> format 
+with <replaceable> N </replaceable> segments.
+Has no influence if output  is not in  
+<literal> .dir </literal> format.
+</para>
+</listitem>
+</varlistentry>
+
+</variablelist>
+</refsect1>
+&ltscp.xml;
+</refentry>

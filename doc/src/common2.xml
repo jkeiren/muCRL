@@ -1,0 +1,23 @@
+<varlistentry>
+  <term><option>-help</option></term>
+  <listitem>
+    <para>
+    Display help information
+    </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-help-all</option></term>
+  <listitem>
+    <para>
+    Display all help information
+    </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-version</option></term>
+  <listitem>
+    <para>
+    Get the version number of this release
+    </para></listitem>
+</varlistentry>

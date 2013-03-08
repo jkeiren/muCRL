@@ -1,0 +1,118 @@
+#  SVC -- the SVC (Systems Validation Centre) file format library
+#
+#  Copyright (C) 2000  Stichting Mathematisch Centrum, Amsterdam,
+#                      The  Netherlands
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU Lesser General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+# $Id: Makefile.in,v 1.6 2008/02/04 14:52:49 bertl Exp $
+
+.SUFFIXES:  .c .o
+
+top_srcdir      = @top_srcdir@
+SHELL     = /bin/sh
+ARCH      = @host_cpu@
+VERSION   = 1.1
+DATE      = `date +%d/%m/%Y`
+RM	  = @RM@
+CC        = @CC@ 
+AR        = ar
+LD        = @CC@
+INSTALL     = @INSTALL@
+INSTALL_PRG = @INSTALL_PROGRAM@
+INSTALL_DAT = @INSTALL_DATA@
+CFLAGS    = @CFLAGS@ 
+CPPFLAGS  = -I. @CPPFLAGS@
+DEFS      = -DVERSION="\"$(VERSION)"\" -DDATE="\"$(DATE)"\"
+LIBS      = @LIBS@
+LDFLAGS   = 
+ARFLAGS   = crs
+
+prefix          = @prefix@
+srcdir          = @srcdir@
+exec_prefix     = @exec_prefix@
+datarootdir 	= @datarootdir@
+includedir      = @includedir@
+mandir          = @mandir@
+libdir          = @libdir@
+libexecdir      = @libexecdir@
+
+
+SVCLIBOBJ   = hashtable.o\
+              ptable.o\
+              svc1.o\
+              svc2.o\
+              lz.o\
+              code.o\
+              blocklist.o\
+              compress.o\
+              huffman.o
+SVCLIBNAME  = libsvc.a
+DIST_COMMON = Makefile.in
+SOURCES     = blocklist.c code.c compress.c hashtable.c huffman.c lz.c ptable.c svc1.c svc2.c 
+HEADERS     = blocklist.h code.h compress.h hashtable.h huffman.h lz.h ptable.h svc1.h svc.h svcerrno.h
+DISTFILES   = $(DIST_COMMON) $(SOURCES) $(HEADERS)
+LIBSVC      = @libdir@/$(SVCLIBNAME)
+INCLUDESVC  = @includedir@/blocklist.h @includedir@/code.h @includedir@/compress.h @includedir@/hashtable.h @includedir@/huffman.h @includedir@/lz.h @includedir@/ptable.h @includedir@/svc1.h @includedir@/svc.h @includedir@/svcerrno.h
+
+
+
+
+all: $(SVCLIBNAME)
+
+install: install-lib install-headers
+
+install-lib: ALWAYS
+	$(MAKE) $(SVCLIBNAME)
+	$(INSTALL) -d $(libdir)
+	$(INSTALL_DAT) $(SVCLIBNAME) $(libdir)
+
+install-headers: ALWAYS
+	$(INSTALL) -d $(includedir)
+	@for header in $(HEADERS); do\
+           $(INSTALL_DAT) $$header $(includedir);\
+        done;
+
+ALWAYS:
+
+uninstall: ALWAYS
+	if test -d $(libdir); then \
+	(cd $(libdir); $(RM) $(SVCLIBNAME)) ;\
+	fi
+	if test -d $(includedir); then \
+	(cd $(includedir); $(RM) $(HEADERS)) ;\
+	fi
+
+$(SVCLIBNAME): $(SVCLIBOBJ)
+	$(AR) $(ARFLAGS) $@ $?
+
+distdir: $(DISTFILES)
+	@for file in $(DISTFILES); do  \
+           cp $$file $(distdir);\
+        done;
+
+clean:
+	$(RM) $(SVCLIBOBJ) core core.*  $(SVCLIBNAME)
+
+hashtable.o: Makefile
+ptable.o: Makefile
+svc1.o: svc1.h Makefile 
+svc2.o: svc.h hashtable.h Makefile
+lz.o: lz.h Makefile 
+code.o: code.h Makefile 
+blocklist.o: Makefile
+compress.o: compress.h Makefile
+huffman.o: huffman.h  Makefile
+

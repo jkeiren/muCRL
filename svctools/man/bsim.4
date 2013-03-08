@@ -1,0 +1,68 @@
+.\"  SVC tools -- the SVC (Systems Validation Centre) tool set
+.\"
+.\"  Copyright (C) 2000  Stichting Mathematisch Centrum, Amsterdam,
+.\"                      The  Netherlands
+.\"
+.\"  This program is free software; you can redistribute it and/or
+.\"  modify it under the terms of the GNU General Public License
+.\"  as published by the Free Software Foundation; either version 2
+.\"  of the License, or (at your option) any later version.
+.\"
+.\"  This program is distributed in the hope that it will be useful,
+.\"  but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"  GNU General Public License for more details.
+.\"
+.\"  You should have received a copy of the GNU General Public License
+.\"  along with this program; if not, write to the Free Software
+.\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+.\"
+.\" $Id: bsim.4,v 1.5 2001/06/14 09:36:16 bertl Exp $
+.TH BSIM 1 20/11/2000
+.SH NAME
+bsim \- reduction of a file in SVC format or
+comparison of two files in SVC format.
+
+.SH SYNOPSIS
+.B bsim
+[-b][-c][-v][-s][-h][-O][-o 
+.I 
+outfile\c
+] 
+.I 
+infile [infile2]
+
+.SH DESCRIPTION
+.B bsim
+is a tool which reduces or compares files in SVC format (.svc) with respect to
+strong or branching bisimilarity. If only \fIinfile\fR is given, then reduction modulo strong
+bisimilarity equivalence will be performed, and comparison of \fIinfile\fR with 
+\fIinfile2\fR otherwise.
+
+.SH OPTIONS 
+.IP \-b
+Reduction (comparison) modulo branching bisimilarity equivalence will be 
+performed
+.IP \-c
+Don't overwrite existing files
+.IP \-v
+Print version number
+.IP \-h
+List available options
+.IP \-o\ \fIoutfile\fR
+Write the output to \fIoutfile\fR. The default is 
+.I infile.red.svc
+.IP \-s
+Silent operation: don't print the header information from the input file
+
+.SH FILES
+.IP infile.svc
+A file in SVC format
+
+.IP infile2.svc
+A second file in SVC format, in case of comparing.
+
+.SH AUTHOR
+Bert Lisser <bertl@cwi.nl>
+.LP
+Please send all complaints, comments and bug fixes to me. 

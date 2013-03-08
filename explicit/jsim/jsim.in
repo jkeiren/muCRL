@@ -1,0 +1,28 @@
+#!/bin/sh
+#$Id: jsim.in,v 1.5 2007/11/07 09:48:26 bertl Exp $
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+datarootdir=@datarootdir@
+javadir=@javadir@
+if test -f ./jsim.in 
+then
+   SERVER=../src/server
+   CLASSPATH=./jsim.jar:./jlfgr-1_0.jar
+   export CLASSPATH
+else
+   SERVER=@libexecdir@/server
+   CLASSPATH=${javadir}/jsim.jar:${javadir}/jlfgr-1_0.jar
+   export CLASSPATH
+fi
+test "@CAESAR@" && bcg="true";
+test "@SVC@" && svc="true";
+if test @cygwin@ = yes;
+then
+	SERVER=`cygpath -wp $SERVER`
+	CLASSPATH=`cygpath -wp $CLASSPATH`
+fi
+@JAVA@ -Dserver=$SERVER -Drandom=${RANDOM:-1953} \
+-Dversion=@VERSION@ \
+-Daut=${aut:-"false"}  -Dsvc=${svc:-"false"}  -Dbcg=${bcg:-"false"} \
+-Dswing.aatext=true \
+jsim.Main  $*

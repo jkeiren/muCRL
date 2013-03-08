@@ -1,0 +1,84 @@
+#$Id: Makefile.in,v 1.5 2007/11/22 12:39:46 bertl Exp $
+
+SHELL           = /bin/sh
+.SUFFIXES:      .c .o
+
+ARCH 	=	@ARCH@
+
+srcdir		= @srcdir@
+top_srcdir	= @top_srcdir@
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+datarootdir 	= @datarootdir@
+bindir		= @bindir@
+libdir		= @libdir@
+includedir	= @includedir@
+datadir		= @datadir@
+distdir		= @distdir@
+libexecdir	= @libexecdir@
+docdir		= @docdir@
+htmldir		= @htmldir@
+
+
+CC		= @CC@
+RM		= @RM@
+CFLAGS		= @CFLAGS@
+CPPFLAGS	= @CPPFLAGS@
+DEFS		= $(LDDEFS) @DEFS@
+LIBS            = -lrw -L. @LIBS@
+TCLLIBS         = @TCLLIBS@
+X_CFLAGS        = @X_CFLAGS@
+XMLTO		= @XMLTO@
+INSTALL         = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA    = @INSTALL_DATA@
+
+SUBDIR		= doc/src
+SOURCES		= MCparseModalFormula.xml abp.xml binary.xml common1.xml \
+		  common2.xml confcheck.xml constelm.xml decluster.xml \
+		  dmp2dir.xml ext.xml ext1.xml ext2.xml ext3.xml finish.xml \
+		  finish1.xml finish2.xml index.xml instantiator.xml \
+		  instantiators.xml invcheck.xml invelm.xml \
+		  libmcrl.xml librw.xml libstep.xml lts2dot.xml ltscmp.xml \
+		  ltscp.xml ltsmin.xml mcrl.xml msim.xml mucalculus.xml \
+		  param.xml parelm.xml pp.xml reachelm.xml renaming.xml \
+		  rewr.xml stategraph.xml structelm.xml sumelm.xml tbfinfo.xml \
+		  tbfupdate.xml
+
+
+DISTFILES       = $(SOURCES) Makefile.in times
+
+all:		index.html
+
+index.html:	$(SOURCES)
+		@if test "$(XMLTO)"; then \
+		    ./times; \
+		    XML_CATALOG_FILES="file:///`pwd`/catalog.xml file:///etc/xml/catalog"; \
+ 		    $(XMLTO) xhtml index.xml; \
+		else \
+                  echo "xmlto is not available"; \
+		fi
+		  
+install:
+		@if test -f index.html; then\
+		$(INSTALL) -d $(htmldir); \
+		for file in *.html; do \
+		    $(INSTALL_DATA) $$file $(htmldir); \
+		done \
+		fi
+
+
+uninstall:
+		if test -d $(htmldir); then \
+		(cd $(htmldir); $(RM) *.html) ;\
+		fi
+
+clean:
+		@if test -f index.html; then \
+	        		$(RM) *.html; \
+		fi
+		
+
+dist:		
+		mkdir $(distdir)/$(SUBDIR)
+		cp $(DISTFILES) *.html catalog.xml dates.xml $(distdir)/$(SUBDIR)

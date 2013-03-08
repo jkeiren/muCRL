@@ -1,0 +1,245 @@
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.2//EN" [
+<!ENTITY mcrl        '<acronym>mCRL</acronym>'>
+<!ENTITY aterm       '<acronym>ATerm</acronym>'>
+<!ENTITY cwi         '<acronym>CWI</acronym>'>
+<!ENTITY refmcparsemodalformula '<literal>MCparseModalFormula(3)</literal>'>
+<!ENTITY sbool       '<literal>"Bool"</literal>'>
+<!ENTITY qtpercent   '<literal>"%"</literal>'>
+<!ENTITY qtparopen   '<literal>"("</literal>'>
+<!ENTITY qtparclose  '<literal>")"</literal>'>
+<!ENTITY qtbropen    '<literal>"["</literal>'>
+<!ENTITY qtbrclose   '<literal>"]"</literal>'>
+<!ENTITY qtangopen   '<literal>"<"</literal>'>
+<!ENTITY qtangclose  '<literal>">"</literal>'>
+<!ENTITY qtcomma     '<literal>","</literal>'>
+<!ENTITY qtsemicolon '<literal>";"</literal>'>
+<!ENTITY qtis        '<literal>"="</literal>'>
+<!ENTITY qtnot       '<literal>"!"</literal>'>
+<!ENTITY qtand       '<literal>"&&"</literal>'>
+<!ENTITY qtor        '<literal>"||"</literal>'>
+<!ENTITY qtimp       '<literal>"=>"</literal>'>
+<!ENTITY qteq        '<literal>"=="</literal>'>
+<!ENTITY qtdot       '<literal>"."</literal>'>
+<!ENTITY qtpipe      '<literal>"|"</literal>'>
+<!ENTITY qtstar      '<literal>"*"</literal>'>
+<!ENTITY qtplus      '<literal>"+"</literal>'>
+<!ENTITY qtat        '<literal>"@"</literal>'>
+<!ENTITY qttrue      '<literal>"T"</literal>'>
+<!ENTITY qtfalse     '<literal>"F"</literal>'>
+<!ENTITY qtforall    '<literal>"forall"</literal>'>
+<!ENTITY qtexists    '<literal>"exists"</literal>'>
+<!ENTITY qtnil       '<literal>"nil"</literal>'>
+<!ENTITY qtmu        '<literal>"mu"</literal>'>
+<!ENTITY qtnu        '<literal>"nu"</literal>'>
+<!ENTITY nname       '<literal>NAME</literal>'>
+<!ENTITY nrname      '<literal>RNAME</literal>'>
+<!ENTITY nan         '<literal>AN</literal>'>
+<!ENTITY nform       '<literal>FORM</literal>'>
+<!ENTITY ndt         '<literal>DT</literal>'>
+<!ENTITY ndtlist     '<literal>DT_LIST</literal>'>
+<!ENTITY nvd         '<literal>VD</literal>'>
+<!ENTITY nvdi        '<literal>VDI</literal>'>
+<!ENTITY nvdilist    '<literal>VDI_LIST</literal>'>
+<!ENTITY nfpvd       '<literal>FP_VD</literal>'>
+<!ENTITY nfpvo       '<literal>FP_VO</literal>'>
+<!ENTITY naf         '<literal>AF</literal>'>
+<!ENTITY nrf         '<literal>RF</literal>'>
+<!ENTITY nmf         '<literal>MF</literal>'>
+]>
+
+<refentry id="mucalculus">
+
+<refmeta>
+<refentrytitle>mucalculus</refentrytitle>
+<manvolnum>7</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>mucalculus</refname>
+<refpurpose>syntax and semantics for the first-order modal mu-calculus extended with data-depended processes and regular formulas.</refpurpose>
+</refnamediv>
+  
+<refsect1>
+<title>Description</title>
+<para>
+We describe the syntax and partly the semantics of the contents of extended mu-calculus formula files. Such a file has to contain exactly one modal formula, which itself consists of modal formulas, regular formulas and action formulas.
+</para>
+
+<refsect2>
+<title>Preliminaries</title>
+<para>
+In formula files, text starting with the symbol &qtpercent; until the end of the line character is considered to be comment. Further we need the following elements to describe action formulas, regular formulas and modal formulas:
+</para>
+<screen>
+    AN        ::=  RNAME | RNAME "(" DT_LIST ")"
+    FORM      ::=  RNAME | RNAME "(" DT_LIST ")"
+    DT        ::=  NAME  | NAME "(" DT_LIST ")"
+    DT_LIST   ::=  DT    | DT_LIST "," DT
+    VD        ::=  RNAME ":" RNAME
+    VDI       ::=  VD "=" DT
+    VDI_LIST  ::=  VDI   | VDI_LIST "," VDI
+    FP_VD     ::=  RNAME | RNAME "(" VDI_LIST ")"
+    FP_VO     ::=  RNAME | RNAME "(" DT_LIST ")"
+</screen>
+<para>
+Here &nname; and &nrname; both denote &mcrl; names, &nan; represents &mcrl; action names, &nform; represents &mcrl; formulas, &ndt; &mcrl; data terms, &ndtlist; lists of data terms, &nvd; &mcrl; variable declarations, &nvdi; variable declarations with initialisations, &nvdilist; lists of variable declarations with initialisations, &nfpvd; fixed point variable declarations and &nfpvo; fixed point variable occurrences. In order to avoid ambiguity and to increase readability in action names, formulas, variable declarations and fixed point variables, an &nrname; is restricted such that the mu-calculus keywords &qttrue;, &qtfalse;, &qtforall;, &qtexists;, &qtnil;, &qtmu; and &qtnu; are not allowed. Also names occurring in actions, formulas and data terms have to be declared and well-typed, formulas should be of type &sbool; and the right part of a variable declaration should be a declared sort. Finally every occurrence of a fixed point variable should be in the scope of a corresponding declaration, i.e. the declaration and the occurrence should have the same name and the same number of parameters, where each parameter is of the same type.
+</para>
+
+<refsect2>
+<title>Action formulas</title>
+<para>
+Action formulas are denoted by the non-terminal &naf; that has the following definition:
+</para>
+<screen>
+    AF  ::=  AN  |  "(" AF ")"  |  "T"  |  "F"  |  "!" AF  
+          |  AF "&&" AF  |  AF "||" AF  |  AF "=>" AF  |  AF "==" AF  
+          |  "forall" VD "." AF  |  "exists" VD "." AF
+</screen>
+<para>
+Here the symbol &qttrue; stands for true, &qtfalse; for false, &qtnot; for not, &qtand; for and, &qtor; for or, &qtimp; for implication and &qteq; for equivalence. The rules starting with &qtforall; and &qtexists; stand for universal and existential quantification. The binary infix operators are left-associative except for &qtimp;, which is right-associative. The quantifications and &qtnot; have the highest priority, followed by &qtand; and &qtor;, followed by &qtimp;, followed by &qteq;. These priorities can be overruled with the use of parentheses.
+</para>
+
+<refsect2>
+<title>Regular formulas</title>
+<para>
+Regular formulas are denoted by the non-terminal &nrf; that has the following definition:
+</para>
+<screen>
+    RF  ::=  AF  |  "(" RF ")"  |  "nil"  |  RF "." RF  |  RF "|" RF
+          |  RF "*"  |  RF "+"
+</screen>
+<para>
+Here &qtnil; stands for empty, &qtdot; for concatenation, &qtpipe; for choice, &qtstar; for the transitive and reflexive closure, and &qtplus; for the transitive closure. The binary infix operators are left-associative. The unary operators have the highest priority, followed by &qtdot;, followed by &qtpipe;. These priorities can be overruled with the use of parentheses.
+</para>
+
+<refsect2>
+<title>Modal formulas</title>
+<para>
+Modal formulas are denoted by the non-terminal &nmf; that has the following definition:
+</para>
+<screen>
+    MF  ::=  FORM  |  "(" MF ")"  |  "T"  |  "F"  |  "!" MF
+          |  MF "&&" MF  |  MF "||" MF  |  MF "=>" MF  |  MF "==" MF 
+          |  "forall" VD "." MF  |  "exists" VD "." MF 
+          |  "<" RF ">" MF  |  "[" RF "]" MF  |  "@" "(" RF ")"
+          |  "mu" FP_VD "." MF  |  "nu" FP_VD "." MF  |  FP_VO
+</screen>
+<para>
+The symbol &qttrue; stands for true, &qtfalse; for false, &qtnot; for not, &qtand; for and, &qtor; for or, &qtimp; for implication and &qteq; for equivalence. The rules starting with &qtforall; and &qtexists; stand for universal and existential quantification, the rules &qtangopen; &nrf; &qtangclose; &nmf; and &qtbropen; &nrf; &qtbrclose; &nmf; for the may and must operators, the rule &qtat; &qtparopen; &nrf; &qtangclose; for the infinite looping operator and the rules starting with &qtmu; and &qtnu; for the smallest and largest fixed point operators. Recall that &nform; represents an &mcrl; formula, &nvd; an &mcrl; variable declaration, &nfpvd; the declaration of a fixed point variable and &nfpvo; the occurrence of a fixed point variable. The binary infix operators are left-associative except for &qtimp;, which is right-associative. The quantifications, the prefix operators and the may and must operators have the highest priority, followed by &qtand; and &qtor;, followed by &qtimp;, followed by &qteq;. These priorities can be overruled with the use of parentheses.
+</para>
+
+<para>
+The may and must operators and the infinite looping operator have the following meaning. In a state of the state space a formula <literal>&lt;R&gt;phi</literal> is valid if there exists a path starting in this state, that satisfies <literal>R</literal> and leads to a state such that <literal>phi</literal> is valid. In a state of the state space a formula <literal>[R]phi</literal> is valid if all paths starting in this state, satisfying <literal>R</literal>, lead to a state such that <literal>phi</literal> is valid. In a state of the state space <literal>@(R)</literal> holds if there exists a path starting in this state that is an infinite concatenation of sequences that satisfy <literal>R</literal>.
+</para>
+
+<refsect2>
+<title>Remarks</title>
+<para>
+For quantification variables, we have the following variable conventions:
+<orderedlist>
+  <listitem>
+    <para>each occurrence of a variable is bound by the nearest quantification in scope of which the bound variable has the same name and the same number of arguments</para>
+  </listitem>
+  <listitem>
+    <para>variables that are introduced by a fixed point quantification may not conflict, i.e. all names of non-fixed point variables have to be distinct</para>
+  </listitem>  
+</orderedlist>
+</para>
+<para>
+The first variable convention implies that is possible to analyse a modal formula without having a data type specification. The second variable convention prevents for meaningless formulas.
+</para>
+<para>
+Formulas containing fixed point operators should be monotonic. Because &qtnot; is not monotonic, every occurrence of a fixed point variable may only be in the scope of an even number of &qtnot; operations.
+</para>
+</refsect1>
+
+<refsect1>
+<title>Relations between symbols</title>
+<para>
+Besides the well-known relations between symbols of first-order logic, the following relations hold for regular formulas, for fresh variable <literal>X</literal>, <abbrev>i.e.</abbrev> <literal>X</literal> may not occur free in <literal>phi</literal> or <literal>R</literal>:
+</para>
+<screen>
+    &lt;nil&gt;phi   = &lt;F*&gt;phi
+    &lt;R1.R2&gt;phi = &lt;R1&gt;&lt;R2&gt;phi
+    &lt;R1|R2&gt;phi = &lt;R1&gt;phi || &lt;R2&gt;phi
+    &lt;R*&gt;phi    = mu X.(phi || &lt;R&gt;X)
+    &lt;R+&gt;phi    = &lt;R.R*&gt;phi
+    
+    [nil]phi   = [F*]phi
+    [R1.R2]phi = [R1][R2]phi
+    [R1|R2]phi = [R1]phi && [R2]phi
+    [R*]phi    = nu X.(phi && [R]X)
+    [R+]phi    = [R.R*]phi
+</screen>
+<para>
+The following relations hold for the modal operators, where <literal>phi(!X)</literal> represents substitution of <literal>!X</literal> for every free occurrence of <literal>X</literal> in <literal>phi</literal>:
+</para>
+<screen>
+    [R]phi     = !&lt;R&gt;!phi
+    nu X.phi   = !mu X.!phi(!X)
+</screen>  
+<para>
+For infinite looping we have, for fresh <literal>X</literal>:
+<screen>
+    @(R)       = nu X.&lt;R&gt;X
+</screen>
+</para>
+
+<refsect1>
+<title>Examples</title>
+
+<para>
+Freedom of deadlock:
+</para>
+<screen>
+    [T*]&lt;T&gt;T
+</screen>
+
+<para>
+There exists a loop a.b.c:
+</para>
+<screen>
+    &lt;T*&gt;@(a.b.c)
+</screen>
+
+<para>
+Action b may not happen after an action c, unless an action a occurs after this c and before this b:
+</para>
+<screen>
+    [(!c)*.c.((!a && !b)* | a.(!c)*.c)*.b]F
+</screen>
+
+<para>
+The same formula but now b may not occur initially:
+</para>
+<screen>
+    [((!a && !b)* | a.(!c)*.c)*.b]F
+</screen>
+
+<para>
+These formulas are equivalent to the following formulas in which no regular operations, <abbrev>i.e.</abbrev> empty path &qtnil;, concatenation &qtdot;, choice &qtpipe;, transitive reflexive closure &qtstar;, transitive closure &qtplus; and looping &qtat;, occur:
+</para>
+<screen>
+    nu X.(&lt;T&gt;T && [T]X)
+    mu X.(nu Y.(&lt;a&gt;&lt;b&gt;&lt;c&gt;Y) || &lt;T&gt;X)
+    nu X.([c] nu Y.([b]F && (nu Z.(Y && [!a && !b]Z) &&
+      [a] nu Z.([c]Y && [!c]Z))) && [!c]X)
+    nu X.([b]F && (nu Y.(X && [!a && !b]Y) && [a] nu Y.([c]X && [!c]Y)))
+</screen>
+</refsect1>
+
+<refsect1>
+<title>Author</title>
+<para>
+Written by Aad Mathijssen <email>A.H.J.Mathijssen@tue.nl</email>. Please send all complaints, comments and bug fixes to me.
+</para>
+</refsect1>
+
+<refsect1>
+<title>See also</title>
+<para>
+The <acronym>C<acronym> function <function>MCparseModalFormula</function> from the library <emphasis>libmcparse</emphasis> parses a mu-calculus formula and saves it to an &aterm;. More information on this function can be found in &refmcparsemodalformula;. More information on the &aterm; library can be found at the website of the <ulink url="http://www.cwi.nl/htbin/sen1/twiki/bin/view/SEN1/ATermLibrary">&cwi;</ulink>.
+</para>
+</refsect1>
+
+</refentry>

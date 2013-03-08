@@ -1,0 +1,101 @@
+#  SVC tools -- the SVC (Systems Validation Centre) tool set
+#
+#  Copyright (C) 2000  Stichting Mathematisch Centrum, Amsterdam,
+#                      The  Netherlands
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU Lesser General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+# $Id: Makefile.in,v 1.7 2008/02/04 14:52:49 bertl Exp $
+
+.SUFFIXES:  .c .o
+
+top_srcdir      = @top_srcdir@
+SHELL     = /bin/sh
+ARCH      = @host_cpu@
+VERSION   = @VERSION@
+DATE      = `date +%d/%m/%Y`
+RM	  = @RM@
+CC        = @CC@ 
+AR        = ar
+LD        = @CC@
+YACC      = @YACC@
+YFLAGS    = -d
+LEX       = @LEX@
+INSTALL     = @INSTALL@
+INSTALL_PRG = @INSTALL_PROGRAM@
+INSTALL_DAT = @INSTALL_DATA@
+CFLAGS    = @CFLAGS@ -DVERSION="\"$(VERSION)"\" -DDATE="\"$(DATE)"\"
+CPPFLAGS  = -I. -I$(top_srcdir)/svc/src @CPPFLAGS@
+LDLIBS    = @LIBS@ 
+LDFLAGS	  = @LDFLAGS@
+ARFLAGS   = cr
+
+prefix          = @prefix@
+srcdir          = @srcdir@
+exec_prefix     = @exec_prefix@
+datarootdir 	= @datarootdir@
+includedir      = @includedir@
+mandir          = @mandir@
+bindir          = @bindir@
+libexecdir      = @libexecdir@
+
+
+PROGRAMS    = svc2aut svc2dot aut2svc svcinfo svc2txt svcconf bsim svc2fsm
+DIST_COMMON = Makefile.in
+SOURCES     = svc2aut.c svc2dot.c aut2svc.c parser.y scanner.l svc2txt.c svcinfo.c svcconf.c bsim.c bsimkernel.c bsimdata.c svc2fsm.c svc2aut.h svc2dot.h aut2svc.h svc2txt.h svcinfo.h svcconf.h bsim.h y.tab.h scanner.c parser.c
+OBJECTS     = svc2aut.o aut2svc.o parser.o scanner.o svc2txt.o svcinfo.o svcconf.o bsim.o bsimdata.o bsimkernel.o svc2fsm.o svc2dot.o
+DISTFILES   = $(DIST_COMMON) $(SOURCES)
+
+
+all: $(PROGRAMS)
+
+ALWAYS:
+
+install: ALWAYS
+	$(MAKE) all
+	$(INSTALL) -d $(bindir)
+	@for prog in $(PROGRAMS); do  \
+           $(INSTALL_PRG) $$prog $(bindir);\
+        done;
+
+uninstall: ALWAYS	
+	if test -d $(bindir); then \
+	(cd $(bindir); rm -f $(PROGRAMS)) ;\
+	fi
+
+distdir: $(DISTFILES)
+	@for file in $(DISTFILES); do  \
+           cp $$file $(distdir);\
+        done;
+
+clean:
+	$(RM) $(OBJECTS) *.core core $(PROGRAMS)
+
+svc2aut: svc2aut.o
+svcinfo: svcinfo.o
+svc2txt: svc2txt.o
+aut2svc: aut2svc.o parser.o scanner.o
+svcconf: svcconf.o
+svc2fsm: svc2fsm.o
+bsim: bsim.o bsimdata.o bsimkernel.o
+
+svc2aut.o: svc2aut.h Makefile
+svcinfo.o: svcinfo.h Makefile
+svc2txt.o: svc2txt.h Makefile
+aut2svc.o: aut2svc.h parser.c scanner.c Makefile
+svcconf.o: svcconf.h Makefile
+bsim.o bsimkernel.o bsimdata.o: bsim.h  Makefile
+svc2dot.o: Makefile
+svc2fsm.o: Makefile

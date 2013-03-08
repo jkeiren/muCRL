@@ -1,0 +1,29 @@
+/* $Id: between.mcrl,v 1.2 2004/07/02 13:36:32 bertl Exp $ */
+sort Bool
+func T,F :                    -> Bool
+map  not : Bool               -> Bool
+     and : Bool # Bool        -> Bool
+     or  : Bool # Bool        -> Bool
+     imp : Bool # Bool        -> Bool
+     eq  : Bool # Bool        -> Bool
+     ite : Bool # Bool # Bool -> Bool
+     
+var  x,y: Bool
+rew  not(T)      = F
+     not(F)      = T
+     and(T,x)    = x
+     and(x,F)    = F
+     and(F,x)    = F
+     and(x,T)    = x
+     or(T,x)    = T
+     or(x,F)    = x
+     or(F,x)    = x
+     or(x,T)    = T
+     imp(x,y)    = or(not(x),y)
+     eq(x,y)     = and(imp(x,y),imp(y,x))
+     ite(T,x,y)  = x
+     ite(F,x,y)  = y
+
+act a b c
+proc X = a . b . c . X
+init X

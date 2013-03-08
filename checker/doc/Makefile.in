@@ -1,0 +1,94 @@
+SHELL           = /bin/sh
+.SUFFIXES:      .c .o
+
+ARCH 	=	@ARCH@
+
+srcdir		= @srcdir@
+top_srcdir	= @top_srcdir@
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+datarootdir 	= @datarootdir@
+bindir		= @bindir@
+libdir		= @libdir@
+includedir	= @includedir@
+datadir		= @datadir@
+distdir		= @distdir@
+libexecdir	= @libexecdir@
+docdir		= @docdir@
+mandir		= @mandir@
+
+
+RM		= @RM@
+JW		= @JW@
+CC		= @CC@
+CFLAGS		= @CFLAGS@
+CPPFLAGS	= @CPPFLAGS@
+DEFS		= $(LDDEFS) @DEFS@
+LIBS            = -lrw -L. @LIBS@
+TCLLIBS         = @TCLLIBS@
+X_CFLAGS        = @X_CFLAGS@
+
+INSTALL         = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA    = @INSTALL_DATA@
+
+SUBDIR		= checker/doc
+MANPAGES7	= mucalculus.7 
+MANPAGES3	= MCparseModalFormula.3
+
+SOURCES		= mucalculus.sgml MCparseModalFormula.sgml \
+		  $(MANPAGES7) $(MANPAGES3)
+EXAMPLE		= between.mcrl between.reg.mcf  between.noreg.mcf \
+		  deadlock.mcf deadlockfree.mcf
+
+DISTFILES       = $(SOURCES) $(EXAMPLE) Makefile.in
+
+all:		$(MANPAGES7) $(MANPAGES3)
+
+install:	
+		$(MAKE) all
+		$(INSTALL) -d $(mandir)
+		$(INSTALL) -d $(mandir)/man3
+		$(INSTALL) -d $(mandir)/man7
+		$(INSTALL) -d $(docdir)
+	 	@for manpage in $(MANPAGES7); do \
+		if test -f $$manpage; then \
+           	$(INSTALL_DATA) $$manpage $(mandir)/man7;\
+		fi; \
+		done
+	 	@for manpage in $(MANPAGES3); do \
+		if test -f $$manpage; then \
+           	$(INSTALL_DATA) $$manpage $(mandir)/man3;\
+		fi; \
+		done
+
+uninstall:
+		@if test -d $(mandir)/man7; then \
+		for manpage in $(MANPAGES7); do \
+		 $(RM) $$manpage; \
+		done; \
+		fi
+		@if test -d $(mandir)/man3; then \
+		for manpage in $(MANPAGES3); do \
+		 $(RM) $$manpage; \
+		done; \
+		fi
+
+MCparseModalFormula.3:	MCparseModalFormula.sgml
+			$(JW) -f docbook -b man $<
+
+mucalculus.7:		mucalculus.sgml
+			$(JW) -f docbook -b man $<
+
+dist:		
+		mkdir $(distdir)/$(SUBDIR)
+		cp $(DISTFILES) $(distdir)/$(SUBDIR)
+
+clean:		
+		$(RM) manpage.links manpage.refs
+		if test ! -f  $(top_srcdir)/tarball; then \
+		    $(RM) $(MANPAGES7) $(MANPAGES3) ; \
+		fi
+
+.l.c:
+		

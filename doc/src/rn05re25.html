@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>MCparseModalFormula</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><link rel="home" href="index.html" title="Manual Pages of the mCRL toolset (2.17.8)" /><link rel="up" href="rn05.html" title="Model checking" /><link rel="prev" href="rn05.html" title="Model checking" /><link rel="next" href="rn05re26.html" title="mucalculus" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">MCparseModalFormula</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="rn05.html">Prev</a> </td><th width="60%" align="center">Model checking</th><td width="20%" align="right"> <a accesskey="n" href="rn05re26.html">Next</a></td></tr></table><hr /></div><div class="refentry" lang="en" xml:lang="en"><a id="MCparseModalFormula"></a><div class="titlepage"></div><div class="refnamediv"><h2>Name</h2><p>MCparseModalFormula — <acronym class="acronym">C</acronym> function that parses a modal mu-calculus formula and saves it to an <acronym class="acronym">ATerm</acronym>.</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="funcsynopsis"><pre class="funcsynopsisinfo">
+#include "libmcparse.h"
+</pre><table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0" class="funcprototype-table"><tr><td><code class="funcdef">ATermAppl <b class="fsfunc">MCparseModalFormula</b>(</code></td><td><var class="pdparam">*formStream</var>, </td><td> </td></tr><tr><td> </td><td><var class="pdparam">reduce</var>, </td><td> </td></tr><tr><td> </td><td><var class="pdparam">acLevel</var>, </td><td> </td></tr><tr><td> </td><td><var class="pdparam">vbLevel</var>, </td><td> </td></tr><tr><td> </td><td><var class="pdparam">saveToMCRLFormat</var><code>)</code>;</td><td> </td></tr></table><div class="paramdef-list"><code>FILE <var class="pdparam">*formStream</var></code>;<br /><code>_Bool <var class="pdparam">reduce</var></code>;<br /><code>int <var class="pdparam">acLevel</var></code>;<br /><code>int <var class="pdparam">vbLevel</var></code>;<br /><code>_Bool <var class="pdparam">saveToMCRLFormat</var></code>;</div><div class="funcprototype-spacer"> </div></div></div><div class="refsect1" lang="en" xml:lang="en"><a id="id427409"></a><h2>Preconditions</h2><p>
+The following preconditions have to be satisfied:
+</p><div class="itemizedlist"><ul type="disc"><li><p>the <acronym class="acronym">ATerm</acronym> library is initialised</p></li><li><p><em class="parameter"><code>formStream</code></em> points to a stream from which can be read</p></li><li><p><code class="literal">0 &lt;= <em class="parameter"><code>acLevel</code></em> &lt;= 2</code></p></li><li><p><code class="literal">0 &lt;= <em class="parameter"><code>vbLevel</code></em> &lt;= 3</code></p></li><li><p>if <em class="parameter"><code>saveToMCRLFormat</code></em>, an <acronym class="acronym">mCRL</acronym> data specification is present in the <acronym class="acronym">mCRL</acronym> library</p></li></ul></div><p>
+</p></div><div class="refsect1" lang="en" xml:lang="en"><a id="id427500"></a><h2>Description</h2><p>
+Function <code class="function">MCparseModalFormula</code> parses the modal formula in <em class="parameter"><code>formStream</code></em> and saves it to a value of type <span class="type">ATermAppl</span>. The structure of the modal formula is explained in <code class="literal">mucalculus(7)</code>. The structure of the <span class="type">ATermAppl</span> value is explained in the next subsection.
+</p><p>
+During parsing the formula is checked for monotonicity and adherence to the variable convention. Also the occurrences of dangerous nestings of fixed point variables are checked. If the first two checks fail, an error generated. If the third check succeeds a warning is generated.
+</p><p>
+If <em class="parameter"><code>reduce</code></em> is true, all regular operations are replaced by equivalent non-regular operations.
+</p><p>
+Alpha conversion is applied based on the value of <em class="parameter"><code>acLevel</code></em>:
+</p><div class="informaltable"><table border="0"><colgroup><col /><col /></colgroup><tbody><tr><td><code class="literal">0 (none)</code></td><td>no alpha conversion</td></tr><tr><td><code class="literal">1 (scope)</code></td><td>names of bound variables that are in each other's scope are different</td></tr><tr><td><code class="literal">2 (full)</code></td><td>all names of bound variables are different</td></tr></tbody></table></div><p>
+The printing of intermediate messages on <code class="constant">stdout</code> (besides error messages) is controlled by the value of <em class="parameter"><code>vbLevel</code></em>:
+</p><div class="informaltable"><table border="0"><colgroup><col /><col /></colgroup><tbody><tr><td><code class="literal">0 (silent)</code></td><td>no messages are printed</td></tr><tr><td><code class="literal">1 (normal)</code></td><td>warnings are printed</td></tr><tr><td><code class="literal">2 (verbose)</code></td><td>warnings and short status information is printed</td></tr><tr><td><code class="literal">3 (debug)</code></td><td>many messages are printed to make debugging possible</td></tr></tbody></table></div><p>
+If <em class="parameter"><code>saveToMCRLFormat</code></em> is true, the types of expressions occurring in the modal formula are checked and the formula is translated to the internal <acronym class="acronym">mCRL</acronym> format, using the data specification that is present in the <acronym class="acronym">mCRL</acronym> library. During this translation, a version of full alpha conversion is performed that is provided by the <acronym class="acronym">mCRL</acronym> library. Therefore, it isn't necessary to provide the parameter <em class="parameter"><code>acLevel</code></em> with the value 2; however, you are advised to do so, because this generates more readable names.
+</p><p>
+If parsing succeeded and no errors are generated, the parsed <span class="type">ATermAppl</span> value is returned; otherwise <code class="constant">NULL</code> is returned and an appropriate error message is printed on <code class="constant">stderr</code>.
+</p><div class="refsect2" lang="en" xml:lang="en"><a id="id427736"></a><h3>Structure of the result</h3><p>
+We describe the syntax and partly the semantics of the resulting <acronym class="acronym">ATerm</acronym> of function <code class="function">MCparseModalFormula</code>. In the following <acronym class="acronym">BNF</acronym> syntax lowercase words are <acronym class="acronym">ATerm</acronym> function symbols, expressions <code class="literal">f(e0,...,en)</code> are <acronym class="acronym">ATerm</acronym> function applications of arity <code class="literal">n</code>, and expressions <code class="literal">[e0,...,en]</code> are <acronym class="acronym">ATerm</acronym> lists of length <code class="literal">n</code>. Therefore, these terms have type <span class="type">AFun</span>, <span class="type">ATermAppl</span> and <span class="type">ATermList</span>, respectively.
+</p><p>
+Preliminaries:
+</p><pre class="screen">
+  AN       ::=  RNAME(DT,...,DT)
+  VO       ::=  RNAME(DT,...,DT)
+  DT       ::=  NAME(DT,...,DT)
+  DT_LIST  ::=  [DT,...,DT]
+  VD       ::=  v(RNAME,RNAME)
+  VD_LIST  ::=  [VD,...,VD]
+</pre><p>
+Here <code class="literal">NAME</code> and <code class="literal">RNAME</code> both denote <acronym class="acronym">mCRL</acronym> names, <code class="literal">AN</code> represents action names, <code class="literal">VO</code> variable occurrences, <code class="literal">DT</code> data terms, <code class="literal">DT_LIST</code> lists of data terms, <code class="literal">VD</code> variable declarations and <code class="literal">VD_LIST</code> lists of variable declarations. Action and data names have to be declared, the data terms should be well typed and the right part of a variable declaration should be a declared sort. An <code class="literal">RNAME</code> is restricted such that the keywords <code class="literal">"T"</code>, <code class="literal">"F"</code>, <code class="literal">"forall"</code>, <code class="literal">"exists"</code>, <code class="literal">"nil"</code>, <code class="literal">"mu"</code> and <code class="literal">"nu"</code> are not allowed. To be able to distinguish function symbols of the mu-calculus from <acronym class="acronym">mCRL</acronym> function symbols, <code class="literal">NAME</code> and <code class="literal">RNAME</code> are quoted <acronym class="acronym">ATerm</acronym>s of type <span class="type">ATermAppl</span>.
+</p><p>
+Action formulas:
+</p><pre class="screen">
+    AF  ::=  act(AN)  |  T  |  F  |  not(AF)
+          |  and(AF,AF)  |  or(AF,AF)  |  imp(AF,AF)  |  eq(AF,AF)
+          |  forall(NAME,NAME,AF)  |  exists(NAME,NAME,AF)
+</pre><p>
+Here the symbol '<code class="literal">act</code>' indicates that its parameter is an action name. The symbol '<code class="literal">T</code>' stands for true, '<code class="literal">F</code>' for false, '<code class="literal">not</code>' for negation, '<code class="literal">and</code>' for conjunction, '<code class="literal">or</code>' for disjunction, '<code class="literal">imp</code>' for implication, '<code class="literal">eq</code>' for equivalence, '<code class="literal">forall</code>' for universal quantification and '<code class="literal">exists</code>' for existential quantification.
+</p><p>
+Regular formulas:
+</p><pre class="screen">
+    RF  ::=  AF  |  nil  |  concat(RF,RF)  |  choice(RF,RF)
+          |  tr_close(RF)  |  t_close(RF)
+</pre><p>
+A regular formula denotes a path of action formulas. Here '<code class="literal">nil</code>' stands for the empty path, '<code class="literal">concat</code>' for the concatentation of two paths, '<code class="literal">choice</code>' for the choice between two paths, '<code class="literal">tr_close</code>' for the transitive and reflexive closure of a path and '<code class="literal">t_close</code>' for the transitive closure of a path.
+</p><p>
+Modal formulas:
+</p><pre class="screen">
+    MF  ::=  form(DT)  |  T  |  F  |  not(MF)
+          |  and(MF,MF)  |  or(MF,MF)  |  imp(MF,MF)  |  eq(MF,MF)
+          |  forall(NAME,NAME,MF)  |  exists(NAME,NAME,MF) 
+          |  may(RF,MF)  |  must(RF,MF)  |  loop(RF)  |  rec(VO)  
+          |  mu(NAME, VD_LIST, MF, DT_LIST)  |  nu(NAME, VD_LIST, MF, DT_LIST)
+</pre><p>
+Here the symbol '<code class="literal">form</code>' indicates that its parameter is a boolean data term. The symbols '<code class="literal">T</code>', '<code class="literal">F</code>', '<code class="literal">not</code>', '<code class="literal">and</code>', '<code class="literal">or</code>', '<code class="literal">imp</code>', '<code class="literal">eq</code>', '<code class="literal">forall</code>' and '<code class="literal">exists</code>' are analogous to the corresponding symbols in action formulas. The symbol '<code class="literal">may</code>' stands for the may operator, '<code class="literal">must</code>' for the must operator and '<code class="literal">loop</code>' for the infinite looping operator. The symbol '<code class="literal">mu</code>' stands for the smallest fixed point operator, '<code class="literal">nu</code>' for the largest fixed point operator and '<code class="literal">rec</code>' for the occurrence of a fixed point variable.
+</p><p>
+The may and must operators and the infinite looping operator have the following meaning. In a state of the state space a formula <code class="literal">may(R,phi)</code> is valid if there exists a path starting in this state, that satisfies <code class="literal">R</code> and leads to a state such that <code class="literal">phi</code> is valid. In a state of the state space a formula <code class="literal">must(R,phi)</code> is valid if all paths starting in this state, satisfying <code class="literal">R</code>, lead to a state such that <code class="literal">phi</code> is valid. In a state of the state space <code class="literal">loop(R)</code> holds if there exists a path starting in this state that is an infinite concatenation of sequences that satisfy <code class="literal">R</code>.
+</p><p>
+The generated formula adheres to the variable convention and it is monotonic, which means that every occurrence of a fixed point variable may only be in the scope of an even number of '<code class="literal">not</code>' operations.
+</p></div><div class="refsect2" lang="en" xml:lang="en"><a id="id428336"></a><h3>Reduction</h3><p>
+We call the operations '<code class="literal">nil</code>', '<code class="literal">concat</code>', '<code class="literal">choice</code>', '<code class="literal">tr_close</code>', '<code class="literal">t_close</code>' and '<code class="literal">loop</code>' regular operations. When parameter <em class="parameter"><code>reduce</code></em> of function <code class="function">MCparseModalFormula</code> has value true, then each regular operation in the modal formula is replaced by an equivalent non-regular operation. This is achieved by repeatedly applying the following properties from left to right, where <code class="literal">X</code> is fresh variable, <abbr class="abbrev">i.e.</abbr> <code class="literal">X</code> may not occur free in <code class="literal">phi</code> or <code class="literal">R</code>:
+</p><pre class="screen">
+    may(nil,phi)            = may(tr_close(F),phi)
+    may(concat(R1,R2),phi)  = may(R1,may(R2,phi))
+    may(choice(R1,R2),phi)  = or(may(R1,phi),may(R2,phi))
+    may(tr_close(R),phi)    = mu(X,[],or(phi,may(R,X),[])
+    may(t_close(R),phi)     = may(concat(R,tr_close(R)),phi)
+    
+    must(nil,phi)           = must(tr_close(F),phi)
+    must(concat(R1,R2),phi) = must(R1,must(R2,phi))
+    must(choice(R1,R2),phi) = and(must(R1,phi),must(R2,phi))
+    must(tr_close(R),phi)   = nu(X,[],and(phi,must(R,X),[])
+    must(t_close(R),phi)    = must(concat(R,tr_close(R)),phi)
+    
+    loop(R)                 = nu(X,[],may(R,X),[])
+</pre></div></div><div class="refsect1" lang="en" xml:lang="en"><a id="id428455"></a><h2>Known problems</h2><p>The type <span class="type">_Bool</span> is used instead of <code class="literal">bool</code> to avoid conflicts with reserved words in the <acronym class="acronym">mCRL</acronym> library. This type is defined in the header file <code class="literal">mcfunc.h</code>.
+</p><p>
+If <em class="parameter"><code>saveToMCRLFormat</code></em> is true, the types of actions are not checked because actions are not present in the internal <acronym class="acronym">mCRL</acronym> format.
+</p></div><div class="refsect1" lang="en" xml:lang="en"><a id="id428500"></a><h2>Author</h2><p>
+Written by Aad Mathijssen <code class="email">&lt;<a class="email" href="mailto:A.H.J.Mathijssen@tue.nl">A.H.J.Mathijssen@tue.nl</a>&gt;</code>. Please send all complaints, comments and bug fixes to me.
+</p></div><div class="refsect1" lang="en" xml:lang="en"><a id="id428515"></a><h2>See also</h2><p>
+More information on the mu-calculus can be found in <a class="link" href="rn05re26.html" title="mucalculus">mucalculus</a>. More information on the <acronym class="acronym">ATerm</acronym> library can be found at the website of the <a class="ulink" href="http://www.cwi.nl/htbin/sen1/twiki/bin/view/SEN1/ATermLibrary" target="_top"><acronym class="acronym">CWI</acronym></a>.
+</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="rn05.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="rn05.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="rn05re26.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Model checking </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> mucalculus</td></tr></table></div></body></html>

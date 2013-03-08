@@ -1,0 +1,233 @@
+<refentry id="rw">
+<refmeta>
+<refentrytitle>Rewriter Options</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>Rewriter Options</refname>
+<refpurpose>Options concerning the rewriter</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+<cmdsynopsis> 
+<arg><option>-hash</option></arg>
+<arg><option>-no-hash</option></arg>
+<arg><option>-alt</option><arg choice="plain">
+<group choice="req">
+<arg choice="req">
+     <arg choice="plain"><option>-rw</option></arg>
+     <arg choice="opt"><option>-simple</option></arg>
+     <arg choice="opt"><option>-no-eq</option></arg>
+     <arg choice="opt"><option>-case</option></arg>
+     <arg choice="opt"><option>-debug</option></arg>
+     <arg choice="opt"><option>-write-so
+     <filename><replaceable>file</replaceable></filename>
+     </option></arg>
+     <arg choice="opt"><option>-read-so
+     <filename><replaceable>file</replaceable></filename>
+     </option></arg>     
+</arg>
+<arg choice="req">
+     <group choice="req">
+     <arg choice="plain"><option>-innermost</option></arg>
+     <arg choice="plain"><option>-jitty</option></arg>
+     </group>
+     <arg choice="opt"><option>-conditional</option></arg> 
+     <arg choice="opt"><option>-rw-limit
+     <parameter>N</parameter></option></arg>
+     <arg choice="opt"><option>-rw-verbose</option></arg>
+     <arg choice="opt"><option>-rw-statistics</option></arg>    
+</arg>
+</group>
+</arg>
+</arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+Common options concerning the choice of an alternative rewriter, 
+the strategy which is used by that rewriter, and the optimization options. 
+Default the interpreting rewriter will be used with jitty strategy,
+except for the instantiator (default the recent compiling rewriter).
+</para>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+<!--<title>Options</title>-->
+<varlistentry>
+   <term><option>-hash</option></term>
+   <listitem>
+   <para>
+   Use hashing during rewriting (default)
+   </para>
+   </listitem>
+ </varlistentry>
+ 
+<varlistentry>
+  <term><option>-no-hash</option></term>
+  <listitem>
+  <para>
+  No hash tables are used during rewriting
+  </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-alt</option> <parameter>rewriter</parameter>
+  </term>
+  <listitem>
+    <para>
+    Choice of an alternative rewriter. 
+        <parameter>rewriter</parameter> stands for:
+    <variablelist>
+    
+    <varlistentry>
+      <term><option>rw</option></term>
+      <listitem>
+      <para>
+      The compiling rewriter with innermost strategy, however
+      the case functions will be evaluated with jitty strategy
+      </para>
+      </listitem>
+    </varlistentry>
+    
+     <varlistentry>
+      <term><option>jitty</option></term>
+      <listitem>
+      <para>
+      Interpreting rewriter with just in time rewriting strategy.
+      </para>
+      </listitem>
+    </varlistentry> 
+    
+    <varlistentry>
+      <term><option>innermost</option></term>
+      <listitem>
+      <para>
+      Interpreting rewriter with innermost strategy
+      </para>
+      </listitem>
+    </varlistentry>
+    </variablelist>
+    </para>
+      </listitem>
+    </varlistentry>
+    
+    <varlistentry>
+      <term><option>-simple</option></term>
+      <listitem>
+      <para>
+      Translation of rewrite rules without optimizing (Compiling rewriter only)
+      </para>
+      </listitem>
+    </varlistentry>
+    
+    <varlistentry>
+      <term><option>-no-eq</option></term>
+      <listitem>
+      <para>
+      No optimization at rewriting of <literal>eq</literal> rules
+      (Compiling rewriter only)
+      </para>
+      </listitem>
+    </varlistentry>
+    
+    <varlistentry>
+      <term><option>-case</option></term>
+      <listitem>
+      <para>
+      Uses implicit distribution rules on case functions.
+      Recommended after &structelm.lnk; (Compiling rewriter only)
+      </para>
+      </listitem>
+    </varlistentry>
+    <varlistentry>
+      <term><option>-debug</option></term>
+      <listitem>
+      <para>
+      The source code of the compiled rewrite system
+      will not be removed. 
+      The source will be compiled with the flag <option>-g</option>. 
+      Also the <literal>.so</literal> file will
+      not be removed
+      (Compiling rewriter only).
+      </para>
+      </listitem>
+    </varlistentry>
+    
+    <varlistentry>
+      <term><option>-write-so</option> 
+      <filename><replaceable>file</replaceable></filename></term>
+      <listitem>
+      <para>
+      Write compiled rewrite system in
+      <filename><replaceable>file</replaceable>.so</filename>
+      (Compiling rewriter only)
+      </para>
+      </listitem>
+    </varlistentry>
+    
+    <varlistentry>
+      <term><option>-read-so</option>
+      <filename><replaceable>file</replaceable></filename>
+      </term>
+      <listitem>
+      <para>
+      Read compiled rewrite system from
+      <filename><replaceable>file</replaceable>.so</filename>
+      (Compiling rewriter only)
+      </para>
+      </listitem>
+    </varlistentry>
+    
+    <varlistentry>
+      <term><option>-conditional</option>
+      </term>
+      <listitem>
+      <para>
+      View rule 
+      <replaceable>l</replaceable>
+      <literal>->if</literal><replaceable>(c,r1,r2)</replaceable> 
+      as conditional (Interpreting rewriter only)
+      </para>
+      </listitem>
+    </varlistentry>
+    
+    <varlistentry>
+      <term><option>-rw-limit</option>
+      <replaceable>N</replaceable>
+      </term>
+      <listitem>
+      <para>
+      Maximal <replaceable>N</replaceable> rewrite steps per term
+      (Interpreting rewriter only)
+      </para>
+      </listitem>
+     </varlistentry>
+     
+     <varlistentry>
+      <term><option>-rw-verbose</option>
+      </term>
+      <listitem>
+      <para>
+      Print some rewrite messages (Interpreting rewriter only)
+      </para>
+      </listitem>
+    </varlistentry>
+     
+    <varlistentry>
+      <term><option>-rw-statistics</option>
+      </term>
+      <listitem>
+      <para>
+      Print some rewrite statistics  (Interpreting rewriter only)
+      </para>
+      </listitem>
+    </varlistentry>
+</variablelist>
+</refsect1>
+&librw.xml;
+</refentry>

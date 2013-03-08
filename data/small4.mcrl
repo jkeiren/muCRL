@@ -1,0 +1,11 @@
+% This is a simple mCRL program that endlessly carries out 
+% the sequence of a.b.c.d actions.
+
+sort Bool
+func T,F:-> Bool
+
+act a b c d
+
+proc X = a.b.c.d.X
+
+init X

@@ -1,0 +1,88 @@
+<refentry id="ltscmp">
+<refmeta>
+<refentrytitle>ltscmp</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>ltscmp</refname>
+<refpurpose>Compares two labeled transition systems</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>ltscmp</command> 
+<arg><group choice="plain">
+<arg choice="plain"><option>-s</option></arg>
+<arg choice="req">
+     <arg choice="plain"><option>-b</option></arg>
+     <arg choice="opt"><option>-cycle</option></arg>
+     <arg choice="opt"><option>-indir</option></arg>    
+</arg>
+</group></arg>
+<arg><option>-statm</option></arg>
+<arg choice="plain"><option>
+<filename><replaceable>input1.ext1</replaceable></filename>
+</option></arg>
+<arg choice="plain"><option><filename><replaceable>input2.ext2</replaceable>
+</filename>
+</option></arg>
+</cmdsynopsis>
+&ext1;
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+Compares two labeled transition systems written in 
+<filename><replaceable>input1.ext1</replaceable></filename>
+and <filename><replaceable>input2.ext2</replaceable></filename>.
+Exits with 0 if they are equivalent, exits with 1 otherwise.
+</para>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+<varlistentry><term><option>-s</option></term>
+<listitem>
+<para>
+Apply strong bisimulation equivalence
+</para>
+</listitem>
+
+</varlistentry>
+<varlistentry><term><option>-b</option></term>
+<listitem>
+<para>
+Apply branching bisimulation equivalence
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><option>-cycle</option></term>
+<listitem>
+<para>
+Apply tau cycle reduction
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><option>-indir</option></term>
+<listitem>
+<para>
+Apply tau indirection reduction
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term><option>-statm</option></term>
+<listitem>
+<para>
+Enable peak memory checking
+</para>
+</listitem>
+</varlistentry>
+
+</variablelist>
+</refsect1>
+&ltscmp.xml;
+</refentry>

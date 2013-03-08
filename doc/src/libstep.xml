@@ -1,0 +1,122 @@
+<refentry id="step">
+<refmeta>
+<refentrytitle>Stepper Options</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+<refnamediv>
+<refname>Stepper Options</refname>
+<refpurpose>Options concerning the stepper</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<cmdsynopsis> 
+<arg><option>-order</option><group choice="req">
+<arg choice="plain">no</arg>
+<arg choice="plain">enum_big_freq</arg>
+<arg choice="plain">big_freq</arg>
+<arg choice="plain">min_depth</arg>
+</group></arg>
+<arg><option>-after-case</option></arg>
+<arg><option>-O</option></arg>
+<arg><option>-conf-compute <parameter>action</parameter></option></arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+Options concerning the stepper which includes the
+enumerator.
+</para>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+<varlistentry>
+  <term><option>-order <parameter>spec</parameter></option></term>
+  <listitem>
+    <para>
+Definition kind of ordening of sum variables in a summand in which 
+<parameter>spec</parameter> stands for:
+
+<variablelist>
+
+<varlistentry>
+<term>
+<option>no</option>
+</term>
+<listitem><para>
+No reordening of the sum variables 
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>
+<option>enum_big_freq</option>
+</term>
+<listitem><para>
+First the sum variables of enumerated type are placed before the other 
+sum variables. Inside that ordening the sum variables are ranked from high to 
+low conform the number of occurrences in the condition. This is the default
+ordening.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>
+<option>big_freq</option>
+</term>
+<listitem><para>
+The sum variables are ranked from high to low 
+conform the number of occurrences in the condition
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>
+<option>min_depth</option>
+</term>
+<listitem><para>
+The sum variables are ranked from low to high 
+conform the lowest depth of their occurrences in the condition
+</para></listitem>
+</varlistentry>
+
+</variablelist>
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-after-case</option></term>
+  <listitem>
+    <para>
+Same as <option>-order</option> <literal>min_depth</literal>. 
+Advised after <command>&rewr.lnk; -case</command>,
+when there occurs many expanded case functions in the conditions.
+   </para>
+   </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-O</option></term>
+  <listitem>
+    <para>
+Less runtime by performing an extra pre processing step,
+which includes building an optimalization tree.
+Works optimally on output of
+<literallayout><command>&mcrl.lnk; -nocluster -regular -newstate</command>.</literallayout>
+    </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-conf-compute <parameter>action</parameter></option></term>
+  <listitem>
+    <para>
+ Set <parameter>action</parameter> as the confluent tau action and
+ enable tau confluence reduction.
+ <remark>This tool does not check if the given action is confluent.</remark>
+    </para></listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+&libstep.xml;
+</refentry>

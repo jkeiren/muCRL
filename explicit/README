@@ -1,0 +1,13 @@
+$Id: README,v 1.1 2004/01/09 14:59:14 bertl Exp $
+
+Call 'jsim' without filename.
+   Then a file chooser window will be popped up. 
+   Three kind of file formats can be chosed: 
+      <file>.tbf  steps through LPE (like msim) 
+      <file>.aut  navigates through Labeled Transition System
+      <file>.trc  like .tbf, in addition traces will be read
+		  the targets are displayed in the marked transion 
+		  table
+
+call "jsim <file>[.tbf|.aut|.trc]" 
+      Then <file> will be read and 'jsim' starts

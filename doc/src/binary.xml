@@ -1,0 +1,78 @@
+
+<refentry id="binary">
+<refmeta>
+<refentrytitle>binary</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>binary</refname>
+<refpurpose>
+Transforms each variable of enumerated sort to a
+sequence of boolean variables
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>binary</command> 
+&common1;
+<arg><option>-norewr</option></arg>
+<arg><option>-inv</option></arg>
+<arg><option>-infile</option> 
+<replaceable>file</replaceable></arg>
+<arg><option><link linkend="libmcrl">Data Options</link></option></arg>
+<arg><option><link linkend="rw">Rewriter Options</link></option></arg>
+<arg><option><parameter>input</parameter>.tbf</option></arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+This filter reads from 
+<filename><replaceable>input</replaceable>.tbf</filename> (or 
+<filename> stdin </filename> if not given) an LPE 
+in <literal>.tbf </literal> format and transforms 
+it to an LPE in which each variable of enumerated sort 
+is replaced by a vector of boolean variables. 
+This will be written to <filename>stdout</filename>.
+</para>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+<!--<title>Options</title>-->
+&common2;
+<varlistentry>
+  <term><option>-norewr</option>
+  </term>
+  <listitem>
+    <para>
+    Do not rewrite after replacing parameters
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-inv</option> </term>
+  <listitem>
+  <para>
+  Add a condition to each summand restricting the
+  new boolean parameters to values corresponding to
+  valid values of the enumerated types
+  </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-invfile</option>
+  <filename><replaceable>file</replaceable></filename>
+  </term>
+  <listitem>
+  <para>
+  Do the same as <option>-inv</option>, but put the conditions
+  as an invariant in <filename><replaceable>file</replaceable></filename> 
+  </para>
+  </listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+&finish;
+</refentry>

@@ -1,0 +1,7 @@
+<group choice="req">
+<arg choice="plain">svc</arg>
+<arg choice="plain">bcg</arg>
+<arg choice="plain">aut</arg>
+<arg choice="plain">fsm</arg>
+<arg choice="plain">fc2</arg>
+</group>

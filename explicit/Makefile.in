@@ -1,0 +1,75 @@
+#$Id: Makefile.in,v 1.2 2004/11/23 12:36:17 uid523 Exp $
+SHELL           = /bin/sh
+.SUFFIXES:      .c .o
+
+ARCH    =       @ARCH@
+
+srcdir          = @srcdir@
+top_srcdir      = @top_srcdir@
+prefix          = @prefix@
+exec_prefix     = @exec_prefix@
+datarootdir 	= @datarootdir@
+bindir          = @bindir@
+libdir          = @libdir@
+includedir      = @includedir@
+datadir         = @datadir@
+distdir         = @distdir@
+libexecdir      = @libexecdir@
+docdir          = @docdir@
+noprintdirectory= @noprintdirectory@
+
+VERSION		= @VERSION@
+SUBDIR		= explicit
+
+@SET_MAKE@
+
+all:
+		@if test "@JSIM@" = "yes"; then \
+		(cd jsim; $(MAKE) all); \
+		fi
+		(cd src; $(MAKE) all)
+		@if test -d ltsmin; then \
+		(cd ltsmin;$(MAKE) all); \
+		fi
+
+install:
+		@if test "@JSIM@" = "yes"; then \
+		(cd jsim; $(MAKE) install); \
+		fi
+		(cd src; $(MAKE) install)
+		@if test -d ltsmin; then \
+		(cd ltsmin;$(MAKE) install); \
+		fi
+
+dist:
+		mkdir $(distdir)/$(SUBDIR)
+		(cd src;$(MAKE) dist)
+		if test -d ltsmin; then \
+		(cd ltsmin;$(MAKE) dist); \
+		fi
+		if test "@JSIM@" = "yes"; then \
+		(cd jsim;$(MAKE) dist); \
+		fi
+		cp Makefile.in TODO README $(distdir)/$(SUBDIR)
+
+clean:
+		(cd src;$(MAKE) clean)
+		if test "@JSIM@" = "yes"; then \
+		(cd jsim;$(MAKE) clean); \
+		fi
+		if test -d ltsmin; then \
+		(cd ltsmin;$(MAKE) clean); \
+		fi
+
+uninstall:
+		if test -d src -a -r src/Makefile; then \
+		(cd src;$(MAKE) uninstall); \
+		fi
+		if test -d jsim -a -r jsim/Makefile; then \
+		(cd jsim;$(MAKE) uninstall); \
+		fi
+		if test -d ltsmin -a -r ltsmin/Makefile; then \
+		(cd ltsmin;$(MAKE) uninstall); \
+		fi
+
+		

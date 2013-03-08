@@ -1,0 +1,130 @@
+.SUFFIXES:  .c .o
+
+SHELL     = /bin/sh
+ARCH      = @ARCH@
+
+VERSION   = @VERSION@
+DATE      = `date`
+RM	  = @RM@
+CC        = @CC@ @STDC@
+LEX       = @LEX@
+YACC      = @YACC@
+LFLAGS    = -I -PMCyy
+YFLAGS    = -d -pMCyy
+
+
+top_srcdir      = @top_srcdir@
+INSTALL     = @INSTALL@
+INSTALL_PRG = @INSTALL_PROGRAM@
+INSTALL_DAT = @INSTALL_DATA@
+CFLAGS    =   @CFLAGS@ 
+CPPFLAGS   =  -I. -I$(top_srcdir)/src  -I$(top_srcdir)/prover/src   @CPPFLAGS@ 
+LDFLAGS   = @LDFLAGS@
+
+prefix          = @prefix@
+srcdir          = @srcdir@
+exec_prefix     = @exec_prefix@
+includedir      = @includedir@
+datarootdir 	= @datarootdir@
+mandir          = @mandir@
+bindir          = @bindir@
+libdir          = @libdir@
+atermlib        = @atermlib@
+atermlocallib   = @atermlocallib@
+distdir         = @distdir@
+libexecdir      = @libexecdir@
+datadir         = @datadir@
+noprintdirectory= @noprintdirectory@
+
+@SET_MAKE@
+
+SUBDIR		= checker/src
+SOURCES		= mucheck.c libmcparse.c mcfunc.c mcparser.c mclexer.c mcparse.c pbes.c
+DISTFILES	= Makefile.in  $(SOURCES) $(INCLUDES) mclexer.l \
+		  mcparser.y
+PROGRAMS	= mucheck mcparse pbes
+MCPARSE		= libmcparse.o mcfunc.o mcparser.o mclexer.o
+OBJECTS		= $(MCPARSE) mucheck.o mcparse.o pbes.o
+INCLUDES	= mcfunc.h mclexer.h mcparser.h libmcparse.h mcparse.h
+LIBS            = -L. -L$(top_srcdir)/src -L$(top_srcdir)/prover/src -lmcparse  -lprover -lmcrl @LIBS@ 
+
+DEFS		= -DVERSION=\"$(VERSION)\" -DMCRLLIB @DEFS@
+
+all:		libmcparse.a $(PROGRAMS)
+
+mclexer.o	: mclexer.h mcparser.h mcfunc.h Makefile
+mcparser.o	: mcfunc.h Makefile
+mcfunc.o	: mcfunc.h Makefile
+libmcparse.o	: libmcparse.h mclexer.h mcfunc.h Makefile
+mcparse.o	: mcparse.h libmcparse.h mcfunc.h Makefile
+pbes.o		: libmcparse.h Makefile
+
+
+mclexer.c:	mclexer.l
+		$(LEX) $(LFLAGS) -o$@ mclexer.l
+                                                                                
+mcparser.c mcparser.h:	mcparser.y
+		$(YACC) $(YFLAGS) -o$@ mcparser.y
+
+libmcparse.a:	$(MCPARSE) Makefile
+		$(RM) $@
+		ar -sr $@ $(MCPARSE)
+
+lib:		libmcparse.a
+
+mucheck.o:	mucheck.c Makefile
+		$(CC) $(CFLAGS) $(CPPFLAGS) $(DEFS) -c $*.c
+
+mcparse.o:	mcparse.c Makefile
+		$(CC) $(CFLAGS) $(CPPFLAGS) $(DEFS) -c $*.c
+
+pbes.o:		pbes.c Makefile
+		$(CC) $(CFLAGS) $(DEFS) $(CPPFLAGS) -c $*.c
+
+
+mucheck:	mucheck.o libmcparse.a $(top_srcdir)/src/libmcrl.a $(top_srcdir)/prover/src/libprover.a  $(atermlocallib)
+		@(cd ../../src; $(MAKE) $(noprintdirectory) libmcrl.a)
+		@(cd ../../prover/src && $(MAKE) $(noprintdirectory) libprover.a)
+		$(CC) $(LDFLAGS) $(DEFS) mucheck.o -o mucheck $(LIBS)
+
+mcparse:	mcparse.o libmcparse.a  $(top_srcdir)/src/libmcrl.a  $(atermlocallib)
+		@(cd ../../src; $(MAKE) $(noprintdirectory) libmcrl.a)
+		$(CC) $(LDFLAGS) $(DEFS) mcparse.o -o mcparse $(LIBS)
+
+pbes:		pbes.o libmcparse.a  $(top_srcdir)/src/libmcrl.a  $(atermlocallib)
+		@(cd ../../src; $(MAKE) $(noprintdirectory) libmcrl.a)
+		$(CC) $(LDFLAGS) $(DEFS) pbes.o -o pbes $(LIBS)
+
+dist:
+		mkdir $(distdir)/$(SUBDIR)
+		cp $(DISTFILES) $(distdir)/$(SUBDIR)
+
+install:
+		$(MAKE) all
+		$(INSTALL) -d $(includedir)
+		@for file in $(INCLUDES); do \
+			$(INSTALL_DAT) $$file $(includedir); \
+		done
+		$(INSTALL) -d $(bindir)
+		@for file in $(PROGRAMS); do \
+		    $(INSTALL_PRG) $$file $(bindir); \
+		done
+		$(INSTALL) -d $(libdir)
+		$(INSTALL_DAT) libmcparse.a $(libdir)
+
+clean:
+		$(RM) $(OBJECTS) $(PROGRAMS) libmcparse.a
+		if test ! -f  $(top_srcdir)/tarball; then \
+		    $(RM) mcparser.c mcparser.h mclexer.c; \
+		fi
+
+uninstall:
+		if test -d $(bindir); then \
+		(cd $(bindir);$(RM) $(PROGRAMS)); \
+		fi
+		if test -d $(includedir); then \
+		(cd $(includedir);$(RM) $(INCLUDES)); \
+		fi
+		if test -d $(libdir); then \
+		(cd $(libdir);$(RM) libmcparse.a); \
+		fi

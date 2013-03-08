@@ -1,0 +1,10 @@
+mcrl -regular2 -nocluster buffer.mcrl
+rewr buffer.tbf > buffer.a.tbf
+mv buffer.a.tbf buffer.tbf
+rm abs_buffer.*
+absint -S D < buffer.tbf > abs_buffer.tbf
+absLoader -E < abs_buffer.tbf
+absLoader -A abs_D <abs_buffer.tbf > abs_buffer.a.tbf
+pp abs_buffer.a.tbf > abs_buffer.a.mcrl
+instantiator -alt jitty abs_buffer.a.tbf
+

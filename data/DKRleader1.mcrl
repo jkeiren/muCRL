@@ -1,0 +1,157 @@
+% This file contains Dolev, Klawe and Rodeh leader election
+% protocol in a ring as described in TCS:
+% L.-AA. Fredlund, J.F. Groote and H. Korver.
+% Formal Verification of a Leader Election           
+% Protocol in Process Algebra.
+% Theoretical Computer Science, 177:459-486, 1997.           
+
+
+%%%%%%%%%%%% Bool %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+sort Bool
+func
+  T,F: -> Bool
+
+map
+  and: Bool#Bool -> Bool
+var
+  b: Bool
+rew
+  and(T,b)=b
+  and(b,T)=b
+  and(b,F)=F
+  and(F,b)=F
+
+map 
+  or: Bool#Bool -> Bool
+var
+  b: Bool
+rew
+  or(T,b)=T
+  or(b,T)=T
+  or(b,F)=b
+  or(F,b)=b
+
+map 
+  not: Bool           -> Bool
+%  if:  Bool#Bool#Bool -> Bool
+var
+  b1,b2: Bool
+rew
+  not(F)=T
+  not(T)=F
+%  if(T,b1,b2)=b1
+%  if(F,b1,b2)=b2
+
+map 
+  eq: Bool#Bool -> Bool
+var
+  b: Bool
+rew
+  eq(b,b)=T
+  eq(F,b)=not(b)
+  eq(T,b)=b
+  eq(b,F)=not(b)
+  eq(b,T)=b
+
+%%%%%%%%%%%%%%% NAT %%%%%%%%%%%%%%%%%%%%%%%%%
+     
+sort NAT
+func 0:->NAT
+     S:NAT->NAT
+
+map  1,2,3,4:-> NAT
+     eq: NAT#NAT -> Bool
+     gt,ge: NAT#NAT -> Bool
+     if: Bool#NAT#NAT -> NAT
+     min:NAT#NAT -> NAT %minus 1 modulo n
+     max:NAT#NAT -> NAT
+
+var  n,m: NAT
+rew  1=S(0)
+     2=S(1)
+     3=S(2)
+     4=S(3)
+     eq(0,0)=T
+     eq(S(n),0)=F
+     eq(0,S(n))=F
+     eq(S(n),S(m))=eq(n,m)
+     eq(n,n)=T
+     gt(0,0)=F
+     gt(S(n),0)=T
+     gt(0,S(n))=F
+     gt(S(n),S(m))=gt(n,m)
+     ge(n,m)=or(gt(n,m),eq(n,m))
+     if(T,n,m)=n
+     if(F,n,m)=m
+     min(0,S(n))=n
+     min(S(n),m)=n
+     max(0,n)=n
+     max(n,0)=n
+     max(S(n),S(m))=S(max(n,m))
+
+%%%%%%%%%%%%%% Queue %%%%%%%%%%%%%%%%%%%%%%%%
+
+sort Queue
+func q0:->Queue
+     in:NAT#Queue->Queue
+
+map  untoe:Queue->Queue
+     toe:Queue->NAT
+     empty:Queue->Bool
+     eq:Queue#Queue->Bool
+
+var  q,q':Queue
+     d,d':NAT
+rew  empty(q0)=T
+     empty(in(d,q))=F
+
+     toe(in(d,q0))=d
+     toe(in(d,in(d',q)))=toe(in(d',q))
+
+     untoe(in(d,q0))=q0
+     untoe(in(d,in(d',q)))=in(d,untoe(in(d',q)))
+
+     eq(q,q)=T
+     eq(q0,in(d,q))=F
+     eq(in(d,q),q0)=F
+     eq(in(d,q),in(d',q'))=and(eq(d,d'),eq(q,q'))
+
+
+act rq,rp,sp,sq,c:NAT#NAT
+    leader
+
+proc Active(i:NAT,d:NAT,n:NAT)=
+        sq(i,d).
+         sum(e:NAT,rq(min(i,n),e).
+          (leader.Dead(i,n)<| eq(d,e)|> 
+          sq(i,e).
+          sum(f:NAT,rq(min(i,n),f).
+            (Active(i,e,n) <| gt(e,max(d,f))|> Relay(i,n)))))
+
+     Relay(i:NAT,n:NAT)=
+        sum(d:NAT,rq(min(i,n),d).sq(i,d).Relay(i,n))
+
+     Dead(i:NAT,n:NAT)=delta 
+
+
+proc Q(i:NAT,q:Queue) =
+        sum(d:NAT,rp(i,d).Q(i,in(d,q)))+
+        sp(i,toe(q)).Q(i,untoe(q))
+                <|not(empty(q)) |>delta
+
+
+comm rp|sq=c
+     rq|sp=c
+
+proc Spec=
+    hide({c},
+      encap({rp,rq,sp,sq},
+             Active(0,3,4)||Q(0,q0) 
+          || Active(1,1,4)||Q(1,q0)
+          || Active(2,0,4)||Q(2,q0)
+          || Active(3,2,4)||Q(3,q0)
+          )
+        ) 
+
+init Spec

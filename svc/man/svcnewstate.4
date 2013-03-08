@@ -1,0 +1,72 @@
+.\"  SVC -- the SVC (Systems Validation Centre) file format library
+.\"
+.\"  Copyright (C) 2000  Stichting Mathematisch Centrum, Amsterdam,
+.\"                      The  Netherlands
+.\"
+.\"  This program is free software; you can redistribute it and/or
+.\"  modify it under the terms of the GNU General Public License
+.\"  as published by the Free Software Foundation; either version 2
+.\"  of the License, or (at your option) any later version.
+.\"
+.\"  This program is distributed in the hope that it will be useful,
+.\"  but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"  GNU General Public License for more details.
+.\"
+.\"  You should have received a copy of the GNU General Public License
+.\"  along with this program; if not, write to the Free Software
+.\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+.\"
+.\" $Id: svcnewstate.4,v 1.2 2001/01/04 15:26:34 izak Exp $
+.TH SVCnewState 4 15/5/2000
+.SH NAME
+SVCnewState \- registrate a new state
+
+.SH SYNOPSIS
+#include <svc.h>
+
+SVCstateIndex SVCnewState(SVCfile 
+.I *file, 
+ATerm 
+.I state, 
+SVCbool 
+.I *new\c
+);
+
+.SH DESCRIPTION
+
+The SVCnewState() function registrates a new 
+.I state
+for the SVC file pointed
+to by
+.I file.
+The flag pointed to by
+.I new
+indicates whether the state is really new (*\c
+.I new
+=SVCtrue\c
+) or already existent (*\c
+.I new
+=SVCfalse\c
+).
+
+.SH RETURN VALUE 
+
+The SVCnewState() function returns the index assigned to 
+.I state
+or a value <0 if errors occured.
+
+
+.SH ERRORS
+
+The SVCnewState() function fails if...
+
+.SH SEE ALSO
+
+SVCaterm2State(4), SVCstate2Aterm (4)
+
+.SH AUTHOR
+Izak van Langevelde <izak@cwi.nl>
+.LP
+Please send all complaints, comments and bug fixes to the author. 
+

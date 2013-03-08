@@ -1,0 +1,86 @@
+SHELL           = /bin/sh
+.SUFFIXES:      .c .o
+
+ARCH 	=	@ARCH@
+VERSION =	@VERSION@
+@SET_MAKE@
+
+
+srcdir		= @srcdir@
+top_srcdir	= @top_srcdir@
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+datarootdir 	= @datarootdir@
+bindir		= @bindir@
+libdir		= @libdir@
+includedir	= @includedir@
+datadir		= @datadir@
+distdir		= @distdir@
+libexecdir	= @libexecdir@
+exampledir	= @exampledir@
+
+
+CC		= @CC@
+CFLAGS		= @CFLAGS@
+CPPFLAGS	= @CPPFLAGS@
+DEFS		= $(LDDEFS) @DEFS@
+LIBS            = -lrw -L. @LIBS@
+TCLLIBS         = @TCLLIBS@
+X_CFLAGS        = @X_CFLAGS@
+
+INSTALL         = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA    = @INSTALL_DATA@
+
+SUBDIR		= data
+SOURCES		= 1394-fin.mcrl DKRleader1.mcrl DKRleader2.mcrl abp.mcrl bakery.mcrl \
+		  buf1.mcrl brp.mcrl chatbox.mcrl chatboxt.mcrl commprot.mcrl \
+		  dining.mcrl garage.mcrl hef_ok.mcrl hef_wrong.mcrl  mutex.mcrl \
+		  onebit.mcrl queue.mcrl slip.mcrl small1.mcrl small2.mcrl \
+		  small3.mcrl small4.mcrl abp.tbf abpE.mcrl ccp33.mcrl bke.mcrl
+
+all:
+
+install:
+		$(INSTALL) -d $(exampledir)
+		@for file in $(SOURCES); do \
+		    $(INSTALL_DATA) $$file $(exampledir); \
+		done
+		$(INSTALL) -d $(datadir)
+		$(INSTALL_DATA) abp.edt $(datadir)
+
+uninstall:
+		if test -d $(exampledir); then \
+		(cd $(exampledir); rm -f $(SOURCES)) ;\
+		fi
+		if test -d $(datadir); then \
+		(cd $(datadir); rm -f abp.edt) ;\
+		fi
+
+dist:		
+		mkdir $(distdir)/$(SUBDIR)
+		cp $(SOURCES) Makefile.in test1 test1.log brp.aut abp.txt \
+		test2 test2.log test3 test3.log abp.inv abp.edt \
+		$(distdir)/$(SUBDIR)
+
+test1:		ALWAYS
+		./test1 >newtest1.log 2>&1
+		diff newtest1.log test1.log||echo "newtest1.log differs from test1.log"
+		@../svctools/src/svc2aut -s -o newbrp.aut brp2.svc
+		diff newbrp.aut brp.aut||echo "newbrp.aut differs from brp.aut"
+		diff newabp.txt abp.txt||echo "newabp.txt differs from abp.txt"
+
+test2:		ALWAYS
+		./test2 >newtest2.log 2>&1
+		diff newtest2.log test2.log||echo "newtest2.log differs from test2.log"
+
+test3:		ALWAYS
+		@if test @CAESAR@ = "yes"; then \
+		./test3 >newtest3.log 2>&1; \
+		diff newtest3.log test3.log||echo "newtest3.log differs from test3.log"; \
+		fi
+		echo "$(MAKE) test is completed"
+
+test:		test1 test2 test3
+
+ALWAYS:

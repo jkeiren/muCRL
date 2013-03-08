@@ -1,0 +1,75 @@
+#  SVC tools -- the SVC (Systems Validation Centre) tool set
+#
+#  Copyright (C) 2000  Stichting Mathematisch Centrum, Amsterdam,
+#                      The  Netherlands
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+# $Id: Makefile.in,v 1.1.1.1 2004/09/07 15:06:33 uid523 Exp $
+
+.SUFFIXES:  .c .o
+
+SHELL     = /bin/sh
+ARCH      = @host_cpu@
+VERSION   = 1.1
+DATE      = `date`
+CC        = @CC@ 
+AR        = ar
+LD        = @CC@
+INSTALL     = @INSTALL@
+INSTALL_PRG = @INSTALL_PROGRAM@
+INSTALL_DAT = @INSTALL_DATA@
+CFLAGS    = @CFLAGS@ 
+CPPFLAGS  = @CPPFLAGS@
+DEFS      = -DVERSION="\"$(VERSION)"\" -DDATE="\"$(DATE)"\"
+LIBS      = @LIBS@
+LDFLAGS   = 
+ARFLAGS   = cr
+
+prefix          = @prefix@
+datarootdir 	= @datarootdir@
+srcdir          = @srcdir@
+top_srcdir      = @top_srcdir@
+exec_prefix     = @prefix@
+includedir      = @includedir@
+mandir          = @mandir@
+libexecdir      = @libexecdir@
+
+
+DIST_COMMON = Makefile.in
+MANPAGES    = aut2svc.4    svc2aut.4    svc2dot.4 svc2txt.4  svcinfo.4  bsim.4
+DISTFILES   = $(DIST_COMMON) $(MANPAGES)
+
+
+
+all: distdir
+
+distdir: $(DISTFILES)
+	@for file in $(DISTFILES); do  \
+           cp $$file $(distdir);\
+        done;
+
+install: $(MANPAGES)
+	$(INSTALL) -d $(mandir)
+	$(INSTALL) -d $(mandir)/man4
+	@for manpage in $(MANPAGES); do\
+           $(INSTALL_DAT) $$manpage $(mandir)/man4;\
+        done;
+
+uninstall:
+	@if test -d $(mandir); then \
+	for manpage in $(MANPAGES); do\
+           rm -f "$(mandir)/man4/$$manpage"; \
+        done; fi

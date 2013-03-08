@@ -1,0 +1,48 @@
+sort
+	abs_List
+map
+	abs_eq:abs_List#abs_List -> Bool
+	H:List -> abs_List
+	last:abs_List -> setOf_Bool
+	head:abs_List -> setOf_D
+	indl:abs_List -> setOf_Bit
+	tail:abs_List -> setOf_abs_List
+
+func emptyL, oneL, moreL:->abs_List
+
+var
+	l: List
+	d, d':D
+rew		  
+	H(empty) = emptyL
+	H(add(d, empty)) = oneL
+	H(add(d, add(d', l))) = moreL
+        
+	abs_eq(emptyL,emptyL) = T
+	abs_eq(emptyL,oneL) = F
+	abs_eq(emptyL,moreL) = F
+	  
+	abs_eq(oneL,emptyL) = F
+	abs_eq(oneL, oneL) = T
+	abs_eq(oneL, moreL) = F
+	  
+	abs_eq(moreL,emptyL) = F
+	abs_eq(moreL,oneL) = F
+	abs_eq(moreL, moreL) = T
+	
+var  k,l:abs_List
+rew
+	tail(emptyL) = sing(emptyL)
+	tail(oneL) = sing(emptyL)
+	tail(moreL) =  in_setOf(moreL, sing(oneL))
+	  	  
+	indl(emptyL) = sing(e1)
+	indl(oneL) = sing(e1)
+	indl(moreL) = sing(e0)
+	head(l) = full_setOf_D
+
+	last(emptyL) = sing(T)
+	last(oneL) = sing(T)
+	last(moreL) = sing(F)
+	 
+

@@ -1,0 +1,55 @@
+.TH INVELM 4 19/03/2001
+.SH NAME
+invelm \- Eliminates and simplifies summands of  a linear process (LPO)
+by means of an invariant 
+
+.SH SYNOPSIS
+.B invelm
+[-invariant 
+.I 
+inv-file\c
+] [OPTIONS]
+
+.SH OPTIONS 
+.IP \-simplify
+rewrite guards into BDD form (this incorporates the invariant!)
+.IP \-summand\ <n>
+only eliminates/simplifies the n'th summand
+.IP \-silent
+no output on stderr
+.IP \-help
+prints a help message
+
+.in 0.75i
+If -invariant is missing, T(rue) is taken. This is especially useful
+with -simplify.
+
+.SH DESCRIPTION
+.B invelm
+is a tool that uses an invariant in order to eliminate guards of
+unreachable summands. It must be checked separately whether
+the file 
+.I inv-file\c
+actually contains an invariant, for instance with 
+.B invcheck.
+If the -simplify option is given, the
+each guard is replaced by the BDD for the conjunction of the
+invariant with that guard.
+
+.SH FILES
+.IP inv-file
+A file containing a formula, which is a term of type Bool, containing
+the LPO parameters as free variables.
+.IP stdin
+An LPO in tbf-format.
+.IP stdout
+An LPO in tbf-format.
+
+.SH SEE ALSO
+
+prover(4), invcheck(4)
+
+.SH AUTHOR
+Jaco van de Pol <vdpol@cwi.nl>
+.LP
+Please send all complaints, comments and bug fixes to me. 

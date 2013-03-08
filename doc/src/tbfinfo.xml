@@ -1,0 +1,65 @@
+
+<refentry id="tbfinfo">
+<refmeta>
+<refentrytitle>tbfinfo</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>tbfinfo</refname>
+<refpurpose>Prints info about 
+<literal>.tbf</literal> file 
+</refpurpose> 
+</refnamediv>
+
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>tbfinfo</command> 
+&common1;
+<arg><option><link linkend="libmcrl">Data Options</link></option></arg>
+<arg><option>-pars</option></arg>
+<arg><option>-npars</option></arg>
+<arg choice="plain"><option><parameter>input</parameter>
+</option></arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+Reads from 
+<filename><replaceable>input</replaceable>.tbf</filename> (or 
+<filename>stdin</filename> if not given) an &lpe; 
+in <literal>.tbf </literal> format and 
+prints info about 
+<literal>.tbf</literal>
+file in <filename>stdout</filename>.
+</para>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+&common2;
+<varlistentry>
+  <term><option>-npars</option>
+  </term>
+  <listitem>
+   <para>
+   Print only the number of process parameters
+   </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-pars</option>
+  </term>
+  <listitem>
+   <para>
+  Print the list of parameters
+   </para>
+  </listitem>
+</varlistentry>
+
+</variablelist>
+</refsect1>
+&finish;
+</refentry>

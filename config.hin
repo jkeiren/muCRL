@@ -1,0 +1,109 @@
+#!/bin/sh
+# $Id: config.hin,v 1.9 2007/10/09 09:46:26 bertl Exp $
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+datarootdir=@datarootdir@
+MAKE=${MAKE:=make}
+cat <<STOP  > config.h
+#ifndef CONFIG_H
+#define CONFIG_H
+/* Define if you need to in order for stat and other things to work.  */
+#ifdef __cplusplus
+extern "C"
+{
+#endif/* __cplusplus */
+#undef _POSIX_SOURCE
+
+/* Define if you have the ANSI C header files.  */
+#undef STDC_HEADERS
+
+/* Define if the X Window System is missing or not being used.  */
+#undef X_DISPLAY_MISSING
+
+#undef CC
+#undef CFLAGS
+#undef VARARRAY
+#undef DYNLINK
+#undef SVC
+#undef GRAPPA
+#undef LDFLAGS
+#undef VERSION
+#undef SGI
+#undef SUN
+#undef POWERPC
+#undef LINUX
+#undef INSTRUMENTED
+#undef DEVELOPMENT
+#undef USE_BCG
+#undef HAVE_ALLOCA_H
+#undef STDC_HEADERS
+#undef HAVE_STDINT_H
+#undef HAVE_LIBZ
+#undef HAVE_DECL_STRDUP
+#undef HAVE_STRDUP
+#undef HAVE_DECL_GETENV
+#undef HAVE_GETENV
+#undef HAVE_DECL_PUTENV
+#undef HAVE_PUTENV
+#undef HAVE_FREAD_UNLOCKED
+#define DATADIR "@datadir@"
+#define BINDIR "@bindir@"
+#define MAKE "@MAKE@"
+#define STATEVIEW "stateview.sh @javadir@"
+#define DATADIR "@datadir@"
+#define LIBEXECDIR "@libexecdir@"
+#define TMPDIR "@tmpdir@"
+#define DYNDIR "@dyndir@"
+#define CPPFLAGS "-I@includedir@"
+#define MCRL 1
+
+/* Define if you have the dl library (-ldl).  */
+#undef HAVE_LIBDL
+
+#if defined(SUN)
+#define u_int16_t uint16_t
+#define u_int32_t uint32_t
+#define u_int64_t uint64_t
+#endif
+
+#ifdef SGI
+#define isblank __isblank
+#define u_int64_t uint64_t
+#endif
+
+#ifdef _MSC_VER
+typedef unsigned short uint16_t;
+typedef unsigned int uint32_t;
+typedef unsigned long uint64_t;
+#endif
+
+#define MAX_TERM_LEN 5000
+#ifndef NAME_MAX
+#define NAME_MAX 255
+#endif
+#ifdef STDC_HEADERS
+#include <string.h>
+#include <stdlib.h>
+#endif
+#ifndef HAVE_STRDUP
+extern char *strdup(const char *s);
+#endif
+#ifdef HAVE_ALLOCA_H
+#include <alloca.h>
+#endif
+#ifdef HAVE_LIBZ
+#define USE_ZLIB
+#endif
+#ifdef HAVE_FREAD_UNLOCKED
+#define FREAD fread_unlocked
+#define FWRITE fwrite_unlocked
+#else
+#define FREAD fread
+#define FWRITE fwrite
+#endif
+#include "sysdep.h"
+#ifdef __cplusplus
+}
+#endif/* __cplusplus */
+#endif
+STOP

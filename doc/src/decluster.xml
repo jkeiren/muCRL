@@ -1,0 +1,75 @@
+
+<refentry id="decluster">
+<refmeta>
+<refentrytitle>decluster</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>decluster</refname>
+<refpurpose>Makes sum variables superfluous by splitting summands 
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>decluster</command> 
+&common1;
+<arg><option>-finite</option></arg>
+<arg><option>-report</option></arg>
+<arg><option>-sort<parameter>sort</parameter></option></arg>
+<arg><option><link linkend="step">Stepper Options</link></option></arg>
+<arg><option><link linkend="rw">Rewriter Options</link></option></arg>
+<arg><option><link linkend="libmcrl">Data Options</link></option></arg>
+<arg choice="plain"><option><parameter>input</parameter>.tbf</option></arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+This filter reads from 
+<filename><replaceable>input</replaceable>.tbf</filename> (or 
+<filename> stdin </filename> if not given) an &lpe; 
+in <literal>.tbf </literal> format, makes
+sumvariables superfluous by enlarging the number of summands
+and writes the LPE to <filename>stdout</filename>.
+The sumvariables will not be removed. The tool <command>&parelm.lnk;</command>
+removes them.
+</para>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+<!--<title>Options</title>-->
+&common2;
+<varlistentry>
+  <term><option>-finite</option>
+  </term>
+  <listitem>
+    <para>
+    Processes only sumvariables whose sorts are finite.
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-report</option>
+  </term>
+  <listitem>
+    <para>
+    Reports the sorts which are processed.
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-sort <parameter>sort</parameter></option></term>
+  <listitem>
+  <para>
+   Processes only sumvariables of <parameter>sort</parameter>.
+  </para>
+  </listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+&decluster.xml;
+</refentry>

@@ -1,0 +1,4 @@
+% there exists a state in which it is impossible to perform a step:
+<T*>[T]F
+% without regular formulas:
+%   mu X.([T]F || <T>X)

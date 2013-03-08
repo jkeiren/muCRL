@@ -1,0 +1,367 @@
+run 0: instantiator -o newabp -svc-term abp.tbf
+Instantiator: Start compiling ...
+Instantiator: .... end compiling.
+Instantiator: Finished.
+Instantiator: Explored 97 states, generated 122 transitions, and 25 levels
+run 1: mcrl -tbf brp.mcrl
+Parallel composition is being translated... done.
+Parallel composition is being translated... done.
+Parallel composition is being translated... done.
+Parallel composition is being translated... done.
+Parallel composition is being translated... done.
+Instantiator: Start compiling ...
+Instantiator: .... end compiling.
+Instantiator: Explored 0 and visited 1 states and 0 transitions at level 0
+Instantiator: level 0 number of states 1 number of transitions 40
+Instantiator: level 1 number of states 40 number of transitions 40
+Instantiator: level 2 number of states 40 number of transitions 40
+Instantiator: level 3 number of states 40 number of transitions 80
+Instantiator: level 4 number of states 80 number of transitions 80
+Instantiator: level 5 number of states 80 number of transitions 80
+Instantiator: level 6 number of states 80 number of transitions 80
+Instantiator: level 7 number of states 80 number of transitions 80
+Instantiator: level 8 number of states 80 number of transitions 160
+Instantiator: level 9 number of states 160 number of transitions 160
+Instantiator: level 10 number of states 160 number of transitions 160
+Instantiator: Explored 1000 and visited 1134 states and 1159 transitions at level 11
+Instantiator: level 11 number of states 160 number of transitions 160
+Instantiator: level 12 number of states 133 number of transitions 172
+Instantiator: level 13 number of states 172 number of transitions 304
+Instantiator: level 14 number of states 304 number of transitions 304
+Instantiator: level 15 number of states 224 number of transitions 264
+Instantiator: Explored 2000 and visited 2249 states and 2370 transitions at level 16
+Instantiator: level 16 number of states 264 number of transitions 264
+Instantiator: level 17 number of states 224 number of transitions 224
+Instantiator: level 18 number of states 224 number of transitions 356
+Instantiator: level 19 number of states 356 number of transitions 368
+Instantiator: Explored 3000 and visited 3328 states and 3554 transitions at level 20
+Instantiator: level 20 number of states 288 number of transitions 328
+Instantiator: level 21 number of states 328 number of transitions 368
+Instantiator: level 22 number of states 289 number of transitions 289
+Instantiator: Explored 4000 and visited 4334 states and 4659 transitions at level 23
+Instantiator: level 23 number of states 269 number of transitions 400
+Instantiator: level 24 number of states 400 number of transitions 466
+Instantiator: level 25 number of states 367 number of transitions 407
+Instantiator: Explored 5000 and visited 5443 states and 5892 transitions at level 26
+Instantiator: level 26 number of states 383 number of transitions 512
+Instantiator: level 27 number of states 434 number of transitions 474
+Instantiator: Explored 6000 and visited 6293 states and 7003 transitions at level 28
+Instantiator: level 28 number of states 370 number of transitions 382
+Instantiator: level 29 number of states 302 number of transitions 329
+Instantiator: level 30 number of states 300 number of transitions 343
+Instantiator: level 31 number of states 318 number of transitions 447
+Instantiator: Explored 7000 and visited 7470 states and 8251 transitions at level 32
+Instantiator: level 32 number of states 433 number of transitions 482
+Instantiator: level 33 number of states 378 number of transitions 378
+Instantiator: Explored 8000 and visited 8238 states and 9276 transitions at level 34
+Instantiator: level 34 number of states 250 number of transitions 277
+Instantiator: level 35 number of states 249 number of transitions 255
+Instantiator: level 36 number of states 231 number of transitions 360
+Instantiator: level 37 number of states 349 number of transitions 407
+Instantiator: Explored 9000 and visited 9226 states and 10480 transitions at level 38
+Instantiator: level 38 number of states 293 number of transitions 293
+Instantiator: level 39 number of states 186 number of transitions 189
+Instantiator: level 40 number of states 119 number of transitions 125
+Instantiator: level 41 number of states 125 number of transitions 174
+Instantiator: level 42 number of states 165 number of transitions 223
+Instantiator: level 43 number of states 221 number of transitions 221
+Instantiator: Explored 10000 and visited 10110 states and 11596 transitions at level 44
+Instantiator: level 44 number of states 114 number of transitions 114
+Instantiator: level 45 number of states 65 number of transitions 71
+Instantiator: level 46 number of states 32 number of transitions 32
+Instantiator: level 47 number of states 21 number of transitions 39
+Instantiator: level 48 number of states 39 number of transitions 39
+Instantiator: level 49 number of states 9 number of transitions 9
+Instantiator: level 50 number of states 9 number of transitions 9
+Instantiator: Finished.
+Instantiator: Explored 10238 states, generated 11858 transitions, and 51 levels
+run 2: mcrl -tbf -regular -cluster -newstate brp.tbf
+mcrl: -cluster also sets -binary
+Parallel composition is being translated... done.
+Parallel composition is being translated... done.
+Parallel composition is being translated... done.
+Parallel composition is being translated... done.
+Parallel composition is being translated... done.
+Instantiator: Start compiling ...
+Instantiator: .... end compiling.
+Instantiator: Explored 0 and visited 1 states and 0 transitions at level 0
+Instantiator: level 0 number of states 1 number of transitions 40
+Instantiator: level 1 number of states 40 number of transitions 40
+Instantiator: level 2 number of states 40 number of transitions 40
+Instantiator: level 3 number of states 40 number of transitions 80
+Instantiator: level 4 number of states 80 number of transitions 80
+Instantiator: level 5 number of states 80 number of transitions 80
+Instantiator: level 6 number of states 80 number of transitions 80
+Instantiator: level 7 number of states 80 number of transitions 80
+Instantiator: level 8 number of states 80 number of transitions 160
+Instantiator: level 9 number of states 160 number of transitions 160
+Instantiator: level 10 number of states 160 number of transitions 160
+Instantiator: Explored 1000 and visited 1134 states and 1159 transitions at level 11
+Instantiator: level 11 number of states 160 number of transitions 160
+Instantiator: level 12 number of states 133 number of transitions 172
+Instantiator: level 13 number of states 172 number of transitions 304
+Instantiator: level 14 number of states 304 number of transitions 304
+Instantiator: level 15 number of states 264 number of transitions 304
+Instantiator: Explored 2000 and visited 2256 states and 2370 transitions at level 16
+Instantiator: level 16 number of states 264 number of transitions 264
+Instantiator: level 17 number of states 224 number of transitions 224
+Instantiator: level 18 number of states 224 number of transitions 356
+Instantiator: level 19 number of states 356 number of transitions 368
+Instantiator: Explored 3000 and visited 3354 states and 3541 transitions at level 20
+Instantiator: level 20 number of states 328 number of transitions 368
+Instantiator: level 21 number of states 328 number of transitions 368
+Instantiator: level 22 number of states 289 number of transitions 289
+Instantiator: Explored 4000 and visited 4271 states and 4596 transitions at level 23
+Instantiator: level 23 number of states 269 number of transitions 400
+Instantiator: level 24 number of states 400 number of transitions 466
+Instantiator: level 25 number of states 407 number of transitions 447
+Instantiator: Explored 5000 and visited 5395 states and 5831 transitions at level 26
+Instantiator: level 26 number of states 395 number of transitions 524
+Instantiator: level 27 number of states 434 number of transitions 474
+Instantiator: Explored 6000 and visited 6347 states and 7000 transitions at level 28
+Instantiator: level 28 number of states 410 number of transitions 422
+Instantiator: level 29 number of states 302 number of transitions 329
+Instantiator: level 30 number of states 300 number of transitions 343
+Instantiator: Explored 7000 and visited 7407 states and 8159 transitions at level 31
+Instantiator: level 31 number of states 330 number of transitions 459
+Instantiator: level 32 number of states 433 number of transitions 482
+Instantiator: level 33 number of states 418 number of transitions 418
+Instantiator: Explored 8000 and visited 8250 states and 9260 transitions at level 34
+Instantiator: level 34 number of states 250 number of transitions 277
+Instantiator: level 35 number of states 249 number of transitions 255
+Instantiator: level 36 number of states 243 number of transitions 372
+Instantiator: Explored 9000 and visited 9357 states and 10480 transitions at level 37
+Instantiator: level 37 number of states 352 number of transitions 410
+Instantiator: level 38 number of states 333 number of transitions 333
+Instantiator: level 39 number of states 195 number of transitions 198
+Instantiator: level 40 number of states 119 number of transitions 125
+Instantiator: level 41 number of states 125 number of transitions 174
+Instantiator: Explored 10000 and visited 10226 states and 11596 transitions at level 42
+Instantiator: level 42 number of states 168 number of transitions 226
+Instantiator: level 43 number of states 221 number of transitions 221
+Instantiator: level 44 number of states 123 number of transitions 123
+Instantiator: level 45 number of states 65 number of transitions 71
+Instantiator: level 46 number of states 32 number of transitions 32
+Instantiator: level 47 number of states 24 number of transitions 42
+Instantiator: level 48 number of states 39 number of transitions 39
+Instantiator: level 49 number of states 18 number of transitions 18
+Instantiator: level 50 number of states 9 number of transitions 9
+Instantiator: Finished.
+Instantiator: Explored 10550 states, generated 12170 transitions, and 51 levels
+OKAY run 2
+run 3: mcrl -tbfile -regular -nocluster brp.mcrl
+Parallel composition is being translated... done.
+Parallel composition is being translated... done.
+Parallel composition is being translated... done.
+Parallel composition is being translated... done.
+Parallel composition is being translated... done.
+symbolic reduction of LPE
+Structelm: Number of existing projections: 2
+Structelm: Number of parameters of input LPO: 21
+Structelm: Number of parameter(s) of output LPO:23
+Structelm: Number of parameters of input LPO: 23
+Structelm: Number of parameter(s) of output LPO:25
+Structelm: Number of parameters of input LPO: 25
+Structelm: Number of parameter(s) of output LPO:27
+Rewr: Start compiling ...
+Rewr: .... end compiling.
+Rewr: Read 45 summands
+Rewr: Written 33 summands
+Constelm: JITty Rewriter initialised with hashing (strategy strictleft)
+Constelm: Read 33 summands
+Constelm: Number of parameters of input LPO: 27
+Constelm: Constant parameter "max" (pos 14, sort "Nat") = "s(s(s(0)))" is removed
+Constelm: Number of removed parameter(s):1
+Constelm: Number of remaining parameter(s) of output LPO:26
+Constelm: Written 33 summands
+Constelm: Number of parameters of output LPO: 26
+Parelm: Number of parameters of input LPO: 26
+Parelm: Parameter "l_0" (sort "D") is removed
+Parelm: Parameter "l_1_0" (sort "D") is removed
+Parelm: Parameter "l_1_1_0" (sort "D") is removed
+Parelm: Parameter "d" (sort "D") is removed
+Parelm: Parameter "i" (sort "Ind") is removed
+Parelm: Parameter "d7" (sort "D") is removed
+Parelm: In total 6 parameters have been removed
+Parelm: Number of parameters of output LPO: 20
+Sumelm: JITty Rewriter initialised with hashing (strategy strictleft)
+Sumelm: Read 33 summands
+Sumelm: Number of parameters of input LPO: 20
+Sumelm: Number of summands in which proc parameters are changed: 1
+Sumelm: Number of summands in which sum variables are changed: 0
+Sumelm: Number of summands which are changed: 1
+Sumelm: Written 33 summands
+Sumelm: Number of parameters of output LPO: 20
+Parelm: Number of parameters of input LPO: 20
+Parelm: No process parameters have been removed
+Parelm: Number of parameters of output LPO: 20
+Constelm: JITty Rewriter initialised with hashing (strategy strictleft)
+Constelm: Read 33 summands
+Constelm: Number of parameters of input LPO: 20
+Constelm: Written 33 summands
+Constelm: Number of parameters of output LPO: 20
+Instantiator: Start compiling ...
+Instantiator: .... end compiling.
+Instantiator: Explored 0 and visited 1 states and 0 transitions at level 0
+Instantiator: level 0 number of states 1 number of transitions 40
+Instantiator: level 1 number of states 4 number of transitions 4
+Instantiator: level 2 number of states 4 number of transitions 4
+Instantiator: level 3 number of states 4 number of transitions 8
+Instantiator: level 4 number of states 8 number of transitions 8
+Instantiator: level 5 number of states 8 number of transitions 8
+Instantiator: level 6 number of states 8 number of transitions 8
+Instantiator: level 7 number of states 8 number of transitions 8
+Instantiator: level 8 number of states 8 number of transitions 16
+Instantiator: level 9 number of states 16 number of transitions 16
+Instantiator: level 10 number of states 16 number of transitions 16
+Instantiator: level 11 number of states 16 number of transitions 16
+Instantiator: level 12 number of states 15 number of transitions 54
+Instantiator: level 13 number of states 18 number of transitions 32
+Instantiator: level 14 number of states 32 number of transitions 32
+Instantiator: level 15 number of states 28 number of transitions 32
+Instantiator: level 16 number of states 28 number of transitions 28
+Instantiator: level 17 number of states 24 number of transitions 24
+Instantiator: level 18 number of states 24 number of transitions 38
+Instantiator: level 19 number of states 38 number of transitions 40
+Instantiator: level 20 number of states 36 number of transitions 40
+Instantiator: level 21 number of states 36 number of transitions 40
+Instantiator: level 22 number of states 33 number of transitions 33
+Instantiator: level 23 number of states 31 number of transitions 80
+Instantiator: level 24 number of states 44 number of transitions 88
+Instantiator: level 25 number of states 47 number of transitions 51
+Instantiator: level 26 number of states 45 number of transitions 58
+Instantiator: level 27 number of states 50 number of transitions 54
+Instantiator: level 28 number of states 46 number of transitions 48
+Instantiator: level 29 number of states 36 number of transitions 41
+Instantiator: level 30 number of states 38 number of transitions 43
+Instantiator: level 31 number of states 40 number of transitions 53
+Instantiator: level 32 number of states 49 number of transitions 54
+Instantiator: level 33 number of states 46 number of transitions 46
+Instantiator: level 34 number of states 30 number of transitions 35
+Instantiator: level 35 number of states 33 number of transitions 35
+Instantiator: level 36 number of states 33 number of transitions 46
+Instantiator: Explored 1000 and visited 1036 states and 1298 transitions at level 37
+Instantiator: level 37 number of states 40 number of transitions 46
+Instantiator: level 38 number of states 37 number of transitions 37
+Instantiator: level 39 number of states 23 number of transitions 24
+Instantiator: level 40 number of states 15 number of transitions 17
+Instantiator: level 41 number of states 17 number of transitions 22
+Instantiator: level 42 number of states 20 number of transitions 26
+Instantiator: level 43 number of states 25 number of transitions 25
+Instantiator: level 44 number of states 15 number of transitions 15
+Instantiator: level 45 number of states 9 number of transitions 11
+Instantiator: level 46 number of states 8 number of transitions 8
+Instantiator: level 47 number of states 4 number of transitions 6
+Instantiator: level 48 number of states 5 number of transitions 5
+Instantiator: level 49 number of states 2 number of transitions 2
+Instantiator: level 50 number of states 1 number of transitions 1
+Instantiator: Finished.
+Instantiator: Number of summands: 33 - Number of used summands: 30
+Instantiator: Explored 1202 states, generated 1522 transitions, and 51 levels
+OKAY run 3
+run 4: mcrl -regular -nocluster -tbf -newstate -binary
+Parallel composition is being translated... done.
+Parallel composition is being translated... done.
+Parallel composition is being translated... done.
+Parallel composition is being translated... done.
+Parallel composition is being translated... done.
+symbolic reduction of LPE
+Structelm: Number of existing projections: 2
+Structelm: Number of parameters of input LPO: 32
+Structelm: Number of parameter(s) of output LPO:34
+Structelm: Number of parameters of input LPO: 34
+Structelm: Number of parameter(s) of output LPO:36
+Structelm: Number of parameters of input LPO: 36
+Structelm: Number of parameter(s) of output LPO:38
+Rewr: Start compiling ...
+Rewr: .... end compiling.
+Rewr: Read 45 summands
+Rewr: Written 33 summands
+Constelm: JITty Rewriter initialised with hashing (strategy strictleft)
+Constelm: Read 33 summands
+Constelm: Number of parameters of input LPO: 38
+Constelm: Constant parameter "max" (pos 18, sort "Nat") = "s(s(s(0)))" is removed
+Constelm: Number of removed parameter(s):1
+Constelm: Number of remaining parameter(s) of output LPO:37
+Constelm: Written 33 summands
+Constelm: Number of parameters of output LPO: 37
+Rewr: JITty Rewriter initialised with hashing (strategy strictleft)
+Rewr: Read 33 summands
+Rewr: Written 33 summands
+Parelm: Number of parameters of input LPO: 37
+Parelm: Parameter "l_0" (sort "D") is removed
+Parelm: Parameter "l_1_0" (sort "D") is removed
+Parelm: Parameter "l_1_1_0" (sort "D") is removed
+Parelm: Parameter "d" (sort "D") is removed
+Parelm: Parameter "i" (sort "Ind") is removed
+Parelm: Parameter "d7" (sort "D") is removed
+Parelm: In total 6 parameters have been removed
+Parelm: Number of parameters of output LPO: 31
+Sumelm: JITty Rewriter initialised with hashing (strategy strictleft)
+Sumelm: Read 33 summands
+Sumelm: Number of parameters of input LPO: 31
+Sumelm: No summands are changed
+Sumelm: Written 33 summands
+Sumelm: Number of parameters of output LPO: 31
+Parelm: Number of parameters of input LPO: 31
+Parelm: No process parameters have been removed
+Parelm: Number of parameters of output LPO: 31
+Instantiator: Start compiling ...
+Instantiator: .... end compiling.
+Instantiator: Explored 0 and visited 1 states and 0 transitions at level 0
+Instantiator: level 0 number of states 1 number of transitions 40
+Instantiator: level 1 number of states 4 number of transitions 4
+Instantiator: level 2 number of states 4 number of transitions 4
+Instantiator: level 3 number of states 4 number of transitions 8
+Instantiator: level 4 number of states 8 number of transitions 8
+Instantiator: level 5 number of states 8 number of transitions 8
+Instantiator: level 6 number of states 8 number of transitions 8
+Instantiator: level 7 number of states 8 number of transitions 8
+Instantiator: level 8 number of states 8 number of transitions 16
+Instantiator: level 9 number of states 16 number of transitions 16
+Instantiator: level 10 number of states 16 number of transitions 16
+Instantiator: level 11 number of states 16 number of transitions 16
+Instantiator: level 12 number of states 15 number of transitions 54
+Instantiator: level 13 number of states 18 number of transitions 32
+Instantiator: level 14 number of states 32 number of transitions 32
+Instantiator: level 15 number of states 28 number of transitions 32
+Instantiator: level 16 number of states 28 number of transitions 28
+Instantiator: level 17 number of states 24 number of transitions 24
+Instantiator: level 18 number of states 24 number of transitions 38
+Instantiator: level 19 number of states 38 number of transitions 40
+Instantiator: level 20 number of states 36 number of transitions 40
+Instantiator: level 21 number of states 36 number of transitions 40
+Instantiator: level 22 number of states 33 number of transitions 33
+Instantiator: level 23 number of states 31 number of transitions 80
+Instantiator: level 24 number of states 44 number of transitions 88
+Instantiator: level 25 number of states 47 number of transitions 51
+Instantiator: level 26 number of states 45 number of transitions 58
+Instantiator: level 27 number of states 50 number of transitions 54
+Instantiator: level 28 number of states 46 number of transitions 48
+Instantiator: level 29 number of states 36 number of transitions 41
+Instantiator: level 30 number of states 38 number of transitions 43
+Instantiator: level 31 number of states 40 number of transitions 53
+Instantiator: level 32 number of states 49 number of transitions 54
+Instantiator: level 33 number of states 46 number of transitions 46
+Instantiator: level 34 number of states 30 number of transitions 35
+Instantiator: level 35 number of states 33 number of transitions 35
+Instantiator: level 36 number of states 33 number of transitions 46
+Instantiator: Explored 1000 and visited 1036 states and 1298 transitions at level 37
+Instantiator: level 37 number of states 40 number of transitions 46
+Instantiator: level 38 number of states 37 number of transitions 37
+Instantiator: level 39 number of states 23 number of transitions 24
+Instantiator: level 40 number of states 15 number of transitions 17
+Instantiator: level 41 number of states 17 number of transitions 22
+Instantiator: level 42 number of states 20 number of transitions 26
+Instantiator: level 43 number of states 25 number of transitions 25
+Instantiator: level 44 number of states 15 number of transitions 15
+Instantiator: level 45 number of states 9 number of transitions 11
+Instantiator: level 46 number of states 8 number of transitions 8
+Instantiator: level 47 number of states 4 number of transitions 6
+Instantiator: level 48 number of states 5 number of transitions 5
+Instantiator: level 49 number of states 2 number of transitions 2
+Instantiator: level 50 number of states 1 number of transitions 1
+Instantiator: Finished.
+Instantiator: Number of summands: 33 - Number of used summands: 30
+Instantiator: Explored 1202 states, generated 1522 transitions, and 51 levels
+OKAY run 4

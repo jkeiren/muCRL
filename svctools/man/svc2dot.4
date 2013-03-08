@@ -1,0 +1,68 @@
+.\"  SVC tools -- the SVC (Systems Validation Centre) tool set
+.\"
+.\"  Copyright (C) 2000  Stichting Mathematisch Centrum, Amsterdam,
+.\"                      The  Netherlands
+.\"
+.\"  This program is free software; you can redistribute it and/or
+.\"  modify it under the terms of the GNU General Public License
+.\"  as published by the Free Software Foundation; either version 2
+.\"  of the License, or (at your option) any later version.
+.\"
+.\"  This program is distributed in the hope that it will be useful,
+.\"  but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"  GNU General Public License for more details.
+.\"
+.\"  You should have received a copy of the GNU General Public License
+.\"  along with this program; if not, write to the Free Software
+.\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+.\"
+.\" $Id: svc2dot.4,v 1.1 2001/09/13 14:14:24 bertl Exp $
+.TH SVC2DOT 1 13/9/2001
+.SH NAME
+svc2dot \- converts SVC format to dot format (graph visualization)
+
+.SH SYNOPSIS
+.B svc2dot
+[-c][-v][-s][-h][-o 
+.I 
+outfile\c
+] 
+.I 
+infile
+
+.SH DESCRIPTION
+.B svc2dot
+is a tool for the conversion of files in SVC format (.svc) to files to
+the format that is readable by the open graph visualization programs \fBdot\fR 
+and \fBdotty\fR.
+\fBdot -Tps\fR converts .dot files to postscript files. \fBdotty\fR displays
+.dot files.
+.SH OPTIONS 
+.IP \-c
+Don't overwrite existing files
+.IP \-v
+Print version number
+.IP \-h
+List available options
+.IP \-o\ \fIoutfile\fR
+Write the output to \fIoutfile\fR. The default is 
+.I outfile.dot
+.IP \-s
+Silent operation: don't print the header information from the input file
+
+.SH FILES
+.IP filename.dot
+A file in dot format
+.IP filename.svc
+A file in SVC format
+
+.SH SEE ALSO
+\fRhttp://www.research.att.com/sw/tools/graphviz\fR for information about and 
+for downloading \fBdot\fR and \Bdotty\fR.
+
+
+.SH AUTHOR
+Bert Lisser <bertl@cwi.nl>
+.LP
+Please send all complaints, comments and bug fixes to me. 

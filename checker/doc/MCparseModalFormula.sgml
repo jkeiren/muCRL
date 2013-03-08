@@ -1,0 +1,286 @@
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.2//EN" [
+<!ENTITY mcrl                 '<acronym>mCRL</acronym>'>
+<!ENTITY aterm                '<acronym>ATerm</acronym>'>
+<!ENTITY cwi                  '<acronym>CWI</acronym>'>
+<!ENTITY refmucalculus        '<literal>mucalculus(7)</literal>'>
+<!ENTITY fmcparsemodalformula '<function>MCparseModalFormula</function>'>
+<!ENTITY pformstream          '<parameter>formStream</parameter>'>
+<!ENTITY preduce              '<parameter>reduce</parameter>'>
+<!ENTITY paclevel             '<parameter>acLevel</parameter>'>
+<!ENTITY pvblevel             '<parameter>vbLevel</parameter>'>
+<!ENTITY psavetomcrlformat    '<parameter>saveToMCRLFormat</parameter>'>
+<!ENTITY cnull                '<constant>NULL</constant>'>
+<!ENTITY cstderr              '<constant>stderr</constant>'>
+<!ENTITY cstdout              '<constant>stdout</constant>'>
+<!ENTITY tfile                '<type>FILE</type>'>
+<!ENTITY tbool                '<type>_Bool</type>'>
+<!ENTITY tint                 '<type>int</type>'>
+<!ENTITY tatermappl           '<type>ATermAppl</type>'>
+<!ENTITY tatermlist           '<type>ATermList</type>'>
+<!ENTITY tafun                '<type>AFun</type>'>
+<!ENTITY qttrue               '<literal>"T"</literal>'>
+<!ENTITY qtfalse              '<literal>"F"</literal>'>
+<!ENTITY qtforall             '<literal>"forall"</literal>'>
+<!ENTITY qtexists             '<literal>"exists"</literal>'>
+<!ENTITY qtnil                '<literal>"nil"</literal>'>
+<!ENTITY qtmu                 '<literal>"mu"</literal>'>
+<!ENTITY qtnu                 '<literal>"nu"</literal>'>
+<!ENTITY ttrue                "'<literal>T</literal>'">
+<!ENTITY tfalse               "'<literal>F</literal>'">
+<!ENTITY tforall              "'<literal>forall</literal>'">
+<!ENTITY texists              "'<literal>exists</literal>'">
+<!ENTITY tnil                 "'<literal>nil</literal>'">
+<!ENTITY tmu                  "'<literal>mu</literal>'">
+<!ENTITY tnu                  "'<literal>nu</literal>'">
+<!ENTITY tnot                 "'<literal>not</literal>'">
+<!ENTITY tand                 "'<literal>and</literal>'">
+<!ENTITY tor                  "'<literal>or</literal>'">
+<!ENTITY timp                 "'<literal>imp</literal>'">
+<!ENTITY teq                  "'<literal>eq</literal>'">
+<!ENTITY tconcat              "'<literal>concat</literal>'">
+<!ENTITY tchoice              "'<literal>choice</literal>'">
+<!ENTITY ttrclose             "'<literal>tr_close</literal>'">
+<!ENTITY ttclose              "'<literal>t_close</literal>'">
+<!ENTITY tmay                 "'<literal>may</literal>'">
+<!ENTITY tmust                "'<literal>must</literal>'">
+<!ENTITY tloop                "'<literal>loop</literal>'">
+<!ENTITY tact                 "'<literal>act</literal>'">
+<!ENTITY tvar                 "'<literal>v</literal>'">
+<!ENTITY tform                "'<literal>form</literal>'">
+<!ENTITY trec                 "'<literal>rec</literal>'">
+<!ENTITY nname                '<literal>NAME</literal>'>
+<!ENTITY nrname               '<literal>RNAME</literal>'>
+<!ENTITY nan                  '<literal>AN</literal>'>
+<!ENTITY nvo                  '<literal>VO</literal>'>
+<!ENTITY ndt                  '<literal>DT</literal>'>
+<!ENTITY ndtlist              '<literal>DT_LIST</literal>'>
+<!ENTITY nvd                  '<literal>VD</literal>'>
+<!ENTITY nvdlist              '<literal>VD_LIST</literal>'>
+<!ENTITY naf                  '<literal>AF</literal>'>
+<!ENTITY nrf                  '<literal>RF</literal>'>
+<!ENTITY nmf                  '<literal>MF</literal>'>
+]>
+
+<refentry id="MCparseModalFormula">
+
+<refmeta>
+<refentrytitle>MCparseModalFormula</refentrytitle>
+<manvolnum>3</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>MCparseModalFormula</refname>
+<refpurpose><acronym>C</acronym> function that parses a modal mu-calculus formula and saves it to an &aterm;.</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+<funcsynopsis>
+<funcsynopsisinfo>
+#include "libmcparse.h"
+</funcsynopsisinfo>
+<funcprototype>
+  <funcdef>&tatermappl; &fmcparsemodalformula;</funcdef>
+  <paramdef>&tfile; *&pformstream;</paramdef>
+  <paramdef>&tbool; &preduce;</paramdef>
+  <paramdef>&tint; &paclevel;</paramdef>
+  <paramdef>&tint; &pvblevel;</paramdef>
+  <paramdef>&tbool; &psavetomcrlformat;</paramdef>
+</funcprototype>
+</funcsynopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>Preconditions</title>
+<para>
+The following preconditions have to be satisfied:
+<itemizedlist>
+  <listitem>
+    <para>the &aterm; library is initialised</para>
+  </listitem>
+  <listitem>
+    <para>&pformstream; points to a stream from which can be read</para>  
+  </listitem>
+  <listitem>
+    <para><literal>0 &lt;= &paclevel; &lt;= 2</literal></para>  
+  </listitem>
+  <listitem>
+    <para><literal>0 &lt;= &pvblevel; &lt;= 3</literal></para>  
+  </listitem>
+  <listitem>
+    <para>if &psavetomcrlformat;, an &mcrl; data specification is present in the &mcrl; library</para>
+  </listitem>
+</itemizedlist>
+</para>
+</refsect1>
+
+<refsect1>
+<title>Description</title>
+<para>
+Function &fmcparsemodalformula; parses the modal formula in &pformstream; and saves it to a value of type &tatermappl;. The structure of the modal formula is explained in &refmucalculus;. The structure of the &tatermappl; value is explained in the next subsection.
+</para>
+<para>
+During parsing the formula is checked for monotonicity and adherence to the variable convention. Also the occurrences of dangerous nestings of fixed point variables are checked. If the first two checks fail, an error generated. If the third check succeeds a warning is generated.
+</para>
+<para>
+If &preduce; is true, all regular operations are replaced by equivalent non-regular operations.
+</para>
+<para>
+Alpha conversion is applied based on the value of &paclevel;:
+<informaltable frame='none'>
+<tgroup cols='2'>
+<tbody>
+<row>
+  <entry><literal>0 (none)</literal></entry>
+  <entry>no alpha conversion</entry>
+</row>
+<row>
+  <entry><literal>1 (scope)</literal></entry>
+  <entry>names of bound variables that are in each other's scope are different</entry>
+</row>
+<row>
+  <entry><literal>2 (full)</literal></entry>
+  <entry>all names of bound variables are different</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable>
+The printing of intermediate messages on &cstdout; (besides error messages) is controlled by the value of &pvblevel;:
+<informaltable frame='none'>
+<tgroup cols='2'>
+<tbody>
+<row>
+  <entry><literal>0 (silent)</literal></entry>
+  <entry>no messages are printed</entry>
+</row>
+<row>
+  <entry><literal>1 (normal)</literal></entry>
+  <entry>warnings are printed</entry>
+</row>
+<row>
+  <entry><literal>2 (verbose)</literal></entry>
+  <entry>warnings and short status information is printed</entry>
+</row>
+<row>
+  <entry><literal>3 (debug)</literal></entry>
+  <entry>many messages are printed to make debugging possible</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable>
+If &psavetomcrlformat; is true, the types of expressions occurring in the modal formula are checked and the formula is translated to the internal &mcrl; format, using the data specification that is present in the &mcrl; library. During this translation, a version of full alpha conversion is performed that is provided by the &mcrl; library. Therefore, it isn't necessary to provide the parameter &paclevel; with the value 2; however, you are advised to do so, because this generates more readable names.
+</para>
+<para>
+If parsing succeeded and no errors are generated, the parsed &tatermappl; value is returned; otherwise &cnull; is returned and an appropriate error message is printed on &cstderr;.
+</para>
+
+<refsect2>
+<title>Structure of the result</title>
+<para>
+We describe the syntax and partly the semantics of the resulting &aterm; of function &fmcparsemodalformula;. In the following <acronym>BNF</acronym> syntax lowercase words are &aterm; function symbols, expressions <literal>f(e0,...,en)</literal> are &aterm; function applications of arity <literal>n</literal>, and expressions <literal>[e0,...,en]</literal> are &aterm; lists of length <literal>n</literal>. Therefore, these terms have type &tafun;, &tatermappl; and &tatermlist;, respectively.
+</para>
+<para>
+Preliminaries:
+</para>
+<screen>
+  AN       ::=  RNAME(DT,...,DT)
+  VO       ::=  RNAME(DT,...,DT)
+  DT       ::=  NAME(DT,...,DT)
+  DT_LIST  ::=  [DT,...,DT]
+  VD       ::=  v(RNAME,RNAME)
+  VD_LIST  ::=  [VD,...,VD]
+</screen>
+<para>
+Here &nname; and &nrname; both denote &mcrl; names, &nan; represents action names, &nvo; variable occurrences, &ndt; data terms, &ndtlist; lists of data terms, &nvd; variable declarations and &nvdlist; lists of variable declarations. Action and data names have to be declared, the data terms should be well typed and the right part of a variable declaration should be a declared sort. An &nrname is restricted such that the keywords &qttrue;, &qtfalse;, &qtforall;, &qtexists;, &qtnil;, &qtmu; and &qtnu; are not allowed. To be able to distinguish function symbols of the mu-calculus from &mcrl; function symbols, &nname; and &nrname; are quoted &aterm;s of type &tatermappl;.
+</para>
+
+<para>
+Action formulas:
+</para>
+<screen>
+    AF  ::=  act(AN)  |  T  |  F  |  not(AF)
+          |  and(AF,AF)  |  or(AF,AF)  |  imp(AF,AF)  |  eq(AF,AF)
+          |  forall(NAME,NAME,AF)  |  exists(NAME,NAME,AF)
+</screen>
+<para>
+Here the symbol &tact; indicates that its parameter is an action name. The symbol &ttrue; stands for true, &tfalse; for false, &tnot; for negation, &tand; for conjunction, &tor; for disjunction, &timp; for implication, &teq; for equivalence, &tforall; for universal quantification and &texists; for existential quantification.
+</para>
+<para>
+Regular formulas:
+</para>
+<screen>
+    RF  ::=  AF  |  nil  |  concat(RF,RF)  |  choice(RF,RF)
+          |  tr_close(RF)  |  t_close(RF)
+</screen>
+<para>
+A regular formula denotes a path of action formulas. Here &tnil; stands for the empty path, &tconcat; for the concatentation of two paths, &tchoice; for the choice between two paths, &ttrclose; for the transitive and reflexive closure of a path and &ttclose; for the transitive closure of a path.
+</para>
+<para>
+Modal formulas:
+</para>
+<screen>
+    MF  ::=  form(DT)  |  T  |  F  |  not(MF)
+          |  and(MF,MF)  |  or(MF,MF)  |  imp(MF,MF)  |  eq(MF,MF)
+          |  forall(NAME,NAME,MF)  |  exists(NAME,NAME,MF) 
+          |  may(RF,MF)  |  must(RF,MF)  |  loop(RF)  |  rec(VO)  
+          |  mu(NAME, VD_LIST, MF, DT_LIST)  |  nu(NAME, VD_LIST, MF, DT_LIST)
+</screen>
+<para>
+Here the symbol &tform; indicates that its parameter is a boolean data term. The symbols &ttrue;, &tfalse;, &tnot;, &tand;, &tor;, &timp;, &teq;, &tforall; and &texists; are analogous to the corresponding symbols in action formulas. The symbol &tmay; stands for the may operator, &tmust; for the must operator and &tloop; for the infinite looping operator. The symbol &tmu; stands for the smallest fixed point operator, &tnu; for the largest fixed point operator and &trec; for the occurrence of a fixed point variable.
+</para>
+<para>
+The may and must operators and the infinite looping operator have the following meaning. In a state of the state space a formula <literal>may(R,phi)</literal> is valid if there exists a path starting in this state, that satisfies <literal>R</literal> and leads to a state such that <literal>phi</literal> is valid. In a state of the state space a formula <literal>must(R,phi)</literal> is valid if all paths starting in this state, satisfying <literal>R</literal>, lead to a state such that <literal>phi</literal> is valid. In a state of the state space <literal>loop(R)</literal> holds if there exists a path starting in this state that is an infinite concatenation of sequences that satisfy <literal>R</literal>.
+</para>
+<para>
+The generated formula adheres to the variable convention and it is monotonic, which means that every occurrence of a fixed point variable may only be in the scope of an even number of &tnot; operations.
+</para>
+</refsect2>
+
+<refsect2>
+<title>Reduction</title>
+<para>
+We call the operations &tnil;, &tconcat;, &tchoice;, &ttrclose;, &ttclose; and &tloop; regular operations. When parameter &preduce; of function &fmcparsemodalformula; has value true, then each regular operation in the modal formula is replaced by an equivalent non-regular operation. This is achieved by repeatedly applying the following properties from left to right, where <literal>X</literal> is fresh variable, <abbrev>i.e.</abbrev> <literal>X</literal> may not occur free in <literal>phi</literal> or <literal>R</literal>:
+</para>
+<screen>
+    may(nil,phi)            = may(tr_close(F),phi)
+    may(concat(R1,R2),phi)  = may(R1,may(R2,phi))
+    may(choice(R1,R2),phi)  = or(may(R1,phi),may(R2,phi))
+    may(tr_close(R),phi)    = mu(X,[],or(phi,may(R,X),[])
+    may(t_close(R),phi)     = may(concat(R,tr_close(R)),phi)
+    
+    must(nil,phi)           = must(tr_close(F),phi)
+    must(concat(R1,R2),phi) = must(R1,must(R2,phi))
+    must(choice(R1,R2),phi) = and(must(R1,phi),must(R2,phi))
+    must(tr_close(R),phi)   = nu(X,[],and(phi,must(R,X),[])
+    must(t_close(R),phi)    = must(concat(R,tr_close(R)),phi)
+    
+    loop(R)                 = nu(X,[],may(R,X),[])
+</screen>
+</refsect2>
+
+</refsect1>
+
+<refsect1>
+<title>Known problems</title>
+<para>The type &tbool; is used instead of <literal>bool</literal> to avoid conflicts with reserved words in the &mcrl; library. This type is defined in the header file <literal>mcfunc.h</literal>.
+</para>
+
+<para>
+If &psavetomcrlformat; is true, the types of actions are not checked because actions are not present in the internal &mcrl; format.
+</para>
+</refsect1>
+
+<refsect1>
+<title>Author</title>
+<para>
+Written by Aad Mathijssen <email>A.H.J.Mathijssen@tue.nl</email>. Please send all complaints, comments and bug fixes to me.
+</para>
+</refsect1>
+
+<refsect1>
+<title>See also</title>
+<para>
+More information on the mu-calculus can be found in &refmucalculus;. More information on the &aterm; library can be found at the website of the <ulink url="http://www.cwi.nl/htbin/sen1/twiki/bin/view/SEN1/ATermLibrary">&cwi;</ulink>.
+</para>
+</refsect1>
+
+</refentry>

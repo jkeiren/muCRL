@@ -1,0 +1,76 @@
+
+<refentry id="dmp2dir">
+<refmeta>
+<refentrytitle>dmp2dir</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>dmp2dir</refname>
+<refpurpose>Converts <literal>.dmp</literal> directory into 
+<literal>.dir</literal> format</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>dmp2dir</command> 
+<arg><option>-nsegments <parameter>number</parameter></option></arg>
+<arg><option>-bufsize <parameter>number</parameter></option></arg>
+<arg><option>-monitor</option></arg>
+<arg choice="plain"><option><filename><replaceable>input</replaceable></filename>
+</option></arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+Converts an <literal>.dmp</literal> directory, which is produced by
+&instantiators.lnk; or &instantiator1.lnk; to an  <literal>.dir</literal>
+directory which can be read by the distributed data reduction tools.
+The name of the output directory is: 
+<filename><replaceable>input</replaceable>.dir</filename> in which
+<replaceable>input</replaceable> is first part of the name of 
+<literal>.dmp</literal> directory:
+<filename><replaceable>input</replaceable>.dmp</filename>
+</para>
+<remark>The tools &ltscp.lnk;, &ltscmp.lnk;, and &ltsmin.lnk; allow  
+<literal>.dmp</literal> input directories</remark>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+<varlistentry>
+  <term><option>-nsegments <parameter>number</parameter></option>
+  </term>
+  <listitem>
+    <para>
+    The number of segments which will be written 
+    </para>
+    <remark> Default is equal to the number of segments found in the 
+    input directory</remark>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-monitor</option>
+  </term>
+  <listitem>
+    <para>
+    Display progressing information 
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-bufsize <parameter>number</parameter></option></term>
+  <listitem>
+    <para>
+    Set the size of the IO buffers (in bytes). 
+    Advantages of taking a large number are: less (expensive) flushes, 
+    and contiguous files. 
+    </para>
+  </listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+&dmp2dir.xml;
+</refentry>

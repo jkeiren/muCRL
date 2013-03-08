@@ -1,0 +1,45 @@
+#$Id: Makefile.in,v 1.2 2004/11/23 12:36:17 uid523 Exp $
+SHELL           = /bin/sh
+.SUFFIXES:      .c .o
+
+ARCH    =       @ARCH@
+
+srcdir          = @srcdir@
+top_srcdir      = @top_srcdir@
+prefix          = @prefix@
+exec_prefix     = @exec_prefix@
+datarootdir 	= @datarootdir@
+bindir          = @bindir@
+libdir          = @libdir@
+includedir      = @includedir@
+datadir         = @datadir@
+distdir         = @distdir@
+libexecdir      = @libexecdir@
+docdir          = @docdir@
+noprintdirectory= @noprintdirectory@
+
+VERSION		= @VERSION@
+SUBDIR		= implicit
+
+@SET_MAKE@
+
+all:
+		(cd src; $(MAKE) all)
+
+install:
+		(cd src; $(MAKE) install)
+
+dist:
+		mkdir $(distdir)/$(SUBDIR)
+		(cd src;$(MAKE) dist)
+		cp Makefile.in $(distdir)/$(SUBDIR)
+
+clean:
+		if test -d src; then \
+		(cd src;$(MAKE) clean); \
+		fi
+
+uninstall:
+		if test -d src; then \
+		(cd src;$(MAKE) uninstall); \
+		fi

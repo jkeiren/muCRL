@@ -1,0 +1,18 @@
+% Renaming of actions in $(datadir)/abp.tbf with intention to remove sum 
+% variables and renaming tau_... to tau.
+
+% The extra rewrite rule
+%       var x:D 
+%       rew  and(not(eq(x,d2)),not(eq(x,d1)))=F
+% must be added for removing sum variables
+
+r1(X)->r1(d1)<|X=d1
+r1(X)->r1(d2)<|X=d2
+s4(X)->s4(d1)<|X=d1
+s4(X)->s4(d2)<|X=d2
+tau_s6e->tau
+tau_s6n->tau
+tau_s3e->tau
+tau_s3dn->tau
+c3(X,Y)->c3(d1, Y)<|X=d1
+c3(X,Y)->c3(d2, Y)<|X=d2

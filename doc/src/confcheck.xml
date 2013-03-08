@@ -1,0 +1,168 @@
+
+<refentry id="confcheck">
+<refmeta>
+<refentrytitle>confcheck</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>confcheck</refname>
+<refpurpose>
+Displays information on confluent taus
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>confcheck</command> 
+<arg> <option>-invariant</option> 
+<replaceable>file</replaceable>
+</arg>
+<arg> <option>-summand</option> <replaceable>n</replaceable>
+</arg>
+<arg><option>-mark</option></arg>
+<arg><option>-generate</option></arg>
+<arg><option>-counter</option></arg>
+<arg><option>-print</option></arg>
+<arg><option>-print-dot</option></arg>
+<arg><option>-all</option></arg>
+<arg><option>-silent</option></arg>
+&common1;
+<arg><option><link linkend="libmcrl">Data Options</link></option></arg>
+<arg><option><link linkend="rw">Rewriter Options</link></option></arg>
+<arg><option><parameter>input</parameter>.tbf</option></arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+This tool reads from 
+<filename><replaceable>input</replaceable>.tbf</filename> (or 
+<filename> stdin</filename> if not given) an &lpe; 
+in <literal>.tbf </literal> format and reports on
+<filename>stderr</filename> which <literal>tau</literal>-summands are
+confluent. If option <option>-mark</option> is present then it writes the
+same input LPE to <filename>stdout</filename>, 
+however with confluent <literal>tau</literal> replaced by <literal>ctau</literal>.
+This information can be used by &instantiator.lnk; &instantiator1.lnk;, or
+&instantiators.lnk;. An invariant can be used by <option>-invariant</option>
+in order to facilitate theorem proving.
+The report on <filename>stderr</filename> can be understood as follows:
+<variablelist>
+<varlistentry>
+<term>.</term><listitem><para>confluent by symmetry (previous case)</para></listitem>
+</varlistentry><varlistentry>
+<term>:</term><listitem><para>confluent by syntactic disjointness</para></listitem>
+</varlistentry><varlistentry>
+<term>+</term><listitem><para>confluent by consulting the prover</para></listitem>
+</varlistentry><varlistentry>
+<term>-</term><listitem><para>not confluent by consulting the prover.
+(Check why with <option>-counter</option> or <option>-print(-dot)</option>).
+</para></listitem>
+</varlistentry>
+</variablelist>
+<remark>
+The symbols <command>eq</command> will be used for all parameters occurring
+in the state vector, so these should be declared and specified by the user.
+It is assumed that these symbols denote equality.
+</remark>
+</para>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+<!--<title>Options</title>-->
+<varlistentry>
+  <term><option>-invariant</option> <parameter>file</parameter></term>
+  <listitem>
+    <para>
+   Read an invariant &phi; from <parameter>file</parameter>.
+   This file should contain exactly one formula, i.e of type Bool.
+   The formula may contain the process parameters of the LPE as free variables,
+   but no other variables. This invariant must be proven correct 
+   (for example by &invcheck.lnk;).
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-summand</option> <replaceable>n</replaceable></term>
+  <listitem>
+    <para>
+    Checks confluence of <parameter>n</parameter>th summand only
+    (should be a  <literal>tau</literal>-summand)
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-mark</option></term>
+  <listitem>
+    <para>
+   Write the
+   same input LPE to <filename>stdout</filename> 
+   except for the confluent <literal>tau</literal>. 
+   This is renamed to <literal>ctau</literal>. 
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-generate</option></term>
+  <listitem>
+    <para>
+   Generate the confluence formulas and write them to 
+   <filename>stdout</filename>  in the format understood by
+   <command>formcheck</command>.
+   They are not checked but merely generated. The main reason is that the
+   formulas could be translated and submitted to other theorem provers,
+   like PVS or Isabelle. Don't use this option in combination with options
+   <option>-mark</option>,<option>-counter</option>, <option>print</option>,
+   or <option>print-dot</option>
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-all</option> </term>
+  <listitem>
+  <para>
+  Do not terminate on detection of non confluence at a 
+  <literal>tau</literal>-summand. This is useful if one wants to
+  know all summands that a certain <literal>tau</literal>-summand
+  doesn't commute with.
+  </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-print</option></term>
+  <listitem>
+  <para>
+   Print resulting BDDs on <filename>stderr</filename>
+  </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-print-dot</option></term>
+  <listitem>
+  <para>
+  Print resulting BDDs in dot-format on <filename>stderr</filename>
+  </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-counter</option></term>
+  <listitem>
+  <para>
+  Print counter examples
+  </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-silent</option> </term>
+  <listitem>
+  <para>
+  Suppress writing information on confluent taus
+  </para>
+  </listitem>
+</varlistentry>
+&common2;
+</variablelist>
+</refsect1>
+&confcheck.xml;
+</refentry>

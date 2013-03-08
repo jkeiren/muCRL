@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>instantiator</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><link rel="home" href="index.html" title="Manual Pages of the mCRL toolset (2.17.8)" /><link rel="up" href="rn03.html" title="Explicit State Space Exploration" /><link rel="prev" href="rn03.html" title="Explicit State Space Exploration" /><link rel="next" href="rn03re19.html" title="instantiators" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">instantiator</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="rn03.html">Prev</a> </td><th width="60%" align="center">Explicit State Space Exploration</th><td width="20%" align="right"> <a accesskey="n" href="rn03re19.html">Next</a></td></tr></table><hr /></div><div class="refentry" lang="en" xml:lang="en"><a id="instantiator"></a><div class="titlepage"></div><div class="refnamediv"><h2>Name</h2><p>instantiator — Generates state space
+</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p><code class="command">instantiator</code>  [<code class="option">-help</code>] [<code class="option">-help-all</code>] [<code class="option">-version</code>] [<code class="option">-max</code> <em class="replaceable"><code>N</code></em>] [<code class="option">-max-enum</code> <em class="replaceable"><code>N</code></em>] [<code class="option">-reduce</code>] [<code class="option">-i</code>] [<code class="option">-o</code> 
+<em class="replaceable"><code>file</code></em>
+] [<code class="option">-monitor</code>] [<code class="option">-explore</code>] [ <code class="option">-svc-term</code>  |   <code class="option">-svc-num</code>  |   <code class="option">-aut</code>  |   <code class="option">-check</code>  |   <code class="option">-deadlock</code>  |   <code class="option">-trace</code> <em class="replaceable"><code>actions</code></em>   |   <code class="option">-traces</code> <em class="replaceable"><code>actions</code></em>   |   <code class="option">-user</code> 
+<em class="replaceable"><code>file</code></em>.so
+  |   <code class="option">-invariant</code> 
+<em class="replaceable"><code>file</code></em>
+ ] [<code class="option"><a class="link" href="rn06re29.html" title="Stepper Options">Stepper Options</a></code>] [<code class="option"><a class="link" href="rn06re28.html" title="Rewriter Options">Rewriter Options</a></code>] [<code class="option"><a class="link" href="rn06re27.html" title="Data Options">Data Options</a></code>]  <code class="option"><em class="replaceable"><code>input</code></em>.tbf</code> </p></div><div class="cmdsynopsis"><p><code class="command"><em class="replaceable"><code>actions</code></em><span class="token">::=</span></code>    <em class="replaceable"><code>action</code></em>   {<em class="replaceable"><code>,action
+</code></em>}... </p></div></div><div class="refsect1" lang="en" xml:lang="en"><a id="id418941"></a><h2>Description</h2><p>
+The state space, defined by the <a class="link" href="rn01re01.html#lpe" title="Linear Process Equation">LPE</a>
+contained in <code class="filename"><em class="replaceable"><code>input</code></em>.tbf</code>, 
+will be traversed in breadth-first order. There are options that 
+encountered actions and deadlocks will be printed during the traversal.
+</p></div><div class="refsect1" lang="en" xml:lang="en"><a id="id418966"></a><h2>Options</h2><div class="variablelist"><dl><dt><span class="term"><code class="option">-help</code></span></dt><dd><p>
+    Display help information
+    </p></dd><dt><span class="term"><code class="option">-help-all</code></span></dt><dd><p>
+    Display all help information
+    </p></dd><dt><span class="term"><code class="option">-version</code></span></dt><dd><p>
+    Get the version number of this release
+    </p></dd><dt><span class="term"><code class="option">-max</code> <em class="parameter"><code>N</code></em>
+  </span></dt><dd><p>
+    <em class="parameter"><code>N</code></em>*<code class="literal">1000</code>
+     is the upperbound of the number of states
+     which will be explored
+    </p></dd><dt><span class="term"><code class="option">-max-enum</code> <em class="parameter"><code>N</code></em>
+  </span></dt><dd><p>
+    <em class="parameter"><code>N</code></em><code class="literal">*1000</code>
+     is the upperbound of help variables used during enumeration
+    </p></dd><dt><span class="term"><code class="option">-reduce</code>
+  </span></dt><dd><p>
+    Write the LPE containing only the summands which are used during state 
+    space generation to <code class="literal">stdout</code>
+    </p></dd><dt><span class="term"><code class="option">-i</code>
+  </span></dt><dd><p>
+    Tau replaced by i (Needed for <span class="application"> CADP </span>)
+    </p></dd><dt><span class="term"><code class="option">-deadlock</code>
+  </span></dt><dd><p>
+    Write an action trace to each deadlock state in text file
+ <code class="filename"><em class="parameter"><code>input</code></em>.trc/<em class="parameter"><code>n</code></em></code>
+    and write report of this in 
+    <code class="filename"><em class="parameter"><code>input</code></em>.dlk</code>
+    These files can be read by <span class="application">msim</span> and
+    <span class="application">jsim</span>.
+    </p></dd><dt><span class="term"><code class="option">-o</code> 
+  <code class="filename"><em class="parameter"><code>output</code></em></code>
+  </span></dt><dd><p>
+    Write state space to  
+    <code class="filename"><em class="parameter"><code>output</code></em>.ext</code> in which 
+    <code class="literal">ext</code> is determined by a chosen option 
+    (default <code class="literal">ext</code> equal to <code class="literal">aut</code>)
+    </p></dd><dt><span class="term"><code class="option">-monitor</code>
+  </span></dt><dd><p>
+    Display progressing information
+    </p></dd><dt><span class="term"><code class="option">-explore</code>
+  </span></dt><dd><p>
+   See <code class="option">-monitor</code>. In addition encountered deadlocks will be 
+   printed.
+    </p></dd><dt><span class="term"><code class="option">-check</code>
+  </span></dt><dd><p>
+    Perform only a type check during state space traversal  
+    </p></dd><dt><span class="term"><code class="option">-aut</code>
+  </span></dt><dd><p>
+    Write transition system in <code class="literal">.aut</code> format (default)
+    </p></dd><dt><span class="term"><code class="option">-svc-term</code>
+  </span></dt><dd><p>
+    Write transition system in SVC format.
+    States are represented by vector of terms.
+    </p></dd><dt><span class="term"><code class="option">-svc-num</code>
+  </span></dt><dd><p>
+    Write transition system in SVC format.
+    States are represented by numbers.
+    </p></dd><dt><span class="term"><code class="option">-trace</code> <em class="parameter"><code>actions</code></em>
+  </span></dt><dd><p>
+    Write an action trace to each <em class="parameter"><code>action</code></em>
+    mentioned in <em class="parameter"><code>actions</code></em> in text file
+<code class="filename"><em class="parameter"><code>input</code></em>.trc/<em class="parameter"><code>action</code></em></code>
+    and writes report of this in 
+    <code class="filename"><em class="parameter"><code>input</code></em>.dlk</code>.
+    Also traces to deadlock states will be written.
+    These files can be read by <span class="application">msim</span> and
+    <span class="application">jsim</span>.
+    </p></dd><dt><span class="term"><code class="option">-traces</code> <em class="parameter"><code>actions</code></em>
+  </span></dt><dd><p>
+    See <code class="option">-trace</code>.  
+    However more traces per action will be written.
+    </p></dd><dt><span class="term"><code class="option">-user</code> 
+  <code class="filename"><em class="parameter"><code>file</code></em>.so</code>
+  </span></dt><dd><p>
+Link user defined callback functions.
+These C-functions must be defined in 
+<code class="filename"><em class="parameter"><code>file</code></em>.c</code>.
+See the example in 
+<code class="filename">labelfreq.c</code>.
+</p></dd><dt><span class="term"><code class="option">-invariant</code> 
+  <code class="filename"><em class="parameter"><code>file</code></em></code>
+  </span></dt><dd><p>
+Check the invariants written in 
+<code class="filename"><em class="parameter"><code>file</code></em></code>
+during instantiation. 
+Further information about output, see the flag <code class="option">-deadlock</code>.
+</p></dd></dl></div></div><div class="refsect1" lang="en" xml:lang="en"><a id="id419528"></a><h2>Last update</h2><p><code class="literal">16 December 2008</code> by Bert Lisser <code class="email">&lt;<a class="email" href="mailto:B.Lisser@cwi.nl">B.Lisser@cwi.nl</a>&gt;</code> 
+
+</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="rn03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="rn03.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="rn03re19.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Explicit State Space Exploration </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> instantiators</td></tr></table></div></body></html>

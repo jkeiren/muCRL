@@ -1,0 +1,2 @@
+['.*_may.*'*. 's4_may(.*,in_setOf(I_ok,empty_setOf_Ind))'.(not ('s1_may.*' or '.*_must.*'))*. 's1_may(in_abs(I_nok,empty_setOf_Ind))']false
+

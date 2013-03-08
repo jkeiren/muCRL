@@ -1,0 +1,1708 @@
+% See J.Pang, W.J. Fokkink, R.F.H. Hofman, and R. Veldema.
+% Model checking a cache coherence protocol for a Java DSM implementation.
+% In Proc. 8th Workshop on Formal Methods for Parallel Programming:
+% Theory and Applications, 238. IEEE Computer Society, 2003.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% States of region: UNUSED and USED
+% Actions of thread: access and flush
+% New lock mechanism
+% Home_buffer and Remote_buffer
+% Threads
+% Processors
+% One Region, each region has one data and one twin,
+% if one region is the home, the twins must be null.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Updated history
+% 1. April 15, remove migrate_message
+% 2. Remove Location of Region
+% 3. Changes at Locker, replace threadmultiset by natural
+% 4. Limited Flush June 11, 2002
+% 5. Finding the bug with counter (localthreads) June 11, 2002
+% 6. Found the reason why counter can be greater than 2, June 13, 2002
+% 7. Trying to fix the deadlock in Second.Trc, June 17, 2002
+% 8. Trying to fix the deadlock in Third.Trc, June 19, 2002
+%    The WriterList is changed to be MultiSet 
+% 9. Add one Bool into Data_Return_Msg to indicate that it is migration message. June 19, 2002
+%10. Fixed in Flushathome, when sub1(getlocalt(r))<>0, we also need to remove Pid for WriterList
+%      and notice that 35,36,34, 26 are all changed, June 19, 2002
+%11 Fixed deadlock in Fourth.Trc the order of s_nofresh and forwarded s_data_require, 
+%       also with forwarded flush June 20 2002
+%12. Be careful with the s_refresh.., s_signal, and s_send_messages,
+%      Put s_refresh after s_signal and s_send_messages, June 20, 2002
+%13. r_flush_msg, when 'F', also need to remve 'Pid'' from the accessorlist, June 20, 2002
+%14. Fixed deadlock in Fifth.Trc, Flush->Since accessorlist is multiset, if
+%     after only one Pid left after removing, need to check what it is. June 21, 2002
+%15. Model checking (on-the-fly), June 24, 2002
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% The obligatory Bool sort
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+sort Bool
+func T,F:->Bool
+map  if:Bool#Bool#Bool->Bool
+     not:Bool->Bool
+     and:Bool#Bool->Bool
+     or:Bool#Bool->Bool
+     eq:Bool#Bool->Bool
+var  b,b':Bool
+rew  if(T,b,b')=b
+     if(F,b,b')=b'
+     not(T)=F
+     not(F)=T
+     not(not(b))=b
+     and(T,b)=b
+     and(F,b)=F
+     and(b,T)=b
+     and(b,F)=F
+     or(T,b)=T
+     or(F,b)=b
+     or(b,T)=T
+     or(b,F)=b
+     eq(T,T)=T
+     eq(T,F)=F
+     eq(F,T)=F
+     eq(F,F)=T
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Natural, used for localthreads
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+sort Natural
+func 0:->Natural
+     S:Natural->Natural
+map  sub1: Natural->Natural
+     eq: Natural#Natural->Bool
+     greaterthan: Natural#Natural->Bool 
+var  n,m:Natural
+rew  sub1(0)=0
+     sub1(S(n))=n
+
+     eq(0,0)=T
+     eq(0,S(m))=F
+     eq(S(n),0)=F
+     eq(S(n),S(m))=eq(n,m)
+
+     greaterthan(0, n) = F
+     greaterthan(S(n),0) = T
+     greaterthan(S(n),S(m))=greaterthan(n,m)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% The Integer Sort, with operation plus and minus
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+sort Integer
+func nil:->Integer
+     int:->Integer
+map  eq:Integer#Integer->Bool
+rew  eq(nil,nil)=T
+     eq(nil,int)=F
+     eq(int,nil)=F
+     eq(int,int)=T
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This sort is used for: the id of thread
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+sort ThreadId
+func tid1,tid2 :->ThreadId
+     tid3:->ThreadId
+map  eq,le:ThreadId#ThreadId->Bool
+var  t:ThreadId
+rew  eq(t,t)=T
+     eq(tid1,tid2)=F
+     eq(tid1,tid3)=F
+
+     eq(tid2,tid1)=F
+     eq(tid2,tid3)=F
+
+     eq(tid3,tid1)=F
+     eq(tid3,tid2)=F
+
+     le(t,t)=T
+     le(tid1,t)=T
+
+     le(tid2,tid1)=F
+     le(tid2,tid3)=T
+
+     le(tid3,tid1)=F
+     le(tid3,tid2)=F
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This sort is used for: the id of processor
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+sort ProcessId
+func pid1,pid2 :->ProcessId
+        pid3:->ProcessId
+map  eq,le:ProcessId#ProcessId->Bool
+var  p:ProcessId
+rew  eq(p,p)=T
+     eq(pid1,pid2)=F
+     eq(pid1,pid3)=F
+
+     eq(pid2,pid1)=F
+     eq(pid2,pid3)=F
+
+     eq(pid3,pid1)=F
+     eq(pid3,pid2)=F
+
+     le(p,p)=T
+     le(pid1,p)=T
+
+     le(pid2,pid1)=F
+     le(pid2,pid3)=T
+
+     le(pid3,pid1)=F
+     le(pid3,pid2)=F
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This sort is used for: the id of region
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+sort RegionId
+func rid1 :->RegionId
+map  eq:RegionId#RegionId->Bool
+rew  eq(rid1,rid1)=T
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This sort is used for Region.AccessorIDSet (Update History 8)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+sort ProcessIdMultiSet
+func ema:->ProcessIdMultiSet
+     in:ProcessId#ProcessIdMultiSet->ProcessIdMultiSet
+map  remove:ProcessId#ProcessIdMultiSet->ProcessIdMultiSet
+     test:ProcessId#ProcessIdMultiSet->Bool
+     empty:ProcessIdMultiSet->Bool
+     if:Bool#ProcessIdMultiSet#ProcessIdMultiSet->ProcessIdMultiSet
+     eq:ProcessIdMultiSet#ProcessIdMultiSet->Bool
+     count:ProcessIdMultiSet->Natural
+     getIden:ProcessIdMultiSet->ProcessId
+     insert:ProcessId#ProcessIdMultiSet->ProcessIdMultiSet
+var  a,a':ProcessId
+     A,A':ProcessIdMultiSet
+rew  remove(a,ema)=ema
+     remove(a,in(a',A))=if(eq(a,a'),A,in(a',remove(a,A)))
+     test(a,ema)=F
+     test(a,in(a',A))=if(eq(a,a'),T,test(a,A))
+     empty(ema)=T
+     empty(in(a,A))=F
+     if(T,A,A')=A
+     if(F,A,A')=A'
+     eq(ema,ema)=T
+     eq(ema,in(a,A))=F
+     eq(in(a,A),ema)=F
+     eq(in(a,A),A')=and(test(a,A'),eq(A,remove(a,A')))
+     count(ema)=0
+     count(in(a,A))=S(count(remove(a,in(a,A))))
+     getIden(in(a,A))=a
+     insert(a,ema)=in(a,ema)
+     insert(a,in(a',A'))=if(eq(a,a'),in(a, in(a',A')),
+                            if(le(a,a'),in(a,in(a',A')),in(a',insert(a,A'))))
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%This sort is used for Thread.AccessRegionSet
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+sort RegionIdSet
+func ridema:->RegionIdSet
+     in:RegionId#RegionIdSet->RegionIdSet
+map  remove:RegionId#RegionIdSet->RegionIdSet
+     test:RegionId#RegionIdSet->Bool
+     empty:RegionIdSet->Bool
+     if:Bool#RegionIdSet#RegionIdSet->RegionIdSet
+     conc:RegionIdSet#RegionIdSet->RegionIdSet
+     eq:RegionIdSet#RegionIdSet->Bool
+     count:RegionIdSet->Natural
+     getIden:RegionIdSet->RegionId
+     insert:RegionId#RegionIdSet->RegionIdSet
+var  a,a':RegionId
+     A,A':RegionIdSet
+rew  remove(a,ridema)=ridema
+     remove(a,in(a',A))=if(eq(a,a'),remove(a,A),in(a',remove(a,A)))
+     test(a,ridema)=F
+     test(a,in(a',A))=if(eq(a,a'),T,test(a,A))
+     empty(ridema)=T
+     empty(in(a,A))=F
+     if(T,A,A')=A
+     if(F,A,A')=A'
+     conc(ridema,A)=A
+     conc(in(a,A),A')=in(a,conc(A,A'))
+     eq(ridema,ridema)=T
+     eq(ridema,in(a,A))=F
+     eq(in(a,A),ridema)=F
+     eq(in(a,A),A')=and(test(a,A'),eq(remove(a,in(a,A)),remove(a,A')))
+     count(ridema)=0
+     count(in(a,A))=S(count(remove(a,in(a,A))))
+     getIden(in(a,A))=a
+     insert(a,A)=if(test(a,A),A,in(a,A))
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% State of regions, initially, the region is UNUSED.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+sort State
+func UNUSED:->State
+     USED:->State
+map  eq: State#State->Bool
+     if:Bool#State#State->State
+var  s1,s2:State
+rew  eq(UNUSED, UNUSED)=T
+     eq(UNUSED, USED)=F
+     eq(USED, UNUSED)=F
+     eq(USED, USED)=T
+     if(T,s1,s2)=s1        % used to make spec shorter
+     if(F,s1,s2)=s2
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Sort of Region
+% Id, Home, State, accessorlist,
+% Data, Twin, localt
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+sort Region
+func reg:RegionId#ProcessId#State#ProcessIdMultiSet
+         #Integer   % Data
+         #Integer   % Twin
+         #Natural->Region           % Localthreads
+map  getid:Region->RegionId
+     gethome:Region->ProcessId
+     getstate:Region->State
+     getaccessorlist:Region->ProcessIdMultiSet
+     getdata:Region->Integer
+     gettwin:Region->Integer
+     getlocalt:Region->Natural
+     sethome:Region#ProcessId->Region
+     setstate:Region#State->Region
+     setaccessorlist:Region#ProcessIdMultiSet->Region
+     setdata:Region#Integer->Region
+     settwin:Region#Integer->Region
+     setlocalt:Region#Natural->Region
+     eq:Region#Region->Bool
+var  id,id': RegionId
+     h,h':ProcessId
+     d,d',t,t':Integer
+     w,w':ProcessIdMultiSet
+     s,s':State
+     lt,lt':Natural
+     region:Region
+rew  getid(reg(id,h,s,w,d,t,lt))=id
+     gethome(reg(id,h,s,w,d,t,lt))=h
+     getstate(reg(id,h,s,w,d,t,lt))=s
+     getaccessorlist(reg(id,h,s,w,d,t,lt))=w
+     getdata(reg(id,h,s,w,d,t,lt))=d
+     gettwin(reg(id,h,s,w,d,t,lt))=t
+     getlocalt(reg(id,h,s,w,d,t,lt))=lt
+     sethome(reg(id,h,s,w,d,t,lt),h')=
+            reg(id,h',s,w,d,t,lt)
+     setstate(reg(id,h,s,w,d,t,lt),s')=
+            reg(id,h,s',w,d,t,lt)
+     setaccessorlist(reg(id,h,s,w,d,t,lt),w')=
+            reg(id,h,s,w',d,t,lt)
+     setdata(reg(id,h,s,w,d,t,lt),d')=
+            reg(id,h,s,w,d',t,lt)
+     settwin(reg(id,h,s,w,d,t,lt),t')=
+            reg(id,h,s,w,d,t',lt)
+     setlocalt(reg(id,h,s,w,d,t,lt),lt')=
+            reg(id,h,s,w,d,t,lt')
+     eq(reg(id,h,s,w,d,t,lt),
+        reg(id',h',s',w',d',t',lt'))=
+           and(and(and(and(
+           eq(id,id'), eq(h,h')), eq(s,s')),eq(w,w')),eq(lt,lt'))
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Actions for processes
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+act
+    s_require_faultlock: ProcessId
+    r_require_faultlock: ProcessId
+    c_require_faultlock: ProcessId
+
+    s_require_flushlock: ProcessId
+    r_require_flushlock: ProcessId
+    c_require_flushlock: ProcessId
+
+    s_require_serverlock: ProcessId
+    r_require_serverlock: ProcessId
+    c_require_serverlock: ProcessId
+
+    s_require_homequeuelock: ProcessId
+    r_require_homequeuelock: ProcessId
+    c_require_homequeuelock: ProcessId
+
+    s_require_remotequeuelock: ProcessId
+    r_require_remotequeuelock: ProcessId
+    c_require_remotequeuelock: ProcessId
+
+    s_free_faultlock: ProcessId
+    r_free_faultlock: ProcessId
+    c_free_faultlock: ProcessId
+
+    s_free_flushlock: ProcessId
+    r_free_flushlock: ProcessId
+    c_free_flushlock: ProcessId
+
+    s_free_serverlock: ProcessId
+    r_free_serverlock: ProcessId
+    c_free_serverlock: ProcessId
+
+    s_free_homequeuelock: ProcessId
+    r_free_homequeuelock: ProcessId
+    c_free_homequeuelock: ProcessId
+
+    s_free_remotequeuelock: ProcessId
+    r_free_remotequeuelock: ProcessId
+    c_free_remotequeuelock: ProcessId
+
+    s_no_faultwait: ProcessId
+    r_no_faultwait: ProcessId
+    c_no_faultwait: ProcessId
+
+    s_no_flushwait: ProcessId
+    r_no_flushwait: ProcessId
+    c_no_flushwait: ProcessId
+
+    s_no_serverwait: ProcessId
+    r_no_serverwait: ProcessId
+    c_no_serverwait: ProcessId
+
+    s_no_homequeuewait: ProcessId
+    r_no_homequeuewait: ProcessId
+    c_no_homequeuewait: ProcessId
+
+    s_no_remotequeuewait: ProcessId
+    r_no_remotequeuewait: ProcessId
+    c_no_remotequeuewait: ProcessId
+
+    s_signal_faultwait: ProcessId
+    r_signal_faultwait: ProcessId
+    c_signal_faultwait: ProcessId
+
+    s_signal_flushwait: ProcessId
+    r_signal_flushwait: ProcessId
+    c_signal_flushwait: ProcessId
+
+    s_signal_serverwait: ProcessId
+    r_signal_serverwait: ProcessId
+    c_signal_serverwait: ProcessId
+
+    s_signal_homequeuewait: ProcessId
+    r_signal_homequeuewait: ProcessId
+    c_signal_homequeuewait: ProcessId
+
+    s_signal_remotequeuewait: ProcessId
+    r_signal_remotequeuewait: ProcessId
+    c_signal_remotequeuewait: ProcessId
+
+    s_data_requiremsg:ThreadId#ProcessId#ProcessId
+    r_i_data_requiremsg:ThreadId#ProcessId#ProcessId
+    c_i_data_requiremsg:ThreadId#ProcessId#ProcessId
+
+    s_i_data_requiremsg:ThreadId#ProcessId#ProcessId
+    r_data_requiremsg:ThreadId#ProcessId#ProcessId
+    c_o_data_requiremsg:ThreadId#ProcessId#ProcessId
+
+% Update history 9
+    s_data_returnmsg:ThreadId#ProcessId#ProcessId#Region#Bool
+    r_o_data_returnmsg:ThreadId#ProcessId#ProcessId#Region#Bool
+    c_i_data_returnmsg:ThreadId#ProcessId#ProcessId#Region#Bool
+
+    s_o_data_returnmsg:ThreadId#ProcessId#ProcessId#Region#Bool
+    r_data_returnmsg:ThreadId#ProcessId#ProcessId#Region#Bool
+    c_o_data_returnmsg:ThreadId#ProcessId#ProcessId#Region#Bool
+% end of update history 9
+
+    s_flush_msg:ThreadId#ProcessId#ProcessId#Region#Bool
+    r_i_flush_msg:ThreadId#ProcessId#ProcessId#Region#Bool
+    c_i_flush_msg:ThreadId#ProcessId#ProcessId#Region#Bool
+
+    s_i_flush_msg:ThreadId#ProcessId#ProcessId#Region#Bool
+    r_flush_msg:ThreadId#ProcessId#ProcessId#Region#Bool
+    c_o_flush_msg:ThreadId#ProcessId#ProcessId#Region#Bool
+
+    s_region_sponmigrate:ThreadId#ProcessId#ProcessId#Region
+    r_o_region_sponmigrate:ThreadId#ProcessId#ProcessId#Region
+    c_i_region_sponmigrate:ThreadId#ProcessId#ProcessId#Region
+
+    s_o_region_sponmigrate:ThreadId#ProcessId#ProcessId#Region
+    r_region_sponmigrate:ThreadId#ProcessId#ProcessId#Region
+    c_o_region_sponmigrate:ThreadId#ProcessId#ProcessId#Region
+
+    s_sendbackinformation:ThreadId#ProcessId#Region
+    r_sendbackinformation:ThreadId#ProcessId#Region
+    c_sendbackinformation:ThreadId#ProcessId#Region
+
+    s_refreshregion:ThreadId#ProcessId#Region
+    r_refreshregion:ThreadId#ProcessId#Region
+    c_refreshregion:ThreadId#ProcessId#Region
+
+    s_norefreshregion:ThreadId#ProcessId
+    r_norefreshregion:ThreadId#ProcessId
+    c_norefreshregion:ThreadId#ProcessId
+
+    s_sendback:ProcessId#Region
+    r_sendback:ProcessId#Region
+    c_sendback:ProcessId#Region
+
+    s_refresh:ProcessId#Region
+    r_refresh:ProcessId#Region
+    c_refresh:ProcessId#Region
+
+    s_norefresh:ProcessId
+    r_norefresh:ProcessId
+    c_norefresh:ProcessId
+
+    s_signal:ThreadId#ProcessId
+    r_signal:ThreadId#ProcessId
+    c_signal:ThreadId#ProcessId
+
+    % What am I doing now?
+    nothingtoflush:ThreadId
+    iamaccessing:ThreadId
+    iamflushing:ThreadId
+
+% For verification
+    biggerthan2	
+    r_home    s_home    c_home
+    r_copy    s_copy    c_copy
+    accessover:ThreadId
+    flushover:ThreadId		
+    lockempty:ProcessId
+    homequeueempty:ProcessId
+    remotequeueempty:ProcessId
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Process Region
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+proc   Region(pid:ProcessId,r:Region)=
+             %Threads access
+             sum(tid: ThreadId,
+                 s_sendbackinformation(tid,pid,r).
+                 (  r_norefreshregion(tid,pid).Region(pid,r)
+                    +
+                    sum(r':Region,
+                        r_refreshregion(tid,pid,r').Region(pid,r')
+                    )   )   )
+              <| not(greaterthan(getlocalt(r), S(S(0)) ) ) |> biggerthan2.delta
+             +
+             %Processors access
+             s_sendback(pid,r).
+             (  r_norefresh(pid).Region(pid,r)
+                +
+                sum(r':Region,
+                    r_refresh(pid,r').Region(pid,r')
+                )     )
+              <| not(greaterthan(getlocalt(r), S(S(0)) ) ) |> biggerthan2.delta
+% For verification
+             + r_home.Region(pid,r)<| eq(pid, gethome(r))|>delta
+             + s_home.Region(pid,r)<| eq(pid, gethome(r))|>delta
+             + r_copy.Region(pid,r)<| not(eq(pid, gethome(r)))|>delta
+             + s_copy.Region(pid,r)<| not(eq(pid, gethome(r)))|>delta
+              
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Process Processor
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+       Processor(pid:ProcessId)=
+	   sum(tid:ThreadId,
+                 sum(pid':ProcessId,
+                     sum(r':Region,
+                     sum(b:Bool,
+                         r_data_returnmsg(tid,pid,pid',r',b).
+                         (
+                         sum(r:Region,
+                             r_sendback(pid,r).
+                             % The twins are Nil
+                             % Refresh twins from the received twins
+                             % Refresh datas from the received datas
+                             % Always access on the datas
+                             ( 
+                               s_signal(tid,pid).                               
+                               s_refresh(pid,
+                                         sethome(
+	                                 setstate(
+   	                                 settwin(
+	                                 setdata
+	                                 (r,getdata(r')),
+	                                 getdata(r')),
+	                                 getstate(r')),
+	                                 gethome(r')) ).
+                              s_free_remotequeuelock(pid).
+                              Processor(pid)
+        	              <|eq(gettwin(r),nil)|>
+                	     % The twins are used
+	                     % Refresh twins, twins= patch(Twin,diff(Data',Data))
+	                     % Refresh datas, data=patch(Data, diff(Data',Data))
+	                     % And access on the twins
+                              s_signal(tid,pid).
+ 	                      s_refresh(pid,
+	                                sethome(
+	                                setstate(
+	                                setdata(r,int),
+	                                getstate(r')),
+	                                gethome(r')) ).
+                              s_free_remotequeuelock(pid).
+                              Processor(pid)
+	                )
+                         )
+                          <|  not(b)  |>
+                            sum( r:Region,
+                             r_sendback(pid,r).
+                             % April 15, needs to change the home
+ 	                     % Refresh twin as Nil
+	                     % Refresh data, Data=Data'
+	                     % state=UNUSED
+                             s_signal(tid,pid).
+	                     s_refresh(pid,
+                                       sethome(
+	                               setstate(
+	                               setaccessorlist(
+	                               settwin(
+	                               setdata
+	                               (r,getdata(r')),nil),
+	                               getaccessorlist(r')),
+	                               USED),
+	                               pid) ).
+                             s_free_remotequeuelock(pid).
+                             Processor(pid)
+                           )
+                         )
+                      )
+                      )
+                 )
+              )
+             +
+              sum(tid:ThreadId,
+                 sum(pid':ProcessId,
+                     r_data_requiremsg(tid,pid',pid).
+                     sum(r:Region,
+                         r_sendback(pid,r).
+                         (%Update history 11
+                          s_data_requiremsg(tid,pid',gethome(r)).
+                          s_norefresh(pid).
+                          s_free_homequeuelock(pid).
+                          Processor(pid)
+                          <| not(eq(gethome(r), pid)) |>
+                           % Someone else accesses from remote
+                           (
+                              % If states=UNUSED
+                              % Home migrates, pid' becomes the home
+                               %April 15, Remove migrate message
+                              s_data_returnmsg(tid,pid',pid,
+                                        sethome(
+                                        setstate(
+                                        setaccessorlist(
+                                        r, insert(pid',getaccessorlist(r))),
+                                        UNUSED),
+                                        pid'), T).
+                              s_refresh(pid,
+                                        sethome(
+                                        setstate(
+                                        setaccessorlist(
+                                        r, ema),
+                                        UNUSED),
+                                        pid')).
+                              s_free_homequeuelock(pid).
+                              Processor(pid)
+                              <| eq(getstate(r),UNUSED) |>
+                              % Otherwise,
+                              % send data back
+                              s_data_returnmsg(tid,pid',pid,
+                                        setstate(
+                                        setaccessorlist(
+                                        r, insert(pid',getaccessorlist(r))),
+                                        USED),F).
+                              s_refresh(pid,
+                                        setstate(
+                                        setaccessorlist(
+                                        r, insert(pid',getaccessorlist(r))),
+                                        USED)).
+                              s_free_homequeuelock(pid).
+                              Processor(pid)
+                            )
+                         )
+                     )
+                 )
+              )
+             +
+             sum(tid:ThreadId,
+                sum(pid':ProcessId,
+                    sum(r':Region,
+                        sum(b:Bool,
+                            r_flush_msg(tid,pid',pid,r',b).
+                            sum(r:Region,
+                                r_sendback(pid,r).
+                                (
+                                 % If I am not the home, forward this message
+                                 % Update history 11 
+                                 s_flush_msg(tid,pid',gethome(r),r',b).
+                                 s_norefresh(pid).
+                                 s_free_homequeuelock(pid).
+                                 Processor(pid)
+                                 <| not(eq(gethome(r), pid)) |>
+                                 %Otherwise ......
+                                 ( 
+                                   s_signal(tid,pid).
+                                   %Update history 13
+                                   s_refresh(pid,setaccessorlist(r, remove(pid',getaccessorlist(r)) ) ).
+                                   s_free_homequeuelock(pid).
+                                   Processor(pid)
+                                   <|not(b)|>
+                                   (  % There is no accessor, state=UNUSED
+                                      s_signal(tid,pid).
+                                      s_refresh(pid,
+                                                setstate(
+                                                setaccessorlist(
+                                                r,
+                                                remove(pid',getaccessorlist(r))),
+                                                UNUSED) ).
+                                      s_free_homequeuelock(pid).
+                                      Processor(pid)
+                                      <|empty(remove(pid',getaccessorlist(r)))|>
+                                      % Otherwise ......
+                                      (  %If only one accessor and it is not me,
+                                         % home migrates
+                                         (
+                                           s_region_sponmigrate(tid,pid,
+                                                                getIden(remove(pid',getaccessorlist(r))),
+                                                                setaccessorlist(
+                                                                r,
+                                                                remove(pid',getaccessorlist(r))) ).
+                                           s_signal(tid,pid).
+                                           s_refresh(pid,
+                                                     sethome(
+                                                     setstate(
+                                                     setaccessorlist(
+                                                     r,
+                                                     ema),
+                                                     UNUSED),
+                                                     getIden(remove(pid',getaccessorlist(r))) ) ).
+                                           s_free_homequeuelock(pid).
+                                           Processor(pid)
+                                           <| not(eq (getIden(remove(pid',getaccessorlist(r))),
+                                              gethome(r) ) ) |>
+                                           % I am the only accessor left, refresh datas
+                                           s_signal(tid,pid).
+                                           s_refresh(pid,
+                                                     setstate(
+                                                     setaccessorlist(
+                                                     r,
+                                                     remove(pid',getaccessorlist(r))),
+                                                     USED) ).
+                                           s_free_homequeuelock(pid).
+                                           Processor(pid)
+                                          )
+                                          <| eq(count(remove(pid',getaccessorlist(r))),S(0)) |>
+                                          % More than accessors left, refresh datas
+                                          s_signal(tid,pid).
+                                          s_refresh(pid,
+                                                    setaccessorlist(
+                                                    r,
+                                                    remove(pid',getaccessorlist(r))) ).
+                                          s_free_homequeuelock(pid).
+                                          Processor(pid)
+                                       )
+                                    )
+                                 )
+                              )
+                           )
+                       )
+                     )
+                  )
+              )
+              % Someone flush, and I become the home
+              +
+              sum(tid:ThreadId,
+                  sum(pid':ProcessId,
+                      sum(r':Region,
+                          r_region_sponmigrate(tid,pid',pid,r').
+                          sum(r:Region,
+                              r_sendback(pid,r).
+                              s_refresh(pid,
+                                        sethome(
+                                        setstate(
+                                        setaccessorlist(
+                                        settwin(
+                                        setdata(
+                                        r,getdata(r')),
+                                        nil),
+                                        getaccessorlist(r')),
+                                        USED),
+                                        pid) ).
+                               s_free_remotequeuelock(pid).
+                               Processor(pid)
+                          )
+                     )
+                 )
+              )
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Process Thread
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+     Thread(tid:ThreadId,
+            pid:ProcessId,
+            wl:RegionIdSet) =
+               % access and flush
+               iamaccessing(tid).AccessThread(tid,pid,wl) +
+               iamflushing(tid).FlushThread(tid,pid,wl)
+               <| not(eq(wl, ridema)) |>delta
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Process Thread: Access
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+     AccessThread(tid:ThreadId,
+                  pid:ProcessId,
+                  wl:RegionIdSet) =
+           Thread(tid,pid,wl)
+           <| test(rid1, wl) |>
+           sum(r:Region,
+               r_sendbackinformation(tid,pid,r).
+               s_norefreshregion(tid,pid).
+               ( % I hold the home, access at home
+                 AccessHomeThread(tid,pid,insert(rid1,wl))
+                 <| eq(gethome(r), pid) |>
+                 % Ok, access from remote
+                 AccessRemoteThread(tid,pid,insert(rid1,wl))
+               )
+           )
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Process Thread: Access at Home
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+     AccessHomeThread(tid:ThreadId,
+                pid:ProcessId,
+                wl:RegionIdSet) =
+           s_require_serverlock(pid).
+           (r_no_serverwait(pid)+r_signal_serverwait(pid)).
+           sum(r:Region,
+               r_sendbackinformation(tid,pid,r).
+               (
+                 (
+                  s_refreshregion(tid,
+                                  pid,
+                                  setlocalt(
+	                          setstate(
+	                          setaccessorlist(
+	                          setdata(r,int),
+	                          insert(pid,getaccessorlist(r))),
+	                          USED),
+	                          S(getlocalt(r)) ) ).
+                  s_free_serverlock(pid).
+% For verification
+                  accessover(tid).
+                  Thread(tid,pid,wl)
+                  <| eq(getstate(r), UNUSED) |>
+                     % if readonly, state=SHARED
+                     % otherwise, state= old state
+                  s_refreshregion(tid,
+                                  pid,
+	                          setlocalt(
+	                          setaccessorlist(
+	                          setdata(r,int),
+	                          insert(pid,getaccessorlist(r))),
+	                          S(getlocalt(r)) )  ).
+                  s_free_serverlock(pid).
+% For verification
+                  accessover(tid).
+                  Thread(tid,pid,wl)
+                  )
+                  <| eq(gethome(r), pid) |>
+                  % faint, home has migrated
+                  s_norefreshregion(tid,pid).
+                  s_free_serverlock(pid).
+                  AccessRemoteThread(tid,pid,wl)
+              )
+           )
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Process Thread: Access from Remote
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+     AccessRemoteThread(tid:ThreadId,
+                pid:ProcessId,
+                wl:RegionIdSet) =
+           s_require_faultlock(pid).
+           (r_no_faultwait(pid)+r_signal_faultwait(pid)).
+           sum(r:Region,
+               r_sendbackinformation(tid,pid,r).
+               (
+               s_data_requiremsg(tid,pid,gethome(r)).
+               s_norefreshregion(tid,pid).
+               sum(pid':ProcessId,
+                   r_signal(tid,pid').
+                   sum(newr:Region,
+                       r_sendbackinformation(tid,pid,newr).
+                       s_refreshregion(tid,pid,
+                                       setlocalt(setdata(newr,int),S(getlocalt(newr))) ).
+                       % r instead of r', that is the reason why counter can be greater than 2                       
+                       % Switch off 
+                       s_free_faultlock(pid).
+% For verification
+                       accessover(tid).
+                       Thread(tid,pid,wl)
+                   )
+                )
+                <| not(eq(gethome(r),pid)) |>
+                s_norefreshregion(tid,pid).
+                s_free_faultlock(pid).
+                AccessHomeThread(tid,pid,wl)
+               )
+           )
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Process Thread: Flush
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+     FlushThread(tid:ThreadId,
+                pid:ProcessId,
+                wl:RegionIdSet) =
+           Thread(tid,pid,wl)
+           <| eq(wl, ridema) |>
+           s_require_flushlock(pid).
+           (r_no_flushwait(pid)+r_signal_flushwait(pid)).
+           sum(r:Region,
+               r_sendbackinformation(tid,pid,r).
+               % Fush at home
+               (FlushHomeThread(tid,pid,remove(rid1,wl),r)
+                <| eq(gethome(r), pid) |>
+                % Otherwise,flush from remote
+                FlushRemoteThread(tid,pid,remove(rid1,wl),r)
+               )
+           )
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Process Thread: Flush at Home
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+     FlushHomeThread(tid:ThreadId,
+                pid:ProcessId,
+                wl:RegionIdSet,
+                r:Region) =
+               % If localthreads=0 (after minus 1)
+               % Need to find whether home migrates
+               % If no one uses it, state=UNUSED
+                (
+                  s_refreshregion(tid,pid,
+	                          setlocalt(
+        	                  setstate(
+                	          setaccessorlist(
+                        	  r,remove(pid,getaccessorlist(r))),
+                	          UNUSED),
+                        	  sub1(getlocalt(r))) ).
+                  s_free_flushlock(pid).
+% For verification
+                  flushover(tid).
+                  Thread(tid,pid,wl )
+                  <|  empty(remove(pid,getaccessorlist(r))) |>
+                  (
+                     %Update history 14
+                     (% If only one accessor,
+                     s_region_sponmigrate(tid,pid,
+                                          getIden(remove(pid,getaccessorlist(r))),
+                                          setaccessorlist(
+                                          r,remove(pid,getaccessorlist(r))) ).
+                     s_refreshregion(tid,pid,
+	                             sethome(
+        	                     setlocalt(
+                	             setstate(
+                        	     setaccessorlist(
+	                             r,ema),
+                        	     UNUSED),
+	                             sub1(getlocalt(r))),
+        	                     getIden(remove(pid,getaccessorlist(r)))) ).
+                     s_free_flushlock(pid).
+% For verification
+                     flushover(tid).
+                     Thread(tid,pid,wl)
+                      <| not( eq(getIden(remove(pid,getaccessorlist(r))), pid )  )|>
+                      s_refreshregion(tid,pid,
+	                             setlocalt(
+        	                     setaccessorlist(
+                	             r,remove(pid,getaccessorlist(r))),
+        	                     sub1(getlocalt(r))) ).
+                     s_free_flushlock(pid).
+% For verification
+                     flushover(tid).
+                     Thread(tid,pid,wl )
+                     )
+                     <| eq(count(remove(pid,getaccessorlist(r))),S(0))  |>
+                     % Otherwise ...
+                     s_refreshregion(tid,pid,
+	                             setlocalt(
+        	                     setaccessorlist(
+                	             r,remove(pid,getaccessorlist(r))),
+        	                     sub1(getlocalt(r))) ).
+                     s_free_flushlock(pid).
+% For verification
+                     flushover(tid).
+                     Thread(tid,pid,wl )
+                  )
+                )
+                <| eq(sub1(getlocalt(r)),0) |>
+                s_refreshregion(tid,pid,setlocalt(setaccessorlist(r,remove(pid,getaccessorlist(r))),sub1(getlocalt(r))) ).
+                s_free_flushlock(pid).
+% For verification
+                flushover(tid).
+                Thread(tid,pid,wl)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Process Thread: Flush from Remote
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+     FlushRemoteThread(tid:ThreadId,
+                pid:ProcessId,
+                wl:RegionIdSet,
+                r:Region) =
+                  s_flush_msg(tid,pid,gethome(r),r,T).
+                  s_refreshregion(tid,pid,
+                                  setlocalt(
+                                  setaccessorlist(
+	               	          setstate(settwin(r,nil),
+	                          UNUSED),
+                                  ema),
+        	                  sub1(getlocalt(r))) ).
+                  s_free_flushlock(pid).
+                  sum(pid':ProcessId,
+                      r_signal(tid,pid').
+                      % No one use this region, state=UNUSED
+% For verification
+                            flushover(tid).
+    	              Thread(tid,pid,wl  )
+                  )
+	          <|eq(sub1(getlocalt(r)),0) |>
+		  s_flush_msg(tid,pid,gethome(r),r,F).
+                  s_refreshregion(tid,pid,
+                	          setlocalt(
+                                  setaccessorlist(
+	                          settwin(r,int),
+                                  ema),
+        	                  sub1(getlocalt(r))) ).
+                  s_free_flushlock(pid).
+                  sum(pid':ProcessId,
+                      r_signal(tid,pid').
+% For verification
+                    flushover(tid).
+        	      Thread(tid,pid,wl)
+                  )
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Process Locker
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+proc Locker(pid: ProcessId,
+            faulters:Natural,flushers:Natural,homequeue:Natural,remotequeue:Natural,
+            wait_faulters:Natural,wait_flushers:Natural,
+            wait_homequeue:Natural,wait_remotequeue:Natural)=
+% For verification
+                lockempty(pid).Locker(pid,faulters,flushers,homequeue,remotequeue,
+                                        wait_faulters,wait_flushers,
+                                        wait_homequeue,wait_remotequeue)
+                <|  and(and(and(and(and(and(and(
+                     eq(faulters,0),  eq(flushers,0)), eq(homequeue,0)),
+                     eq(remotequeue,0)), eq(wait_faulters,0)), eq(wait_flushers,0)),
+                     eq(wait_homequeue,0)), eq(wait_remotequeue,0))  |>delta
+                +
+                r_require_faultlock(pid).
+                (
+                    s_no_faultwait(pid).
+                    Locker(pid,S(faulters),
+                           flushers,
+                           homequeue,remotequeue,
+                           wait_faulters,wait_flushers,
+                           wait_homequeue,wait_remotequeue)
+                    <|and( eq(faulters,0), eq(flushers,0) )|>
+                    Locker(pid,faulters,flushers,homequeue,remotequeue,
+                           S(wait_faulters),wait_flushers,
+                           wait_homequeue,wait_remotequeue)
+                )
+            +
+                r_require_flushlock(pid).
+                (
+                    s_no_flushwait(pid).
+                    Locker(pid,faulters,S(flushers),
+                           homequeue,remotequeue,
+                           wait_faulters,wait_flushers,
+                           wait_homequeue,wait_remotequeue)
+                    <|and(and(and( eq(faulters,0), eq(flushers,0) ), eq(homequeue,0) ), eq(remotequeue,0) )|>
+                    Locker(pid,faulters,flushers,
+                           homequeue,remotequeue,
+                           wait_faulters,S(wait_flushers),
+                           wait_homequeue,wait_remotequeue)
+                )
+            +
+                r_require_serverlock(pid).
+                (
+                    s_no_serverwait(pid).
+                    Locker(pid,faulters,flushers,
+                           S(homequeue),remotequeue,
+                           wait_faulters,wait_flushers,
+                           wait_homequeue,wait_remotequeue)
+                    <|and( eq(homequeue,0), eq(flushers,0) )|>
+                    Locker(pid,faulters,flushers,
+                           homequeue,remotequeue,
+                           wait_faulters,wait_flushers,
+                           S(wait_homequeue),wait_remotequeue)
+                )
+            +
+                r_require_homequeuelock(pid).
+                (
+                    s_no_homequeuewait(pid).
+                    Locker(pid,faulters,flushers,
+                           S(homequeue),remotequeue,
+                           wait_faulters,wait_flushers,
+                           wait_homequeue,wait_remotequeue)
+                    <|and( eq(homequeue,0), eq(flushers,0) )|>
+                    Locker(pid,faulters,flushers,
+                           homequeue,remotequeue,
+                           wait_faulters,wait_flushers,
+                           S(wait_homequeue),wait_remotequeue)
+                )
+            +
+                r_require_remotequeuelock(pid).
+                (
+                    s_no_remotequeuewait(pid).
+                    Locker(pid,faulters,flushers,
+                           homequeue,S(remotequeue),
+                           wait_faulters,wait_flushers,
+                           wait_homequeue,wait_remotequeue)
+                    <|and( eq(remotequeue,0), eq(flushers,0) )|>
+                    Locker(pid,faulters,flushers,
+                           homequeue,remotequeue,
+                           wait_faulters,wait_flushers,
+                           wait_homequeue,S(wait_remotequeue))
+                )
+            +
+                r_free_faultlock(pid).
+                (
+                    (
+                            (s_signal_serverwait(pid).
+                             Locker(pid,
+                                   sub1(faulters),
+                                   flushers,
+                                   S(homequeue),
+                                   remotequeue,
+                                   wait_faulters,
+                                   wait_flushers,
+                                   sub1(wait_homequeue),
+                                   wait_remotequeue)
+                             +
+                             s_signal_homequeuewait(pid).
+                             Locker(pid,
+                                   sub1(faulters),
+                                   flushers,
+                                   S(homequeue),
+                                   remotequeue,
+                                   wait_faulters,
+                                   wait_flushers,
+                                   sub1(wait_homequeue),
+                                   wait_remotequeue)
+                             )
+                        <| and( not(eq(wait_homequeue,0)), eq(homequeue,0) ) |>
+                        (
+                               (s_signal_remotequeuewait(pid).
+                                Locker(pid,
+                                       sub1(faulters),
+                                       flushers,
+                                       homequeue,
+                                       S(remotequeue),
+                                       wait_faulters,
+                                       wait_flushers,
+                                       wait_homequeue,
+                                       sub1(wait_remotequeue))
+                               <| not(eq(wait_remotequeue,0)) |>
+                                Locker(pid,sub1(faulters),flushers,
+                                       homequeue,remotequeue,
+                                       wait_faulters,wait_flushers,
+                                       wait_homequeue,wait_remotequeue)
+                             )
+                            <| eq(remotequeue,0) |>
+                            Locker(pid,sub1(faulters),flushers,
+                                   homequeue,remotequeue,
+                                   wait_faulters,wait_flushers,
+                                   wait_homequeue,wait_remotequeue)
+                         )
+                    )
+                    <| and( not( and(eq(wait_homequeue,0),eq(wait_remotequeue,0)) ), eq(flushers,0) )|>
+                    (
+                             s_signal_flushwait(pid).
+                             Locker(pid,
+                                    sub1(faulters),
+                                    S(flushers),
+                                    homequeue,
+                                    remotequeue,
+                                    wait_faulters,
+                                    sub1(wait_flushers),
+                                    wait_homequeue,wait_remotequeue)
+                         <| and( and( and( and( not(eq(wait_flushers,0)), eq(remotequeue,0) ), eq(homequeue,0) ), eq(flushers,0) ), eq(sub1(faulters),0) )|>
+                         (
+                                  s_signal_faultwait(pid).
+                                  Locker(pid,
+                                         faulters,
+                                         flushers,
+                                         homequeue,
+                                         remotequeue,
+                                         sub1(wait_faulters),
+                                         wait_flushers,
+                                         wait_homequeue,wait_remotequeue)
+                              <| and( and (and( not(eq(wait_faulters,0)), eq(homequeue,0) ), eq(flushers,0) ), eq(sub1(faulters),0) ) |>
+                              Locker(pid,sub1(faulters),flushers,
+                                     homequeue,remotequeue,
+                                     wait_faulters,wait_flushers,
+                                     wait_homequeue,wait_remotequeue)
+                         )
+                    )
+                )
+            +
+                r_free_flushlock(pid).
+                (
+                    (      (s_signal_serverwait(pid).
+                             Locker(pid,
+                                   faulters,
+                                   sub1(flushers),
+                                   S(homequeue),
+                                   remotequeue,
+                                   wait_faulters,
+                                   wait_flushers,
+                                   sub1(wait_homequeue),
+                                   wait_remotequeue)
+                             +
+                             s_signal_homequeuewait(pid).
+                             Locker(pid,
+                                   faulters,
+                                   sub1(flushers),
+                                   S(homequeue),
+                                   remotequeue,
+                                   wait_faulters,
+                                   wait_flushers,
+                                   sub1(wait_homequeue),
+                                   wait_remotequeue)
+                             )
+                        <| and( not(eq(wait_homequeue,0)), eq(homequeue,0) ) |>
+                        (
+                               (s_signal_remotequeuewait(pid).
+                                Locker(pid,
+                                       faulters,
+                                       sub1(flushers),
+                                       homequeue,
+                                       S(remotequeue),
+                                       wait_faulters,
+                                       wait_flushers,
+                                       wait_homequeue,
+                                       sub1(wait_remotequeue))
+                               <| not(eq(wait_remotequeue,0)) |>
+                                Locker(pid,faulters,sub1(flushers),
+                                       homequeue,remotequeue,
+                                       wait_faulters,wait_flushers,
+                                       wait_homequeue,wait_remotequeue)
+                             )
+                            <| eq(remotequeue,0) |>
+                            Locker(pid,faulters,sub1(flushers),
+                                   homequeue,remotequeue,
+                                   wait_faulters,wait_flushers,
+                                   wait_homequeue,wait_remotequeue)
+                         )
+                    )
+                    <| and( not( and( eq(wait_homequeue,0), eq(wait_remotequeue,0) ) ), eq(sub1(flushers),0) )|>
+                    (
+                             s_signal_flushwait(pid).
+                             Locker(pid,
+                                    faulters,
+                                    flushers,
+                                    homequeue,
+                                    remotequeue,
+                                    wait_faulters,
+                                    sub1(wait_flushers),
+                                    wait_homequeue,
+                                    wait_remotequeue)
+                         <| and( and( and( and (not(eq(wait_flushers,0)), eq(remotequeue,0) ), eq(homequeue,0) ), eq(sub1(flushers),0) ), eq(faulters,0) )|>
+                         (
+                                  s_signal_faultwait(pid).
+                                  Locker(pid,
+                                         S(faulters),
+                                         sub1(flushers),
+                                         homequeue,
+                                         remotequeue,
+                                         sub1(wait_faulters),
+                                         wait_flushers,
+                                         wait_homequeue,
+                                         wait_remotequeue)
+                              <| and( and( and( not(eq(wait_faulters,0)), eq(homequeue,0) ), eq(sub1(flushers),0) ), eq(faulters,0) ) |>
+                              Locker(pid,faulters,sub1(flushers),
+                                     homequeue,remotequeue,
+                                     wait_faulters,wait_flushers,
+                                     wait_homequeue,wait_remotequeue)
+                         )
+                    )
+                )
+            +
+                r_free_serverlock(pid).
+                (
+                    (
+                            (s_signal_serverwait(pid).
+                             Locker(pid,
+                                   faulters,
+                                   flushers,
+                                   homequeue,
+                                   remotequeue,
+                                   wait_faulters,
+                                   wait_flushers,
+                                   sub1(wait_homequeue),
+                                   wait_remotequeue)
+                             +
+                             s_signal_homequeuewait(pid).
+                             Locker(pid,
+                                   faulters,
+                                   flushers,
+                                   homequeue,
+                                   remotequeue,
+                                   wait_faulters,
+                                   wait_flushers,
+                                   sub1(wait_homequeue),
+                                   wait_remotequeue)
+                             )
+                        <| and( not(eq(wait_homequeue,0)), eq(sub1(homequeue),0) ) |>
+                        (
+                               (s_signal_remotequeuewait(pid).
+                                Locker(pid,
+                                       faulters,
+                                       flushers,
+                                       sub1(homequeue),
+                                       S(remotequeue),
+                                       wait_faulters,
+                                       wait_flushers,
+                                       wait_homequeue,
+                                       sub1(wait_remotequeue))
+                               <| not(eq(wait_remotequeue,0)) |>
+                                Locker(pid,faulters,flushers,
+                                       sub1(homequeue),remotequeue,
+                                       wait_faulters,wait_flushers,
+                                       wait_homequeue,wait_remotequeue)
+                              )
+                            <| eq(remotequeue,0) |>
+                            Locker(pid,faulters,flushers,
+                                   sub1(homequeue),remotequeue,
+                                   wait_faulters,wait_flushers,
+                                   wait_homequeue,wait_remotequeue)
+                         )
+                    )
+                    <| and( not( and(eq(wait_homequeue,0), eq(wait_remotequeue,0)) ), eq(flushers,0) )|>
+                    (
+                             s_signal_flushwait(pid).
+                             Locker(pid,
+                                    faulters,
+                                    S(flushers),
+                                    sub1(homequeue),
+                                    remotequeue,
+                                    wait_faulters,
+                                    sub1(wait_flushers),
+                                    wait_homequeue,
+                                    wait_remotequeue)
+                         <| and( and( and( and( not(eq(wait_flushers,0)), eq(remotequeue,0) ),eq(sub1(homequeue),0) ), eq(flushers,0) ), eq(faulters,0) )|>
+                         (
+                                  s_signal_faultwait(pid).
+                                  Locker(pid,
+                                         S(faulters),
+                                         flushers,
+                                         sub1(homequeue),
+                                         remotequeue,
+                                         sub1(wait_faulters),
+                                         wait_flushers,
+                                         wait_homequeue,
+                                         wait_remotequeue)
+                              <| and( and( and( not(eq(wait_faulters,0)),eq(sub1(homequeue),0) ), eq(flushers,0) ), eq(faulters,0) )|>
+                              Locker(pid,faulters,flushers,
+                                     sub1(homequeue),remotequeue,
+                                     wait_faulters,wait_flushers,
+                                     wait_homequeue,wait_remotequeue)
+                         )
+                    )
+                )
+            +
+                r_free_homequeuelock(pid).
+                (
+                    (
+                            (s_signal_serverwait(pid).
+                             Locker(pid,
+                                   faulters,
+                                   flushers,
+                                   homequeue,
+                                   remotequeue,
+                                   wait_faulters,
+                                   wait_flushers,
+                                   sub1(wait_homequeue),
+                                   wait_remotequeue)
+                             +
+                             s_signal_homequeuewait(pid).
+                             Locker(pid,
+                                   faulters,
+                                   flushers,
+                                   homequeue,
+                                   remotequeue,
+                                   wait_faulters,
+                                   wait_flushers,
+                                   sub1(wait_homequeue),
+                                   wait_remotequeue)
+                             )
+                        <| and( eq(sub1(homequeue),0), not(eq(wait_homequeue,0)) ) |>
+                        (
+                               (s_signal_remotequeuewait(pid).
+                                Locker(pid,
+                                       faulters,
+                                       flushers,
+                                       sub1(homequeue),
+                                       S(remotequeue),
+                                       wait_faulters,
+                                       wait_flushers,
+                                       wait_homequeue,
+                                       sub1(wait_remotequeue))
+                               <| not(eq(wait_remotequeue,0)) |>
+                                Locker(pid,faulters,flushers,
+                                       sub1(homequeue),remotequeue,
+                                       wait_faulters,wait_flushers,
+                                       wait_homequeue,wait_remotequeue)
+                             )
+                            <| eq(remotequeue,0) |>
+                            Locker(pid,faulters,flushers,
+                                   sub1(homequeue),remotequeue,
+                                   wait_faulters,wait_flushers,
+                                   wait_homequeue,wait_remotequeue)
+                         )
+                    )
+                    <| and( not( and(eq(wait_homequeue,0), eq(wait_remotequeue,0) ) ),eq(flushers,0) )|>
+                    (
+                             s_signal_flushwait(pid).
+                             Locker(pid,
+                                    faulters,
+                                    S(flushers),
+                                    sub1(homequeue),
+                                    remotequeue,
+                                    wait_faulters,
+                                    sub1(wait_flushers),
+                                    wait_homequeue,
+                                    wait_remotequeue)
+                         <| and( and( and( and (not(eq(wait_flushers,0)), eq(remotequeue,0) ), eq(sub1(homequeue),0) ), eq(flushers,0) ), eq(faulters,0) )|>
+                         (
+                                  s_signal_faultwait(pid).
+                                  Locker(pid,
+                                         S(faulters),
+                                         flushers,
+                                         sub1(homequeue),
+                                         remotequeue,
+                                         sub1(wait_faulters),
+                                         wait_flushers,
+                                         wait_homequeue,
+                                         wait_remotequeue)
+                              <| and( and( and( not(eq(wait_faulters,0)),eq(sub1(homequeue),0) ), eq(flushers,0) ), eq(faulters,0) ) |>
+                              Locker(pid,faulters,flushers,
+                                     sub1(homequeue),remotequeue,
+                                     wait_faulters,wait_flushers,
+                                     wait_homequeue,wait_remotequeue)
+                         )
+                    )
+                )
+            +
+                r_free_remotequeuelock(pid).
+                (
+                    (       (s_signal_serverwait(pid).
+                             Locker(pid,
+                                   faulters,
+                                   flushers,
+                                   S(homequeue),
+                                   sub1(remotequeue),
+                                   wait_faulters,
+                                   wait_flushers,
+                                   sub1(wait_homequeue),
+                                   wait_remotequeue)
+                             +
+                             s_signal_homequeuewait(pid).
+                             Locker(pid,
+                                   faulters,
+                                   flushers,
+                                   S(homequeue),
+                                   sub1(remotequeue),
+                                   wait_faulters,
+                                   wait_flushers,
+                                   sub1(wait_homequeue),
+                                   wait_remotequeue)
+                             )
+                        <| and( eq(homequeue,0) ,not(eq(wait_homequeue,0)) )|>
+                        (
+                               (s_signal_remotequeuewait(pid).
+                                Locker(pid,
+                                       faulters,
+                                       flushers,
+                                       homequeue,
+                                       remotequeue,
+                                       wait_faulters,
+                                       wait_flushers,
+                                       wait_homequeue,
+                                       sub1(wait_remotequeue))
+                               <| not(eq(wait_remotequeue,0)) |>
+                                Locker(pid,faulters,flushers,
+                                       homequeue,sub1(remotequeue),
+                                       wait_faulters,wait_flushers,
+                                       wait_homequeue,wait_remotequeue)
+                             )
+                            <| eq(sub1(remotequeue),0) |>
+                            Locker(pid,faulters,flushers,
+                                   homequeue,sub1(remotequeue),
+                                   wait_faulters,wait_flushers,
+                                   wait_homequeue,wait_remotequeue)
+                         )
+                    )
+                    <| and( not( and(eq(wait_homequeue,0),eq(wait_remotequeue,0) ) ), eq(flushers,0) )|>
+                    (
+                             s_signal_flushwait(pid).
+                             Locker(pid,
+                                    faulters,
+                                    S(flushers),
+                                    homequeue,
+                                    sub1(remotequeue),
+                                    wait_faulters,
+                                    sub1(wait_flushers),
+                                    wait_homequeue,
+                                    wait_remotequeue)
+                         <| and( and( and( and (not(eq(wait_flushers,0)), eq(sub1(remotequeue),0) ), eq(homequeue,0) ), eq(flushers,0) ), eq(faulters,0) )|>
+                         (
+                                  s_signal_faultwait(pid).
+                                  Locker(pid,
+                                         S(faulters),
+                                         flushers,
+                                         homequeue,
+                                         sub1(remotequeue),
+                                         sub1(wait_faulters),
+                                         wait_flushers,
+                                         wait_homequeue,
+                                         wait_remotequeue)
+                              <| and( and( and( not(eq(wait_faulters,0)),eq(homequeue,0) ), eq(flushers,0) ), eq(faulters,0) ) |>
+                              Locker(pid,faulters,flushers,
+                                     homequeue,sub1(remotequeue),
+                                     wait_faulters,wait_flushers,
+                                     wait_homequeue,wait_remotequeue)
+                         )
+                    )
+                )
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Process Home Queue at Processor
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+proc HomeQueue(pid: ProcessId)=
+            sum(tid: ThreadId,
+ 	        sum(pid':ProcessId,
+                    r_i_data_requiremsg(tid,pid',pid).
+                    s_require_homequeuelock(pid).
+                    (r_no_homequeuewait(pid)+r_signal_homequeuewait(pid)).
+                    s_i_data_requiremsg(tid,pid',pid).
+                    HomeQueue(pid)
+                )
+            )
+            +
+            sum(tid: ThreadId,
+            	sum(pid':ProcessId,
+                    sum(r:Region,
+                        sum(b:Bool,
+                            r_i_flush_msg(tid,pid',pid,r,b).
+                            s_require_homequeuelock(pid).
+                            (r_no_homequeuewait(pid)+r_signal_homequeuewait(pid)).
+                            s_i_flush_msg(tid,pid',pid,r,b).
+                            HomeQueue(pid)
+                        )
+                    )
+                )
+            )
+% For verification
+           +	
+           homequeueempty(pid).HomeQueue(pid)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Process Remote Queue at Processor
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+proc RemoteQueue(pid: ProcessId)=
+            sum(tid:ThreadId,
+               sum(pid':ProcessId,
+                   sum(r:Region,
+                   sum(b:Bool,
+	               r_o_data_returnmsg(tid,pid,pid',r,b).
+                       s_require_remotequeuelock(pid).
+                       (r_no_remotequeuewait(pid)+r_signal_remotequeuewait(pid)).
+        	       s_o_data_returnmsg(tid,pid,pid',r,b).
+                       RemoteQueue(pid)
+                   )
+                   )
+               )
+            )
+            +
+            sum(tid: ThreadId,
+                sum(pid':ProcessId,
+                    sum(r:Region,
+                        r_o_region_sponmigrate(tid,pid',pid,r).
+                        s_require_remotequeuelock(pid).
+                        (r_no_remotequeuewait(pid)+r_signal_remotequeuewait(pid)).
+                        s_o_region_sponmigrate(tid,pid',pid,r).
+                        RemoteQueue(pid)
+                    )
+                )
+            )
+% For verification
+           +	
+           remotequeueempty(pid).RemoteQueue(pid)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Communications
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+comm  s_require_faultlock | r_require_faultlock = c_require_faultlock
+      s_require_flushlock | r_require_flushlock = c_require_flushlock
+      s_require_serverlock | r_require_serverlock = c_require_serverlock
+      s_require_homequeuelock | r_require_homequeuelock = c_require_homequeuelock
+      s_require_remotequeuelock | r_require_remotequeuelock = c_require_remotequeuelock
+
+      s_free_faultlock | r_free_faultlock = c_free_faultlock
+      s_free_flushlock | r_free_flushlock = c_free_flushlock
+      s_free_serverlock | r_free_serverlock = c_free_serverlock
+      s_free_homequeuelock | r_free_homequeuelock = c_free_homequeuelock
+      s_free_remotequeuelock | r_free_remotequeuelock = c_free_remotequeuelock
+
+      s_no_faultwait | r_no_faultwait = c_no_faultwait
+      s_no_flushwait | r_no_flushwait = c_no_flushwait
+      s_no_serverwait | r_no_serverwait = c_no_serverwait
+      s_no_homequeuewait | r_no_homequeuewait = c_no_homequeuewait
+      s_no_remotequeuewait | r_no_remotequeuewait = c_no_remotequeuewait
+
+      s_signal_faultwait | r_signal_faultwait = c_signal_faultwait
+      s_signal_flushwait | r_signal_flushwait = c_signal_flushwait
+      s_signal_serverwait | r_signal_serverwait = c_signal_serverwait
+      s_signal_homequeuewait | r_signal_homequeuewait = c_signal_homequeuewait
+      s_signal_remotequeuewait | r_signal_remotequeuewait = c_signal_remotequeuewait
+
+      s_data_requiremsg | r_i_data_requiremsg = c_i_data_requiremsg
+      s_i_data_requiremsg | r_data_requiremsg = c_o_data_requiremsg
+
+      s_data_returnmsg | r_o_data_returnmsg = c_i_data_returnmsg
+      s_o_data_returnmsg | r_data_returnmsg = c_o_data_returnmsg
+
+      s_flush_msg | r_i_flush_msg = c_i_flush_msg
+      s_i_flush_msg | r_flush_msg = c_o_flush_msg
+
+      s_region_sponmigrate | r_o_region_sponmigrate = c_i_region_sponmigrate
+      s_o_region_sponmigrate | r_region_sponmigrate = c_o_region_sponmigrate
+
+      s_sendbackinformation | r_sendbackinformation = c_sendbackinformation
+      s_refreshregion | r_refreshregion = c_refreshregion
+      s_norefreshregion | r_norefreshregion = c_norefreshregion
+
+      s_sendback | r_sendback = c_sendback
+      s_refresh | r_refresh = c_refresh
+      s_norefresh | r_norefresh = c_norefresh
+
+      s_signal | r_signal = c_signal
+
+% For verification
+      s_home | r_home = c_home
+      s_copy | r_copy = c_copy
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% The system
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+init
+%   hide ({    iamaccessing, iamflushing},
+% Line above added by jfg (17/1/2002)
+%   hide ({c_require_faultlock,c_free_faultlock,
+%          c_require_flushlock,c_free_flushlock,
+%          c_require_serverlock,c_free_serverlock,
+%          c_require_homequeuelock,c_free_homequeuelock,
+%          c_require_remotequeuelock,c_free_remotequeuelock,
+%          c_no_faultwait,c_no_flushwait,c_no_serverwait,
+%          c_no_homequeuewait,c_no_remotequeuewait,
+%          c_signal_faultwait,c_signal_flushwait,c_signal_serverwait,
+%          c_signal_homequeuewait,c_signal_remotequeuewait,
+%          c_i_data_requiremsg,c_o_data_requiremsg,
+%          c_i_data_returnmsg,c_o_data_returnmsg,
+%          c_i_flush_msg,c_o_flush_msg,
+%          c_i_region_sponmigrate,c_o_region_sponmigrate,
+%          c_sendbackinformation, c_sendback,
+%          c_refreshregion, c_refresh,
+%          c_norefreshregion, c_norefresh,
+%          c_signal
+%          },
+        encap({ s_require_faultlock,r_require_faultlock,
+                s_require_flushlock,r_require_flushlock,
+                s_require_serverlock,r_require_serverlock,
+                s_require_homequeuelock,r_require_homequeuelock,
+                s_require_remotequeuelock,r_require_remotequeuelock,
+
+                s_free_faultlock,r_free_faultlock,
+                s_free_flushlock,r_free_flushlock,
+                s_free_serverlock,r_free_serverlock,
+                s_free_homequeuelock,r_free_homequeuelock,
+                s_free_remotequeuelock,r_free_remotequeuelock,
+
+                s_no_faultwait,r_no_faultwait,
+                s_no_flushwait,r_no_flushwait,
+                s_no_serverwait,r_no_serverwait,
+                s_no_homequeuewait,r_no_homequeuewait,
+                s_no_remotequeuewait,r_no_remotequeuewait,
+
+                s_signal_faultwait,r_signal_faultwait,
+                s_signal_flushwait,r_signal_flushwait,
+                s_signal_serverwait,r_signal_serverwait,
+                s_signal_homequeuewait,r_signal_homequeuewait,
+                s_signal_remotequeuewait,r_signal_remotequeuewait,
+
+                s_data_requiremsg,r_i_data_requiremsg,
+                s_i_data_requiremsg,r_data_requiremsg,
+                s_data_returnmsg,r_o_data_returnmsg,
+                s_o_data_returnmsg,r_data_returnmsg,
+
+                s_flush_msg,r_i_flush_msg,
+                s_i_flush_msg,r_flush_msg,
+
+                s_region_sponmigrate,r_o_region_sponmigrate,
+                s_o_region_sponmigrate,r_region_sponmigrate,
+
+                s_sendbackinformation,r_sendbackinformation,
+                s_refreshregion, r_refreshregion,
+                s_norefreshregion, r_norefreshregion,
+
+                s_sendback,r_sendback,
+                s_refresh, r_refresh,
+                s_norefresh, r_norefresh,
+
+                s_signal, r_signal,
+
+% For verification
+                s_home, r_home,
+                s_copy, r_copy
+               },
+              Thread(tid1,pid1,ridema) ||
+              Thread(tid2,pid2,ridema) ||
+              Thread(tid3,pid3,ridema) ||
+	Locker(pid1,0,0,0,0,0,0,0,0) ||
+              Locker(pid2,0,0,0,0,0,0,0,0) ||
+              Locker(pid3,0,0,0,0,0,0,0,0) ||
+              HomeQueue(pid1) ||
+              HomeQueue(pid2) ||
+              HomeQueue(pid3) ||
+              RemoteQueue(pid1) ||
+              RemoteQueue(pid2) ||
+              RemoteQueue(pid3) ||
+              Processor(pid1) ||
+              Processor(pid2) ||
+              Processor(pid3) ||
+              Region(pid1,
+                        reg(rid1,pid1,UNUSED,ema,
+                        int,
+                        nil,0)) ||
+              Region(pid3,
+                        reg(rid1,pid1,UNUSED,ema,
+                        int,
+                        nil,0)) ||
+              Region(pid2,
+                        reg(rid1,pid1,UNUSED,ema,
+                        nil,
+                        nil,0))
+             )
+%        )    )
+
+% Region(Id,Location, Home, State, Accessorlist,
+%         Data, Twin, Localthreads)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,243 @@
+
+<refentry id="invelm">
+<refmeta>
+<refentrytitle>invelm</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>invelm</refname>
+<refpurpose>
+Eliminates summands with guards contradicting an invariant
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>invelm</command> 
+&common1;
+<arg><option>-invariant</option> 
+<replaceable>file</replaceable>
+</arg>
+<arg><option>-simplify</option></arg>
+<arg><option>-rewrite</option></arg>
+<arg><option>-splitsums</option></arg>
+<arg><option>-summand</option> <replaceable>n</replaceable></arg>
+<arg><option>-witness</option></arg>
+<arg><option>-print</option></arg>
+<arg><option>-print-dot</option></arg>
+<arg><option>-counter</option></arg>
+<arg><option>-help-rewrite</option></arg>
+<arg><option>-help-simplify</option></arg>
+<arg><option><link linkend="libmcrl">Data Options</link></option></arg>
+<arg><option><link linkend="rw">Rewriter Options</link></option></arg>
+<arg><option><parameter>input</parameter>.tbf</option></arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+This filter reads from 
+<filename><replaceable>input</replaceable>.tbf</filename> (or 
+<filename> stdin </filename> if not given) an &lpe; 
+in <literal>.tbf </literal> format, reads an invariant 
+&phi; from
+<filename><replaceable>file</replaceable></filename> and
+eliminates summands with guards contradicting that invariant.
+Invariant &phi; must be a term of type &bool; in the 
+signature of the input LPE, which may contain process parameters of 
+the LPE as free variables, but no other free variables.
+It is assumed that this term is an invariant of the LPE.
+If <option>-invariant</option> is missing, it is set to &ttrue;.
+This is especially useful with <option>-simplify</option>.
+</para>
+<para>
+When the guard of some summand is &tfalse; it will never be executed,
+so it can be eliminated.
+But even when the summand is satisfiable, it might happen that all states
+where the guard holds are unreachable. Such a summand will be never executed
+either. Given an invariant &phi;, approximating the set of reachable states,
+<command>invelm</command>  eliminates such summands.
+</para>
+<para>
+<command>invelm</command> eliminates all summands 
+<parameter>i</parameter> from the input &lpe;
+such that 
+<literal><parameter>&phi; &and; h<subscript>i</subscript>
+</parameter></literal> is provable equivalent to &tfalse;.
+</para> 
+<para>
+If the guard is different from &tfalse;, it is kept unaltered, 
+except when <option>-simplify</option> is used.
+</para>
+<para>
+The LPE will be written to <filename>stdout</filename>.
+</para>
+<remark>
+Note that it is not checked whether the provided invariant actually 
+holds. Application of <command>invelm</command> is only sound after 
+checking the invariant, for instance by using 
+&invcheck.lnk;.
+</remark>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+<!--<title>Options</title>-->
+&common2;
+<varlistentry>
+  <term><option>-invariant</option> <parameter>file</parameter></term>
+  <listitem>
+    <para>
+   Read an invariant from <parameter>file</parameter>.
+   If this option is missing, then  invariant &ttrue; will be assumed.
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-simplify</option></term>
+  <listitem>
+  <para>
+  Rewrite each conjunction of guard and invariant to a BDD
+  </para>
+  <para>
+  The effect of this option is to make global knowledge (provided by the
+  invariant) locally available in each guard. This may be helpful for other
+  tools that use the prover, such as confcheck. However, static analysis
+  tools (e.g. constelm, parelm, sumelm) may perform worse, because BDDs
+  are syntactically harder, and all variables of the invariant tend to occur
+  in all summands.
+  </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-rewrite</option></term>
+  <listitem><para>
+  The rewrite system is modified as follows:
+  
+  <itemizedlist>
+  <listitem><para>
+  Parameters of the &lpe; are viewed as constants (maps)
+  </para></listitem>
+  <listitem><para>
+  Certain facts from the invariant are viewed as rewrite rules
+  </para></listitem>
+  </itemizedlist>
+  
+  These rewrite rules are added to the existing rewrite rules, 
+  and applied to all summands. The abstract datatype is not changed.
+  The new rules are displayed on <filename>stderr </filename> 
+  (except with <option>-silent</option>)
+  </para>
+  <para>
+  As an example, if the invariant is of the form:
+  <programlisting>
+    and(eq(x,plus(y,z)),
+    and(c,
+    and(not(b),
+    and(eq(length(l),S(0))
+    and(or(a,d),
+        not(or(gt(x,y),e)))))))
+  </programlisting>
+  Then the following rules are added
+  <programlisting>
+    x -> plus(y,z)
+    c -> T
+    b -> F
+    length(l) -> S(0)
+    gt(y,z) -> F
+    e -> F
+  </programlisting>
+  Typically, applying <command>parelm</command> subsequently, 
+  will eliminate <literal>x,c,b</literal> and <literal>e</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-splitsums</option> </term>
+  <listitem>
+  <para>
+  Split summands with guard <literal>or( , )</literal>
+  in multiple summands
+  </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-summand</option> <parameter>n</parameter></term>
+  <listitem>
+    <para>
+   Eliminate/simplify only summand <parameter>n</parameter>
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-witness</option></term>
+  <listitem>
+  <para>
+  Provides a witness for summands that seem to be reachable
+  </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-silent</option> </term>
+  <listitem>
+  <para>
+  Suppress information per summand
+  </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-print</option></term>
+  <listitem>
+  <para>
+  Print resulting BDDs
+  </para>
+  </listitem> 
+</varlistentry>
+
+<varlistentry>
+  <term><option>-print-dot</option></term>
+  <listitem>
+  <para>
+  Print resulting BDDs in 
+  <literal>.dot</literal> format to 
+  <literal>stdout</literal> instead of LPE.
+  </para>
+  </listitem> 
+</varlistentry>
+
+<varlistentry>
+  <term><option>-help-rewrite</option></term>
+  <listitem>
+  <para>
+  Print more help on <option>-rewrite</option> flag
+  </para>
+  </listitem> 
+</varlistentry>
+
+<varlistentry>
+  <term><option>-help-simplify</option></term>
+  <listitem>
+  <para>
+  Print more help on <option>-simplify</option> flag
+  </para>
+  </listitem> 
+</varlistentry>
+</variablelist>
+
+</refsect1>
+<refsect1>
+<title>Limitations</title>
+<para>
+This tool is incomplete, because the invariant might be &true; for some
+unreachable states. Even with an appropiate invariant, the prover might not 
+find a contradiction, which can be inspected by using <option>-witness</option>.
+</para>
+</refsect1>
+&reachelm.xml;
+</refentry>

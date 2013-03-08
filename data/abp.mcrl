@@ -1,0 +1,99 @@
+%% $Id: abp.mcrl,v 1.1 2001/05/21 11:56:33 bertl Exp $
+%% This file contains the alternating bit protocol,
+%% as described in J.C.M. Baeten and W.P. Weijland,
+%% Process Algebra, Cambridge Tracts in Theoretical
+%% Computer Science 18, Cambridge University Press, 1990.
+%% The only exception is that the domain
+%% D to consist of two data elements d1 and d2 to facilitate
+%% simulation.
+
+
+sort D
+func d1,d2: -> D
+map  eq:D#D -> Bool
+
+rew  eq(d1,d1)=T
+     eq(d2,d2)=T
+     eq(d1,d2)=F
+     eq(d2,d1)=F
+
+
+sort Bool
+
+map  and,or:Bool#Bool -> Bool
+     not:Bool -> Bool
+     eq:Bool#Bool->Bool
+
+func T,F:-> Bool
+
+var  x:Bool
+rew  and(T,x)=x
+     and(x,T)=x
+     and(x,F)=F
+     and(F,x)=F
+     or(T,x)=T
+     or(x,T)=T
+     or(x,F)=x
+     or(F,x)=x
+
+     not(F)=T
+     not(T)=F
+
+     eq(x,T)=x
+     eq(T,x)=x
+     eq(F,x)=not(x)
+     eq(x,F)=not(x)
+
+
+sort  error
+func  e:-> error
+map   eq:error#error -> Bool
+
+var   x:error
+rew   eq(x,x)=T
+ 
+sort  bit
+func  0,1:-> bit
+map   invert:bit -> bit
+      eq:bit#bit-> Bool
+
+var   x:bit
+rew   eq(x,x)=T
+      eq(0,1)=F
+      eq(1,0)=F
+
+rew   invert(1)=0
+      invert(0)=1
+
+act   r1,s4    : D
+      s2,r2,c2 : D#bit
+      s3,r3,c3 : D#bit
+      s3,r3,c3 : error
+      s5,r5,c5 : bit
+      s6,r6,c6 : bit
+      s6,r6,c6 : error
+
+      tau_s3dn tau_s3e tau_s6n tau_s6e
+
+comm  r2|s2 = c2
+      r3|s3 = c3
+      r5|s5 = c5
+      r6|s6 = c6
+
+proc  S            = S(0).S(1).S
+      S(n:bit)     = sum(d:D,r1(d).S(d,n))
+      S(d:D,n:bit) = s2(d,n).((r6(invert(n))+r6(e)).S(d,n)+r6(n))
+
+      R            = R(1).R(0).R
+      R(n:bit)     = (sum(d:D,r3(d,n))+r3(e)).s5(n).R(n)+
+                      sum(d:D,r3(d,invert(n)).s4(d).s5(invert(n)))
+
+      K            = sum(d:D,sum(n:bit,r2(d,n).
+                          (tau_s3dn.s3(d,n)+tau_s3e.s3(e)))) .K
+
+      L            = sum(n:bit,r5(n).(tau_s6n.s6(n)+tau_s6e.s6(e))).L
+
+
+init
+  hide({c2,c3,c5,c6,tau_s3dn,tau_s3e,tau_s6n,tau_s6e}, 
+             encap({r2,r3,r5,r6,s2,s3,s5,s6}, S || K || L ||  R))

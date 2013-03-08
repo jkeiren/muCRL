@@ -1,0 +1,5 @@
+(*
+* Producer can write continuosly 
+* (NOT POSSIBLE)
+*)
+['.*_must.*'*.not('W_must(in_setOf(A_abs_D,empty_setOf_abs_D))' or '.*_may.*')] false

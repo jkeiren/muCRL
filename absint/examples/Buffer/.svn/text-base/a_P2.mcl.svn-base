@@ -1,0 +1,4 @@
+(*
+* Consumer can read after one write
+*)
+['.*_may.*'*. 'W_may(in_setOf(A_abs_D,empty_setOf_abs_D))'] <'R_must(in_setOf(A_abs_D,empty_setOf_abs_D))'> true

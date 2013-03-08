@@ -1,0 +1,12 @@
+function produce {
+AAP=`basename $7 ".xml"`
+echo "<!ENTITY $7 \"<refsect1> &finish1; \
+<para><literal>$4 $5 $6</literal> &finish2;</para> </refsect1>\">"
+echo "<!ENTITY $AAP.lnk '<link linkend=\"$AAP\">$AAP</link>'>"
+}
+
+for i 
+in *.xml
+do
+    produce `ls  -gGo --time-style=+"%e %B %Y" $i`
+done > dates.xml

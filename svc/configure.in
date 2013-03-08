@@ -1,0 +1,69 @@
+dnl Process this file with autoconf to produce a configure script.
+
+dnl   SVC -- the SVC (Systems Validation Centre) file format library
+dnl
+dnl   Copyright (C) 2000  Stichting Mathematisch Centrum, Amsterdam,
+dnl                       The  Netherlands
+dnl
+dnl   This program is free software; you can redistribute it and/or
+dnl   modify it under the terms of the GNU Lesser General Public License
+dnl   as published by the Free Software Foundation; either version 2
+dnl   of the License, or (at your option) any later version.
+dnl
+dnl   This program is distributed in the hope that it will be useful,
+dnl   but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+dnl   GNU Lesser General Public License for more details.
+dnl
+dnl   You should have received a copy of the GNU Lesser General Public License
+dnl   along with this program; if not, write to the Free Software
+dnl   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+dnl $Id: configure.in,v 1.1.1.1 2004/09/07 15:06:33 uid523 Exp $
+
+AC_INIT(Makefile.in)
+
+dnl Determine machine architecture
+
+AC_CANONICAL_HOST
+
+dnl Checks for programs.
+
+AC_PROG_CC
+AC_PROG_INSTALL
+
+dnl Specify paths to look for libraries and headers
+
+AC_ARG_WITH(libs-from,
+                [  --with-libs-from=DIR    compiler flags to look for libraries],
+                [LIBRARY_SEARCH_PATH="$withval"])
+
+AC_ARG_WITH(incs-from,
+                [  --with-incs-from=DIR    compiler flags to look for header files],
+                [HEADER_SEARCH_PATH="$withval"])
+
+AC_SUBST(LIBRARY_SEARCH_PATH)
+AC_SUBST(HEADER_SEARCH_PATH)
+
+
+dnl Checks for header files.
+
+AC_HEADER_STDC
+AC_CHECK_HEADERS(fcntl.h limits.h strings.h)
+SVC_CHECK_HEADER(aterm1.h)
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+
+dnl Checks for library functions.
+AC_FUNC_STRFTIME
+AC_CHECK_FUNCS(strdup strerror)
+
+dnl Setting directory for distribution
+
+distdir='${prefix}/svc-1.0.6'
+AC_SUBST(distdir)
+
+AC_OUTPUT(  \
+   Makefile \
+   man/Makefile \
+   src/Makefile)

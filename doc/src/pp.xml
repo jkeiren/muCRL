@@ -1,0 +1,150 @@
+
+<refentry id="pp">
+<refmeta>
+<refentrytitle>pp</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>pp</refname>
+<refpurpose>Print linear mcrl specifications written in 
+<literal>.tbf</literal>format</refpurpose> 
+</refnamediv>
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>pp</command> 
+&common1;
+<arg><option><link linkend="libmcrl">Data Options</link></option></arg>
+<arg><option>-no-actions</option></arg>
+<arg><option>-adt-only</option></arg>
+<arg><option>-params</option>  
+<arg choice="plain">
+<replaceable>name</replaceable></arg>
+<arg rep="repeat" choice="plain"><arg choice="req"><replaceable>,name
+</replaceable></arg></arg>
+</arg>
+<arg><option>-mcrl2</option></arg>
+<arg><option>-conds</option> <replaceable>ranges</replaceable></arg>
+
+<arg choice="plain"><option><replaceable>input</replaceable>
+</option></arg>
+</cmdsynopsis>
+<cmdsynopsis>
+<command><replaceable>ranges</replaceable><token>::=</token></command>
+<arg choice="plain"> <replaceable>range</replaceable></arg>
+<arg rep="repeat" choice="plain"><arg choice="req"><replaceable>,range
+</replaceable></arg></arg>
+</cmdsynopsis>
+<cmdsynopsis>
+<command><replaceable>range</replaceable><token>::=</token></command>
+<group choice="plain">
+<arg choice="plain"><replaceable>n1</replaceable></arg>
+<arg choice="plain"><replaceable>n1-n2</replaceable></arg>
+<arg choice="plain">%</arg>
+</group>
+</cmdsynopsis>
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+Reads from 
+<filename><replaceable>input</replaceable>.tbf</filename> (or 
+<filename> stdin </filename> if not given) an &lpe; 
+in <literal>.tbf </literal> format, and prints the output LPE 
+in  <filename>stdout</filename>
+</para>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+&common2;
+<varlistentry>
+  <term><option>-no-actions</option>
+  </term>
+  <listitem>
+   <para>
+   No action declaration part will be printed
+   </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-adt-only</option>
+  </term>
+  <listitem>
+   <para>
+   Only the adt part will be printed
+   </para>
+  </listitem>
+</varlistentry>
+<!--<title>Options</title>-->
+
+<varlistentry>
+  <term><option>-params <parameter>name</parameter></option>
+  </term>
+  <listitem>
+    <para>
+    Print the arguments of parameter
+    <parameter>name</parameter>
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-mcrl2</option>
+  </term>
+  <listitem>
+   <para>
+   Converts LPE to mcrl2 internal format and writes to 
+   <filename>stdout</filename>
+   </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-conds <parameter>ranges</parameter></option>
+  </term>
+  <listitem>
+    <para>
+     For each <parameter>range</parameter> in <parameter>ranges</parameter>
+     print all summands specified in <parameter>range</parameter>.
+     <parameter>range</parameter> has the following format:
+     <variablelist>
+          <varlistentry>
+          <term>
+          <parameter>n1</parameter>
+          </term>
+          <listitem><para>
+          Number of summand
+          </para></listitem>
+          </varlistentry>
+
+          <varlistentry>
+          <term>
+          <parameter>n1-n2</parameter>
+          </term>
+          <listitem><para>
+          Range of summand numbers. Number <parameter>n1</parameter> 
+          is lower bound and number <parameter>n2</parameter> is upper bound.
+          Summands <parameter>n1</parameter> and <parameter>n2</parameter>
+          are included in the range.
+          </para></listitem>
+          </varlistentry>
+          
+          <varlistentry>
+          <term>
+          <parameter>%</parameter>
+          </term>
+          <listitem><para>
+          All summands
+          </para></listitem>
+          </varlistentry>
+       </variablelist> 
+    </para>
+  </listitem>
+</varlistentry>
+
+</variablelist>
+</refsect1>
+&pp.xml;
+</refentry>

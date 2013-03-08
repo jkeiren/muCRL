@@ -1,0 +1,8 @@
+#!/bin/sh
+PATH=../prover/src:../src:../lin:../svctools/src:$PATH
+rm -f brp.tbf.o brp.tbf
+mcrl -tbf -regular -newstate -statenames brp.mcrl
+PATH=../prover/src:../src:../lin:../svctools/src:$CADP/com:$CADP/bin.`$CADP/com/arch`:../mcrlopen:$PATH
+instantiator -i -O -o brp3 brp.tbf
+mcrl_open brp.tbf generator brp.bcg
+aldebaran -std -bequ brp3.aut brp.bcg 

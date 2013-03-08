@@ -1,0 +1,74 @@
+.SUFFIXES:  .c .o
+
+SHELL     = /bin/sh
+ARCH      = @ARCH@
+
+VERSION   = @VERSION@
+DATE      = `date`
+RM	  = @RM@
+CC        = @CC@
+
+top_srcdir      = @top_srcdir@
+INSTALL     = @INSTALL@
+INSTALL_PRG = @INSTALL_PROGRAM@
+INSTALL_DAT = @INSTALL_DATA@
+CFLAGS    =   @CFLAGS@ 
+CPPFLAGS  =   -I. -I$(top_srcdir)/src -I$(top_srcdir)/prover/src @CPPFLAGS@
+LDFLAGS   = @LDFLAGS@
+LIBS      = -L$(top_srcdir)/src -L$(top_srcdir)/prover/src -lprover -lmcrl @LIBS@ 
+
+prefix          = @prefix@
+srcdir          = @srcdir@
+exec_prefix     = @exec_prefix@
+includedir      = @includedir@ 
+mandir          = @mandir@
+bindir          = @bindir@
+libdir          = @libdir@
+distdir         = @distdir@
+libexecdir      = @libexecdir@
+datarootdir 	= @datarootdir@
+datadir         = @datadir@
+noprintdirectory= @noprintdirectory@
+
+@SET_MAKE@
+
+SUBDIR		= absint/src
+DISTFILES	= Makefile.in absLoader.c absint.c  libAbsint.c
+PROGRAMS	= absint absLoader
+INCLUDES	= libAbsint.h
+
+DEFS		= -DVERSION=\"$(VERSION)\" @DEFS@
+
+all:		absint absLoader
+
+absint.o:	absint.c Makefile
+		$(CC) $(CFLAGS) $(DEFS) $(CPPFLAGS) -c $*.c
+
+absLoader.o:	absLoader.c Makefile
+		$(CC) $(CFLAGS) $(DEFS) $(CPPFLAGS) -c $*.c
+
+absint:		absint.o libAbsint.o
+		$(CC) $(LDFLAGS) $(DEFS) absint.o libAbsint.o -o absint $(LIBS)
+
+absLoader:	absLoader.o libAbsint.o 
+		$(CC) $(LDFLAGS) $(DEFS) absLoader.o libAbsint.o -o absLoader $(LIBS)
+
+dist:
+		mkdir $(distdir)/$(SUBDIR)
+		cp $(DISTFILES) $(distdir)/$(SUBDIR)
+		cp $(INCLUDES) $(distdir)/$(SUBDIR)
+
+install:
+		$(MAKE) all
+		$(INSTALL) -d $(bindir)
+		@for file in $(PROGRAMS); do \
+		    $(INSTALL_PRG) $$file $(bindir); \
+		done
+
+clean:
+		$(RM) absLoader.o absint.o libAbsint.o $(PROGRAMS)
+
+uninstall:
+		if test -d $(bindir); then \
+		(cd $(bindir);rm -f $(PROGRAMS)); \
+		fi

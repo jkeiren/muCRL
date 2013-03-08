@@ -1,0 +1,90 @@
+#$Id: Makefile.in,v 1.7 2007/07/13 11:44:42 bertl Exp $
+SHELL           = /bin/sh
+.SUFFIXES:      .c .o
+
+RM	= 	@RM@
+ARCH 	=	@ARCH@
+
+srcdir		= .
+top_srcdir	= @top_srcdir@
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+datarootdir 	= @datarootdir@
+bindir		= @bindir@
+libdir		= @libdir@
+includedir	= @includedir@
+datadir		= @datadir@
+distdir		= @distdir@
+libexecdir	= @libexecdir@
+exampledir	= @exampledir@
+SUBDIR          = explicit/ltsmin
+
+
+CC		= @CC@
+DEFS		= @DEFS@ 
+CFLAGS		= @CFLAGS@
+CPPFLAGS	= -I. -I$(top_srcdir) -I$(top_srcdir)/explicit/src @CPPFLAGS@
+LIBS	=	-L. -L$(top_srcdir)/explicit/src -lexplicit @LIBS@
+
+VERSION		= @VERSION@
+LDFLAGS		= @LDFLAGS@
+INSTALL         = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA    = @INSTALL_DATA@
+PROGRAMS        = ltsmin ltscmp ltscp
+PROGRAMO        = ltsmin.o ltscmp.o ltscp.o
+SOURCES		= ltscmp.c ltsmin.c ltscp.c setreductions.c simona-red.c \
+		lowmem.c ks.c
+OBJECTS		= setreductions.o simona-red.o \
+		lowmem.o ks.o
+
+INCLUDES	= lowmem.h simona-red.h setreductions.h help.h ks.h
+
+all:		$(PROGRAMS)
+                
+install:        all
+		$(INSTALL) -d $(bindir)
+		@for file in $(PROGRAMS); do \
+			$(INSTALL_PROGRAM) $$file $(bindir); \
+		done
+		
+ltsmin:		ltsmin.o $(OBJECTS) 
+		$(CC) $(LDFLAGS) -o $@ ltsmin.o $(OBJECTS) $(LIBS)
+		
+
+ltscmp:		ltscmp.o
+		$(CC) $(LDFLAGS) -o $@ ltscmp.o $(LIBS)
+
+ltscp:		ltscp.o
+		$(CC) $(LDFLAGS) -o $@ ltscp.o $(LIBS)
+
+
+ltsmin.o:	$(INCLUDES)
+
+ltscmp.o:	$(INCLUDES)
+
+setreductions.o:	$(INCLUDES)
+
+simona_red.o:	$(INCLUDES)
+
+lowmem.o:	$(INCLUDES)
+
+ks.o:		$(INCLUDES)
+
+
+dist:
+		mkdir $(distdir)/$(SUBDIR)
+		cp $(SOURCES) $(INCLUDES) Makefile.in $(distdir)/$(SUBDIR) 
+
+clean:
+		$(RM) $(OBJECTS) $(PROGRAMO) core.* core $(PROGRAMS)
+
+uninstall:
+		if test -d $(bindir); then \
+		(cd $(bindir); $(RM) $(PROGRAMS)) ;\
+		fi
+
+.c.o:
+		$(CC) $(DEFS) $(CFLAGS) $(CPPFLAGS) -c $*.c
+
+$(OBJECTS) $(PROGRAMO):	Makefile $(INCLUDES)

@@ -1,0 +1,108 @@
+%% $Id: abpE.mcrl,v 1.1 2002/11/11 10:22:12 bertl Exp $
+%% This file contains the alternating bit protocol,
+%% as described in J.C.M. Baeten and W.P. Weijland,
+%% Process Algebra, Cambridge Tracts in Theoretical
+%% Computer Science 18, Cambridge University Press, 1990.
+
+%% Environment is added
+%% Prove that the behaviour of ABP is equivalent to one data 
+%% element buffer.
+
+
+sort D
+map d1,d2: -> D
+map  eq:D#D -> Bool
+var d:D
+rew
+eq(d,d)=T
+
+sort Bool
+
+map  and,or:Bool#Bool -> Bool
+     not:Bool -> Bool
+     eq:Bool#Bool->Bool
+     if:Bool#Bool#Bool->Bool
+
+func T,F:-> Bool
+
+var  x,y:Bool
+rew  and(T,x)=x
+     and(x,T)=x
+     and(x,F)=F
+     and(F,x)=F
+     or(T,x)=T
+     or(x,T)=T
+     or(x,F)=x
+     or(F,x)=x
+     if(F,x,y)=y
+     if(T,x,y)=x
+     if (x,y,y)=y
+     not(F)=T
+     not(T)=F
+
+     eq(x,T)=x
+     eq(T,x)=x
+     eq(F,x)=not(x)
+     eq(x,F)=not(x)
+
+
+sort  error
+func  e:-> error
+map   eq:error#error -> Bool
+
+var   x:error
+rew   eq(x,x)=T
+ 
+sort  bit
+func  0,1:-> bit
+map   invert:bit -> bit
+      eq:bit#bit-> Bool
+
+var   x:bit
+rew   eq(x,x)=T
+      eq(0,1)=F
+      eq(1,0)=F
+
+rew   invert(1)=0
+      invert(0)=1
+
+act   r1,s4,_r1,_s4,__r1,__s4    : D
+      s2,r2,c2 : D#bit
+      s3,r3,c3 : D#bit
+      s3,r3,c3 : error
+      s5,r5,c5 : bit
+      s6,r6,c6 : bit
+      s6,r6,c6 : error
+      ok nok
+      tau_s3dn tau_s3e tau_s6n tau_s6e
+
+comm  r2|s2 = c2
+      r3|s3 = c3
+      r5|s5 = c5
+      r6|s6 = c6
+      r1|_r1 = __r1
+      s4|_s4 = __s4
+
+proc  S            = S(0).S(1).S
+      S(n:bit)     = sum(d:D,r1(d).S(d,n))
+      S(d:D,n:bit) = s2(d,n).((r6(invert(n))+r6(e)).S(d,n)+r6(n))
+
+      R            = R(1).R(0).R
+      R(n:bit)     = (sum(d:D,r3(d,n))+r3(e)).s5(n).R(n)+
+                      sum(d:D,r3(d,invert(n)).s4(d)).s5(invert(n))
+
+      K            = sum(d:D,sum(n:bit,r2(d,n).
+                          (tau_s3dn.s3(d,n)+tau_s3e.s3(e)))) .K
+
+      L            = sum(n:bit,r5(n).(tau_s6n.s6(n)+tau_s6e.s6(e))).L
+
+      E            = sum(d:D,_r1(d)._s4(d)).E
+init
+  hide({c2,c3,c5,c6,tau_s3dn,tau_s3e,tau_s6n,tau_s6e,__r1,__s4}, 
+             encap({r2,r3,r5,r6,s2,s3,s5,s6,_r1,r1,s4,_s4}, S || K || L ||  R || E))
+
+% ADDED FOR VERIFICATION:
+
+map implies: Bool#Bool->Bool
+var x,y:Bool
+rew implies(x,y) = or(not(x),y)

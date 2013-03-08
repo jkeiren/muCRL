@@ -1,0 +1,69 @@
+#!/bin/sh
+set -e
+RW="-alt rw"
+PATH=../src:../lin:../svctools/src:$PATH 
+rm -f brp1.svc brp2.svc brp3.svc brp4.svc brp.svc brp.tbf brp.red.tbf
+# Run 0 
+echo "run 0: instantiator -o newabp -svc-term abp.tbf"
+instantiator $RW -o newabp -svc-term abp.tbf
+svc2txt -s newabp
+
+# Run 1 
+echo "run 1: mcrl -tbf brp.mcrl" 
+mcrl -tbf brp.mcrl 
+../src/instantiator $RW -o brp1 -svc-num -monitor brp.tbf
+
+# Run 2 
+echo "run 2: mcrl -tbf -regular -cluster -newstate brp.tbf" 
+mcrl -tbf -regular -cluster -newstate brp.mcrl
+instantiator $RW -o brp2 -monitor -svc-num  brp.tbf
+if ../explicit/ltsmin/ltscmp -q brp1.svc brp2.svc
+then
+    echo "OKAY run 2"
+else
+    echo "WRONG run 2"
+    exit 1
+fi
+
+# Run 3 
+echo "run 3: mcrl -tbfile -regular -nocluster brp.mcrl" 
+mcrl -tbfile -regular -nocluster brp.mcrl
+echo "symbolic reduction of LPE" 
+structelm -expand List -depth 3 brp.tbf| rewr $RW -case  | constelm | \
+parelm|sumelm|parelm|constelm >brp.red.tbf
+../src/instantiator $RW -o brp3 -svc-num -monitor  brp.red.tbf
+if ../explicit/ltsmin/ltscmp -q brp1.svc brp3.svc
+then
+    echo "OKAY run 3"
+else
+    echo "WRONG run 3"
+    exit 1
+fi
+
+# Run 4 
+echo "run 4: mcrl -regular -nocluster -tbf -newstate -binary" 
+mcrl -regular -nocluster -tbf -newstate -binary brp.mcrl
+echo "symbolic reduction of LPE" 
+structelm -binary -expand List -depth 3 brp.tbf| rewr -alt rw -case  | constelm | \
+rewr -prover| parelm|sumelm|parelm >brp.red.tbf
+../src/instantiator $RW -o brp4 -svc-num -monitor  brp.red.tbf
+if ../explicit/ltsmin/ltscmp -q brp1.svc brp4.svc
+then
+    echo "OKAY run 4"
+else
+    echo "WRONG run 4"
+    exit 1
+fi
+
+# 3 (<=3) Instantiator: Visited 10550 states and generated 12170 transitions
+
+#real    0m7.44s
+#user    0m6.28s
+#sys     0m0.55s
+
+
+# 3 (<=3) Instantiator: Visited 1202 states and generated 1378 transitions
+
+#real    0m2.79s
+#user    0m1.89s
+#sys     0m0.27s

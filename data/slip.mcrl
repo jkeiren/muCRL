@@ -1,0 +1,96 @@
+% This file describes an implementation and a specification of
+% the Serial Line Interface Protocol (SLIP), as used in J.F. Groote, F.
+% Monin and J.C. van de Pol. Checking verifications of protocols and
+% distributed systems by computer. In D. Sangiorgi and
+% R. de Simone, editors, Proceedings of Concur'98, Sophia
+% Antipolis, 1998. LNCS 1466, pages 629-655, Springer Verlag, 1998. 
+% The SLIP protocol does little more than escaping ESC and END 
+% characters by preceding them with an extra ESC character. For the
+% physical layer via which the data is sent we have taken a simple
+% one bit buffer. The state space of the implementation and the specification
+% is finite and rather small. However, it turned out a little cumbersome
+% to find the proper formulation of the specification.
+
+sort Bool
+func T,F:->Bool
+map  or,and:Bool#Bool->Bool
+     not:Bool->Bool
+
+var  c:Bool
+rew  or(F,c)=c
+     or(T,c)=T
+     and(F,c)=F
+     and(T,c)=c
+     not(T)=F
+     not(F)=T
+
+sort Byte
+func B0,B1,END,ESC:->Byte
+map  eq:Byte#Byte->Bool
+
+rew  
+     eq(ESC,ESC)=T
+     eq(ESC,END)=F
+     eq(ESC,B0)=F
+     eq(ESC,B1)=F
+     eq(END,ESC)=F
+     eq(END,END)=T
+     eq(END,B0)=F
+     eq(END,B1)=F
+     eq(B0,ESC)=F
+     eq(B0,END)=F
+     eq(B0,B0)=T
+     eq(B0,B1)=F
+     eq(B1,ESC)=F
+     eq(B1,END)=F
+     eq(B1,B0)=F
+     eq(B1,B1)=T
+
+sort State
+func 0,1,2,3:->State
+map  S:State->State
+     eq:State#State->Bool
+
+var s:State
+rew S(0)=1
+    S(1)=2
+    S(2)=3
+    eq(0,0)=T
+    eq(1,0)=F
+    eq(2,0)=F
+    eq(3,0)=F
+    eq(0,1)=F
+    eq(1,1)=T
+    eq(2,1)=F
+    eq(3,1)=F
+    eq(0,2)=F
+    eq(1,2)=F
+    eq(2,2)=T
+    eq(3,2)=F
+    eq(0,3)=F
+    eq(1,3)=F
+    eq(2,3)=F
+    eq(3,3)=T
+
+act  r,s,r1,s1,r2,s2,c1,c2:Byte
+comm r1|s1=c1 r2|s2=c2
+proc C=sum(b:Byte,r1(b).s2(b).C)
+
+     S=sum(b:Byte,r(b).
+          (s1(ESC).s1(b).S
+              <| or(eq(b,END),eq(b,ESC)) |> s1(b).S))
+     
+     R=sum(b:Byte,r2(b).
+          (sum(b:Byte,r2(b).s(b).R) <| eq(b,ESC)|> s(b).R))
+
+     IMPL=encap({r1,s1,r2,s2},S||C||R)
+
+
+     SPEC(b1:Byte,b2:Byte,b3:Byte,s:State)=
+       sum(b:Byte,r(b).SPEC(b,b1,b2,S(s))<| not(eq(s,3)) |> delta) +
+       s(b1).SPEC(b1,b2,b3,0) <| eq(s,1) |> delta +
+       s(b2).SPEC(b1,b2,b3,1) <| eq(s,2) |> delta +
+       s(b3).SPEC(b1,b2,b3,2) <| eq(s,3) |> delta
+
+init IMPL
+% init SPEC(ESC,ESC,0)

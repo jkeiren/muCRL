@@ -1,0 +1,71 @@
+
+<variablelist>
+
+<varlistentry>
+<term>
+<option>svc</option>
+</term>
+<listitem><para>
+State information is discarded
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>
+<option>bcg</option>
+</term>
+<listitem><para>
+Ceasar Aldebaran format (binary)
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>
+<option>aut</option>
+</term>
+<listitem><para>
+Ceasar Aldebaran format (ASCII)
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>
+<option>dir</option>
+</term>
+<listitem><para>
+Prototype for SVC II, focussing on distributed tools
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>
+<option>fsm</option>
+</term>
+<listitem><para>
+Write support only
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>
+<option>fc2</option>
+</term>
+<listitem><para>
+Write support only
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>
+<option>dmp</option>
+</term>
+<listitem><para>
+The incremental file format used by
+<command>&instantiators.lnk;</command> and 
+<command>&instantiator1.lnk;</command> for dumping and loading
+state spaces.
+Read support only.
+</para></listitem>
+</varlistentry>
+</variablelist>
+

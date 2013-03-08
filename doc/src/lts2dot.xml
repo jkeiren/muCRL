@@ -1,0 +1,151 @@
+
+<refentry id="lts2dot">
+<refmeta>
+<refentrytitle>lts2dot</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>lts2dot</refname>
+<refpurpose>Converts an Labeled Transition System 
+to the <literal>Graphviz</literal> format
+</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>lts2dot</command> 
+<arg>
+<option>-o</option><replaceable>file</replaceable>
+</arg>
+
+<arg><group choice="plain">
+      <arg choice="plain"><option>-a4</option></arg>
+      <arg choice="plain"><option>-letter</option></arg>
+     </group>
+</arg>
+
+<arg><option>-statenames</option>
+    <group choice="req">
+      <arg choice="plain"><option>hide</option></arg>
+      <arg choice="plain"><option>show</option></arg>
+    </group>
+</arg>
+<arg><option>-actionnames</option>
+    <group choice="req">
+      <arg choice="plain"><option>hide</option></arg>
+      <arg choice="plain"><option>show</option></arg>
+    </group>
+</arg>
+<arg><option>-internal</option></arg>
+<arg><option>-spec <replaceable>dot_commands</replaceable></option></arg>
+<arg choice="plain">
+<replaceable>input.ext1</replaceable>
+</arg>
+</cmdsynopsis>
+&ext1;
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+Converts an Labeled Transition System read from 
+<filename><replaceable>input.ext1</replaceable></filename>
+to the <literal>Graphviz</literal> format and write this to 
+<filename><replaceable>input.dot</replaceable></filename>  
+</para>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+
+<varlistentry>
+  <term><option>-o</option> 
+  <filename><replaceable>file</replaceable></filename>
+  </term>
+  <listitem>
+    <para>
+    Redirect output to 
+    <filename><replaceable>file</replaceable>.dot</filename>
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-spec</option> 
+  <parameter>dot_commands</parameter>
+  </term>
+  <listitem>
+    <para>
+    Insert commands specified in <parameter>dot_commands</parameter> 
+    to be inserted after the first <token> { </token> in output
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-internal</option> </term>
+  <listitem>
+  <para>
+   Mark internal transitions
+  </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-statenames</option>
+  </term>
+  <listitem>
+  <variablelist>
+          <varlistentry>
+          <term><option>hide</option> </term>
+          <listitem>
+          <para>
+           Hide names of states
+          </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>show</option> </term>
+          <listitem>
+          <para>
+          Show names of states 
+          </para>
+          </listitem>
+        </varlistentry>
+  </variablelist>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-actionnames</option>
+  </term>
+  <listitem>
+  <variablelist>
+          <varlistentry>
+          <term><option>hide</option> </term>
+          <listitem>
+          <para>
+           Hide names of actions
+          </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>show</option> </term>
+          <listitem>
+          <para>
+          Show names of actions 
+          </para>
+          </listitem>
+        </varlistentry>
+  </variablelist>
+  </listitem>
+</varlistentry>
+<!--
+</para>
+</listitem>
+</varlistentry>
+-->
+</variablelist>
+</refsect1>
+&finish;
+</refentry>

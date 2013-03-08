@@ -1,0 +1,56 @@
+   SVC -- the SVC (Systems Validation Centre) file format library
+
+   Copyright (C) 2000  Stichting Mathematisch Centrum, Amsterdam,
+                       The  Netherlands
+
+   This program is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public License
+   as published by the Free Software Foundation; either version 2
+   of the License, or (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+$Id: ChangeLog,v 1.1.1.1 2004/09/07 15:06:33 uid523 Exp $
+
+
+
+2000/6/1
+   * Version 1.0 
+   * Initial release
+
+2000/6/15 (izak@cwi.nl)
+   * Version 1.1 
+   * Bug fix: frequency of the escape sequence is not updated
+
+2000/9/18 (izak@cwi.nl)
+   * Version 1.2
+   * Update conform update ATerm library 1.4.4
+   * Added configure.in to release
+
+2000/9/25
+   * Release 1.0.3
+   * Fixed bug in troff manuals causing manuals to start with a blank page
+   * Fixed memory allocation bug in compressed streams
+   * Cleaned up header files by removing standard includes
+
+2000/9/27
+   * Release 1.0.4
+   * Fixed bug: buffer for states and labels was allocated too small
+
+2000/10/18
+   * Release 1.0.5
+   * Fixed bug: the SVCaterm2... functions returned 0 instead of -1 to flag
+     an unknown ATerm
+
+2001/1/4
+   * Release 1.0.6
+   * Format version number incremented to 1.2 beta
+   * Lempel Ziff token enlarged to three bytes
+   * Gnu General Public License added

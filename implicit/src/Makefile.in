@@ -1,0 +1,82 @@
+#$Id: Makefile.in,v 1.4 2005/11/10 16:11:47 bertl Exp $
+SHELL           = /bin/sh
+.SUFFIXES:      .c .o
+
+RM	= 	@RM@
+ARCH 	=	@ARCH@
+
+srcdir		= .
+top_srcdir	= @top_srcdir@
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+datarootdir 	= @datarootdir@
+bindir		= @bindir@
+libdir		= @libdir@
+includedir	= @includedir@
+datadir		= @datadir@
+distdir		= @distdir@
+libexecdir	= @libexecdir@
+exampledir	= @exampledir@
+SUBDIR          = implicit/src
+
+
+CC		= @CC@
+DEFS		= @DEFS@ -DMASTER 
+CFLAGS		= @CFLAGS@  
+CPPFLAGS	= -I. -I$(top_srcdir)/src @CPPFLAGS@
+LIBS		= -L. -L$(top_srcdir)/src -limplicit -lmcrl @LIBS@
+
+VERSION 	= @VERSION @
+LDFLAGS		= @LDFLAGS@
+INSTALL         = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA    = @INSTALL_DATA@
+PROGRAMS        = critpairs
+IMPLICIT	= unification_linear.o unification_naive.o \
+		  unification_master.o at_stack.o
+OBJECTS		= $(IMPLICIT) critpairs.o
+
+SOURCES		= unification_linear.c unification_naive.c \
+		unification_master.c at_stack.c critpairs.c
+
+INCLUDES	= at_stack.h unification.h
+
+all:		$(PROGRAMS)
+                
+install:	all
+		$(INSTALL) -d $(bindir)
+		$(INSTALL_PROGRAM) critpairs $(bindir)
+		$(INSTALL) -d $(libdir)
+		$(INSTALL_DATA) libimplicit.a $(libdir)
+		$(INSTALL) -d $(includedir)
+		@for file in $(INCLUDES); do \
+			$(INSTALL_DATA) $$file $(includedir); \
+		done
+uninstall:
+		if test -d $(bindir); then \
+		(cd $(bindir); $(RM) $(PROGRAMS)) ;\
+		fi
+		if test -d $(includedir); then \
+		(cd $(includedir);$(RM) $(INCLUDES)) ; \
+		fi
+		if test -d $(libdir); then \
+		(cd $(libdir);$(RM) libimplicit.a) ; \
+		fi
+		
+libimplicit.a:	$(IMPLICIT) Makefile
+		ar -csr $@ $(OBJECTS)
+
+critpairs:	critpairs.o libimplicit.a Makefile
+		$(CC) $(LDFLAGS) -o $@ critpairs.o $(LIBS)
+
+$(OBJECTS): 	$(INCLUDES) Makefile
+
+dist:
+		mkdir $(distdir)/$(SUBDIR)
+		cp Makefile.in $(INCLUDES) $(SOURCES) $(distdir)/$(SUBDIR)
+
+clean:
+		$(RM) $(OBJECTS) core.* core  $(PROGRAMS) libimplicit.a
+
+.c.o:
+		$(CC) $(DEFS) $(CFLAGS) $(CPPFLAGS) -c $*.c

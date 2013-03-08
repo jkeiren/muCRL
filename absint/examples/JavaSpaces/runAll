@@ -1,0 +1,8 @@
+mcrl -regular2 -nocluster producerConsumer.mcrl
+rm abs_producerConsumer.*;
+absint -lH -S DTableC < producerConsumer.tbf > abs_producerConsumer.tbf
+absLoader -Lift Nat < abs_producerConsumer.tbf > abs_producerConsumer.b.tbf
+mv abs_producerConsumer.b.tbf abs_producerConsumer.tbf
+absLoader -L absTable.mcrl < abs_producerConsumer.tbf > abs_producerConsumer.a.tbf
+pp abs_producerConsumer.a.tbf > abs_producerConsumer.a.mcrl
+instantiator -alt jitty -monitor abs_producerConsumer.a.tbf

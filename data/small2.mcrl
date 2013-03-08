@@ -1,0 +1,10 @@
+% This is a simple mCRL specification that describes
+% an a loop.
+
+sort Bool
+func T,F:->Bool
+
+act a
+proc X=a.X
+
+init X

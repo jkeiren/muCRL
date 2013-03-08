@@ -1,0 +1,91 @@
+# $Id: Makefile.in,v 1.9 2006/12/21 09:12:04 bertl Exp $
+
+SHELL           = /bin/sh
+.SUFFIXES:      .c .o
+
+RM	= 	@RM@
+ARCH 	=	@ARCH@
+
+srcdir		= @srcdir@
+top_srcdir	= @top_srcdir@
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+datarootdir 	= @datarootdir@
+bindir		= @bindir@
+libdir		= @libdir@
+includedir	= @includedir@
+datadir		= @datadir@
+distdir		= @distdir@
+javadir		= @javadir@
+libexecdir	= @libexecdir@
+exampledir	= @exampledir@
+docdir		= @docdir@
+
+
+CC		= @CC@
+DEFS		= @DEFS@
+VERSION		= @VERSION@
+JAVAC		= @JAVAC@
+
+INSTALL         = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA    = @INSTALL_DATA@
+SUBDIR		= explicit/jsim
+OBJECTS		= Choice.java HelloMsg.java InfoMsg.java Msg.java \
+		  MyFileChooser.java ErrorMsg.java  Help.java Main.java \
+	 	  MsgHandler.java  SteprankMsg.java Mgr.java ProgressTable.java \
+		  ClientTable.java DbsTable.java Proc.java WeightTree.java \
+		  Frozen.java LogTable.java StateTable.java
+
+@SET_MAKE@
+
+all:		
+		@if test -f Main.java; then \
+		$(MAKE) jsim.jar; \
+		fi
+
+jsim.jar:	$(OBJECTS)
+		$(JAVAC) -source 1.4 -classpath ".:${CLASSPATH}" $(OBJECTS)
+		(cd ..;jar cmf jsim/manifest.txt jsim/jsim.jar jsim/*.class jsim/*.html jsim/*.java)
+
+install:	all
+		$(INSTALL) -d $(bindir)
+		$(INSTALL_PROGRAM) jsim $(bindir)
+		$(INSTALL) -d $(javadir)
+		$(INSTALL_DATA) jlfgr-1_0.jar $(javadir)
+		$(INSTALL_DATA) jsim.jar $(javadir)
+		@if test "@DEVELOPMENT@" = "yes";then \
+		        $(INSTALL_PROGRAM) admin.sh $(libexecdir); \
+			$(INSTALL_PROGRAM) contact $(bindir); \
+		fi
+
+uninstall:
+		if test -d $(javadir); then \
+		(cd $(javadir);$(RM) jlfgr-1_0.jar jsim.jar) ;\
+		fi
+		if test -d $(bindir); then \
+		(cd $(bindir);$(RM) jsim) ;\
+		fi
+		if test -d $(libexecdir); then \
+		(cd $(libexecdir);$(RM) admin.sh) ;\
+		fi
+
+
+dist:		jsim.jar
+		mkdir $(distdir)/$(SUBDIR)
+		cp Makefile.in jsim.in contact.in jlfgr-1_0.jar jsim.jar \
+		admin.sh manifest.txt $(distdir)/$(SUBDIR)
+
+doc:
+		(LINK=""; \
+		if test $${GRAPPADOC}; \
+		then LINK="-link $${GRAPPADOC} $${LINK}"; \
+		fi; \
+		if test $${JAVADOC}; \
+		then LINK="-link $${JAVADOC} $${LINK}"; \
+		fi; \
+		javadoc -private $${LINK} \
+		-d $(docdir)  -sourcepath $(top_srcdir) stateview )
+
+clean:
+		$(RM) *.class

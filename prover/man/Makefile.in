@@ -1,0 +1,41 @@
+.SUFFIXES:  .c .o
+
+SHELL     = /bin/sh
+INSTALL     = @INSTALL@
+INSTALL_PRG = @INSTALL_PROGRAM@
+INSTALL_DAT = @INSTALL_DATA@
+
+prefix          = @prefix@
+datarootdir 	= @datarootdir@
+srcdir          = @srcdir@
+top_srcdir      = @top_srcdir@
+exec_prefix     = @prefix@
+includedir      = @includedir@
+mandir          = @mandir@
+libexecdir      = @libexecdir@
+distdir         = @distdir@
+SUBDIR  	= prover/man
+
+DISTFILES    = confcheck.4 formcheck.4 invcheck.4 invelm.4 reachelm.4
+
+all: distdir
+
+dist: 
+	mkdir $(distdir)/$(SUBDIR)
+	mkdir $(distdir)/$(SUBDIR)/man4
+	@for file in $(DISTFILES); do  \
+           cp man4/$$file $(distdir)/$(SUBDIR)/man4;\
+	done
+	cp Makefile.in $(distdir)/$(SUBDIR)
+
+install:
+	$(INSTALL) -d $(mandir)
+	$(INSTALL) -d $(mandir)/man4
+	@for manpage in $(DISTFILES); do \
+           $(INSTALL_DAT) man4/$$manpage $(mandir)/man4;\
+        done;
+
+uninstall:
+	@for manpage in $(DISTFILES); do \
+           rm -f "$(mandir)/man4/$$manpage";\
+        done;

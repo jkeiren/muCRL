@@ -1,0 +1,966 @@
+% This mCRL specification describes the BKE security protocol 
+% as in occurs in Computer Science Report CSR-04-30, 
+% Analysing the BKE-security protocol with mCRL by
+% Jan Friso Groote, Sjouke Mauw and Alexander Serebrenik, 2004.
+% The report describes the analysis of this model, in which
+% it is shown that the BKE protocol guarantees secure exchange
+% of messages. If the exchange of messages would not be secure,
+% then the action NOT_SECRET would show up in the state space.
+% This property is easy to check, were it not for the huge
+% number of states that this specification entails.
+
+% This mCRL model consists of two major parts: a data description 
+% and a processes description.
+% First we introduce the Booleans including the basic operations.
+
+sort Bool
+func T,F:->Bool
+map  and,or:Bool#Bool->Bool
+     not:Bool->Bool
+     eq:Bool#Bool->Bool
+     if:Bool#Bool#Bool->Bool
+     imply:Bool#Bool->Bool
+                      
+var  x,y:Bool
+rew  and(T,x)=x      or(T,x)=T     imply(T,T)=T     
+     and(x,T)=x      or(x,T)=T     imply(T,F)=F
+     and(x,F)=F      or(x,F)=x     imply(F,T)=T
+     and(F,x)=F      or(F,x)=x     imply(F,F)=T
+
+     eq(x,T)=x       if(T,x,y)=x   not(F)=T
+     eq(T,x)=x       if(F,x,y)=y   not(T)=F
+     eq(F,x)=not(x)  if(x,y,y)=y
+     eq(x,F)=not(x)
+
+% Secondly, we require the natural numbers with 0 and the successor
+% S as constructors. This means that each natural number can be
+% written as S(S(...(0)..)).  
+% As a shorthand we allow to write digits 1, 2, etc. eq stands for
+% equality, and sm for smaller than. P is the predecessor.
+
+sort Nat
+func 0:->Nat
+     S:Nat->Nat
+map  eq:Nat#Nat->Bool
+     sm:Nat#Nat->Bool 
+     plus:Nat#Nat->Nat
+     1,2,3,4,5,6,7,8,9:->Nat
+     P:Nat->Nat
+     even:Nat->Bool
+
+var  n,m:Nat
+rew  eq(n,n)=T        sm(n,n)=F        eq(S(n),S(m))=eq(n,m)         
+     eq(S(n),0)=F     sm(n,0)=F        sm(S(n),S(m))=sm(n,m)             
+     eq(0,S(m))=F     sm(0,S(m))=T     plus(S(n),m)=S(plus(n,m))
+     plus(0,n)=n      plus(n,0)=n      plus(n,S(m))=S(plus(n,m))
+
+     even(0)=T
+     even(S(n))=not(even(n))
+     
+     P(S(n))=n
+
+     1=S(0)     4=S(3)	7=S(6)       
+     2=S(1)     5=S(4)	8=S(7)
+     3=S(2)     6=S(5)	9=S(8)
+
+% Agents. There are exactly three agents - A, B, E. 
+% We use an ordering on the agents which is defined as E < A < B.
+% It is used to reduce the state space which is generated.
+
+sort  Agent
+func  A,B,E:->Agent
+map   eq:Agent#Agent->Bool
+      sm:Agent#Agent->Bool
+      if:Bool#Agent#Agent->Agent
+      
+var   a,a':Agent
+rew   eq(a,a)=T
+      eq(A,B)=F      eq(B,A)=F      eq(E,A)=F
+      eq(A,E)=F      eq(B,E)=F      eq(E,B)=F
+
+      if(T,a,a')=a
+      if(F,a,a')=a'
+
+      sm(A,B)=T      sm(B,B)=F      sm(E,B)=T
+      sm(A,E)=F      sm(B,E)=F      sm(E,E)=F
+      sm(A,A)=F      sm(B,A)=F      sm(E,A)=T
+
+% There are two kinds of keys used in the protocol: symmetric and 
+% asymmetric ones (functional keys).
+% Symmetric keys have form K(n) where n is a natural number.
+% On symmetric keys we define equality eq and smaller than sm.
+
+sort  symKEY    
+map   K:Nat->symKEY
+      eq:symKEY#symKEY->Bool
+      sm:symKEY#symKEY->Bool
+
+var   n,m:Nat
+rew  eq(K(n),K(m)) = eq(n,m)
+     sm(K(n),K(m)) = sm(n,m)
+
+% A nonce is a random, unpredictable value which is used to make the
+% exchanged messages unique and thus helps to counter replay attacks.
+
+sort  NONCE
+map   nonce:Nat->NONCE
+      eq:NONCE#NONCE->Bool
+      sm:NONCE#NONCE->Bool
+
+var   n,m:Nat
+rew   eq(nonce(n),nonce(m)) = eq(n,m)
+      sm(nonce(n),nonce(m)) = sm(n,m)
+
+% Address is either addr(a) for some agent a or
+% a special value badAddr, which is required to make address:funKEY->ADDR 
+% to a total function (see below). We require again the equality and
+% smaller than functions.
+
+sort  ADDR
+map   addr:Agent->ADDR
+      badAddr:->ADDR          
+      eq:ADDR#ADDR->Bool
+      sm:ADDR#ADDR->Bool
+
+var   a1,a2:Agent
+rew   eq(badAddr,badAddr)  = F
+      eq(badAddr,addr(a2)) = F
+      eq(addr(a1),badAddr) = F
+      eq(addr(a1),addr(a2))= eq(a1,a2)
+
+      sm(badAddr,badAddr)  = F
+      sm(badAddr,addr(a2)) = T
+      sm(addr(a1),addr(a2))= sm(a1,a2)
+      sm(addr(a1),badAddr) = F
+
+% The sort funKEY contains the second kind of keys, functional keys. 
+% Functional keys are public keys (PK) and secret keys (SK). Furthermore, 
+% functional keys can be the result of applying a hash function (h) to 
+% some nonce. For a public key k, the function decode_key returns the 
+% corresponding secret key. For a given secret key, it returns the 
+% corresponding public key. Otherwise decode_key returns a special value 
+% NOKEY. For a public key, the function address returns the address of the 
+% owner of the key. Otherwise it returns a special value badAddr.
+% The constant NOKEY is needed to make decodeKEY:funKEY->funKEY to a 
+% total function as stated above.
+
+sort funKEY
+map   PK,SK:Agent->funKEY    
+      h:NONCE->funKEY   
+      eq:funKEY#funKEY->Bool
+      sm:funKEY#funKEY->Bool                        
+      decodeKEY:funKEY->funKEY  
+      address:funKEY->ADDR
+      NOKEY :->funKEY
+
+var   a1,a2:Agent
+      n1,n2: NONCE   
+rew   eq(NOKEY,NOKEY)   = T         eq(PK(a1),NOKEY)  = F
+      eq(NOKEY,PK(a2))  = F         eq(PK(a1),PK(a2)) = eq(a1,a2)
+      eq(NOKEY,SK(a2))  = F         eq(PK(a1),SK(a2)) = F
+      eq(NOKEY,h(n2))   = F         eq(PK(a1),h(n2))  = F
+
+      eq(SK(a1),NOKEY)  = F         eq(h(n1),NOKEY)   = F
+      eq(SK(a1),PK(a2)) = F         eq(h(n1),h(n2))   = eq(n1,n2)
+      eq(SK(a1),SK(a2)) = eq(a1,a2) eq(h(n1),PK(a1))  = F
+      eq(SK(a1),h(n2))  = F         eq(h(n1),SK(a1))  = F
+
+      sm(NOKEY,NOKEY)   = F         sm(PK(a1),NOKEY)  = F
+      sm(NOKEY,PK(a2))  = T         sm(PK(a1),PK(a2)) = sm(a1,a2)
+      sm(NOKEY,SK(a2))  = T         sm(PK(a1),SK(a2)) = T
+      sm(NOKEY,h(n2))   = T         sm(PK(a1),h(n2))  = T
+
+      sm(SK(a1),NOKEY)  = F         sm(h(n1), NOKEY)  = F
+      sm(SK(a1),PK(a2)) = F         sm(h(n1),h(n2))   = sm(n1,n2)
+      sm(SK(a1),SK(a2)) = sm(a1,a2) sm(h(n1),PK(a1))  = F
+      sm(SK(a1),h(n2))  = T         sm(h(n1),SK(a1))  = F
+
+      decodeKEY(PK(a1)) = SK(a1)    address(PK(a1)) = addr(a1)
+      decodeKEY(SK(a1)) = PK(a1)    address(h(n1)) = badAddr
+      decodeKEY(h(n1)) = NOKEY      address(SK(a1)) = badAddr
+      decodeKEY(NOKEY) = NOKEY      address(NOKEY) = badAddr
+
+% The eavesdropper's knowledge (see sort Knowledge below) consists of 
+% six different lists of information. One of them is a sorted list of 
+% symmetric keys obtained by the intruder, given in the sort symKEYList. 
+% Initially the list is empty. The function add adds a new element to
+% the list, isIn is a membership test (required only for keys). 
+% The expression get(n,l) gets the n'th symmetric key of the symmetric 
+% key list l
+
+sort  symKEYList
+func  emptysymKEYList:->symKEYList
+      insymKEY:symKEY#symKEYList->symKEYList
+map   add:symKEY#symKEYList->symKEYList           
+      isIn:symKEY#symKEYList->Bool           
+      isInAUX:Bool#symKEY#symKEYList->Bool	
+      if:Bool#symKEYList#symKEYList->symKEYList
+      length:symKEYList->Nat
+      get:Nat#symKEYList->symKEY                
+      initialsymKEYList:->symKEYList
+
+var   k1,k2:symKEY
+      l1,l2:symKEYList
+      n:Nat
+
+rew   add(k1,emptysymKEYList)=insymKEY(k1,emptysymKEYList)
+      add(k1,insymKEY(k2,l1))=
+          if(sm(k1,k2),insymKEY(k1,insymKEY(k2,l1)),
+             if(eq(k1,k2),insymKEY(k2,l1),
+                          insymKEY(k2,add(k1,l1))))
+
+      isIn(k1,emptysymKEYList)=F
+      isIn(k1,insymKEY(k2,l1))=
+           if(sm(k1,k2),F,isInAUX(eq(k1,k2),k1,l1))
+
+      isInAUX(T,k1,l1) = T
+      isInAUX(F,k1,l1) = isIn(k1,l1) 	
+
+      if(T,l1,l2)=l1
+      if(F,l1,l2)=l2
+
+      length(emptysymKEYList)=0
+      length(insymKEY(k1,l1))=S(length(l1))
+
+      get(0,insymKEY(k1,l1))=k1
+      get(S(n),insymKEY(k1,l1))=get(n,l1)
+
+      initialsymKEYList = emptysymKEYList
+
+% A sorted list of nonces is also a part of the eavesdropper's knowledge.
+% Initially the eavesdropper posesses one nonce. One can show that 
+% this is sufficient to simulate an eavesdropper with infinitely many 
+% nonces.
+
+sort  NONCEList
+func  emptyNONCEList:->NONCEList
+      inNONCE:NONCE#NONCEList->NONCEList
+map   add:NONCE#NONCEList->NONCEList
+      if:Bool#NONCEList#NONCEList->NONCEList
+      length:NONCEList->Nat
+      get:Nat#NONCEList->NONCE
+      initialNONCEList:->NONCEList
+
+var   k1,k2:NONCE
+      l1,l2:NONCEList
+      n:Nat
+rew   add(k1,emptyNONCEList)=inNONCE(k1,emptyNONCEList)
+      add(k1,inNONCE(k2,l1))=
+         if(sm(k1,k2),inNONCE(k1,inNONCE(k2,l1)),
+                if(eq(k1,k2),inNONCE(k2,l1),
+                             inNONCE(k2,add(k1,l1))))
+
+      if(T,l1,l2)=l1
+      if(F,l1,l2)=l2
+
+      length(emptyNONCEList)=0
+      length(inNONCE(k1,l1))=S(length(l1))
+
+      get(0,inNONCE(k1,l1))=k1
+      get(S(n),inNONCE(k1,l1))=get(n,l1)
+
+      initialNONCEList = add(nonce(0), emptyNONCEList)
+
+% A sorted list of addresses is also a part of intruder's knowledge.
+% All addresses are public. Hence, the initial knowledge of the 
+% intruder consists of the addresses of all the agents.
+
+sort  ADDRList
+func  emptyADDRList:->ADDRList
+      inADDR:ADDR#ADDRList->ADDRList
+map   add:ADDR#ADDRList->ADDRList
+      if:Bool#ADDRList#ADDRList->ADDRList
+      length:ADDRList->Nat
+      get:Nat#ADDRList->ADDR
+      initialADDRList:->ADDRList
+
+var   k1,k2:ADDR
+      l1,l2:ADDRList
+      n:Nat
+rew   add(k1,emptyADDRList)=inADDR(k1,emptyADDRList)
+      add(k1,inADDR(k2,l1))=
+         if(sm(k1,k2),inADDR(k1,inADDR(k2,l1)),
+                 if(eq(k1,k2),inADDR(k2,l1),
+                              inADDR(k2,add(k1,l1))))
+
+      if(T,l1,l2)=l1
+      if(F,l1,l2)=l2
+
+      length(emptyADDRList)=0
+      length(inADDR(k1,l1))=S(length(l1))
+
+      get(0,inADDR(k1,l1))=k1
+      get(S(n),inADDR(k1,l1))=get(n,l1)
+
+      initialADDRList = add(addr(A), add(addr(B), 
+                             add(addr(E), emptyADDRList)))
+
+% The intruder also keeps a sorted list of functional keys. 
+% Initially all public keys are known to the intruder. And
+% naturally the eavesdropper initially knows its own 
+% secret key.
+
+sort  funKEYList
+func  emptyfunKEYList:->funKEYList
+      infunKEY:funKEY#funKEYList->funKEYList
+map   add:funKEY#funKEYList->funKEYList
+      isIn:funKEY#funKEYList->Bool
+      isInAUX:Bool#funKEY#funKEYList->Bool	
+      if:Bool#funKEYList#funKEYList->funKEYList
+      length:funKEYList->Nat
+      get:Nat#funKEYList->funKEY
+      initialfunKEYList :->funKEYList
+
+var   k1,k2:funKEY
+      l1,l2:funKEYList
+      n:Nat
+rew   add(k1,emptyfunKEYList)=infunKEY(k1,emptyfunKEYList)
+      add(k1,infunKEY(k2,l1))=
+         if(sm(k1,k2),infunKEY(k1,infunKEY(k2,l1)),
+                 if(eq(k1,k2),infunKEY(k2,l1),
+                              infunKEY(k2,add(k1,l1))))
+
+      isIn(k1,emptyfunKEYList)=F
+      isIn(k1,infunKEY(k2,l1))=
+         if(sm(k1,k2),F,isInAUX(eq(k1,k2),k1,l1))
+
+      isInAUX(T,k1,l1) = T
+      isInAUX(F,k1,l1) = isIn(k1,l1) 	
+
+      if(T,l1,l2)=l1
+      if(F,l1,l2)=l2
+
+      length(emptyfunKEYList)=0
+      length(infunKEY(k1,l1))=S(length(l1))
+
+      get(0,infunKEY(k1,l1))=k1
+      get(S(n),infunKEY(k1,l1))=get(n,l1)
+
+      initialfunKEYList = add(PK(A), add(PK(B), 
+          add(PK(E), add(SK(E), emptyfunKEYList))))
+
+% The sort Message contains all the messages that are exchanged 
+% in the BKE protocol. There three kinds of messages:
+% two sent by the initiator and one sent by the responder.
+% The second message sent by an initiator consists of a functional
+% key encrypted by a symmetric key. The first message sent by an
+% initiator contains a nonce and an address encrypted by a 
+% functional key. The message sent by the receiver contains a 
+% functional key, a nonce, a symmetric key and it is encrypted by 
+% a functional key. The functions get... are projections to extract
+% information from the messages.
+% The functions encryptedN (N=1,2,3) indicate whether a message
+% has a particular form. The function encrypted1 is true if its 
+% first argument has the form of the second I-message and the key 
+% used during the encryption is its second argument.
+% The function encrypted2 is true if its first argument has the form
+% of the first I-message and the key used during the encryption
+% is its second argument. The function encrypted3 is true if its 
+% first argument has the form of the R-message and the key used 
+% during the encryption is its second argument. Two messages are equal, 
+% expressed using the function eq iff they are of the same kind 
+% and all components are equal.
+% The function sm defines an ordering on messages. This ordering is 
+% defined as follows:
+% for any fk1,sk2,n1,a2,fk3,fk1',n2,sk3 and fk4 
+%        encrypt(fk1,sk2) < encrypt(n1,a2,fk3) < encrypt(fk1',n2,sk3,fk4).
+% Messages of the same kind are compared lexicographically.
+
+
+sort  Message
+func  encrypt:funKEY#symKEY->Message 
+      encrypt:NONCE#ADDR#funKEY->Message
+      encrypt:funKEY#NONCE#symKEY#funKEY->Message
+map   eq:Message#Message->Bool
+      get1N:Message->NONCE
+      get1f:Message->funKEY
+      get2N:Message->NONCE
+      get2A:Message->ADDR
+      get3s:Message->symKEY
+      sm:Message#Message->Bool                
+      encrypted1:Message#symKEY->Bool
+      encrypted2:Message#funKEY->Bool
+      encrypted3:Message#funKEY->Bool
+
+var   fk1,fk1',fk3,fk3',fk4,fk4',fk5 :funKEY
+      sk2,sk2',sk3,sk3',sk4,sk5:symKEY
+      n1,n1',n2,n2':NONCE
+      a2,a2':ADDR
+rew   eq(encrypt(fk1,sk2),encrypt(n1',a2',fk3'))=F
+      eq(encrypt(fk1,sk2),encrypt(fk1',n2',sk3',fk4'))=F
+      eq(encrypt(n1,a2,fk3),encrypt(fk1',sk2'))=F
+      eq(encrypt(n1,a2,fk3),encrypt(fk1',n2',sk3',fk4'))=F 
+      eq(encrypt(fk1,n2,sk3,fk4),encrypt(fk1',sk2'))=F
+      eq(encrypt(fk1,n2,sk3,fk4),encrypt(n1',a2',fk3'))=F	
+      eq(encrypt(fk1,sk2),encrypt(fk1',sk2'))=
+        and(eq(fk1,fk1'),eq(sk2,sk2'))
+      eq(encrypt(n1,a2,fk3),encrypt(n1',a2',fk3'))=
+        and(eq(n1,n1'), 
+        and(eq(a2,a2'), eq(fk3, fk3')))
+      eq(encrypt(fk1,n2,sk3,fk4),encrypt(fk1',n2',sk3',fk4'))=
+        and(eq(fk1,fk1'), 
+        and(eq(n2,n2'),
+        and(eq(sk3,sk3'), eq(fk4, fk4'))))
+ 
+      get1f(encrypt(fk1,sk2))=fk1
+      get1f(encrypt(fk1,n2,sk3,fk4))=fk1
+      get1N(encrypt(n1,a2,fk3))=n1
+      get2A(encrypt(n1,a2,fk3))=a2
+      get2N(encrypt(fk1,n2,sk3,fk4))=n2
+      get3s(encrypt(fk1,n2,sk3,fk4))=sk3
+
+      sm(encrypt(fk1,sk2),encrypt(fk1',sk2'))=
+        or(sm(fk1,fk1'),
+              and(eq(fk1,fk1'),sm(sk2,sk2')))
+      sm(encrypt(fk1,sk2),encrypt(n1',a2',fk3'))=T
+      sm(encrypt(fk1,sk2),encrypt(fk1',n2',sk3',fk4'))=T
+      sm(encrypt(n1,a2,fk3),encrypt(fk1',sk2'))=F
+      sm(encrypt(n1,a2,fk3),encrypt(n1',a2',fk3'))=
+          or(sm(n1,n1'), 
+             and(eq(n1,n1'),
+               or(sm(a2,a2'), 
+                    and(eq(a2,a2'), 
+                    sm(fk3,fk3')))))
+      sm(encrypt(n1,a2,fk3),encrypt(fk1',n2',sk3',fk4'))=T
+      sm(encrypt(fk1,n2,sk3,fk4),encrypt(fk1',sk2'))=F
+      sm(encrypt(fk1,n2,sk3,fk4),encrypt(n1',a2',fk3'))=F
+      sm(encrypt(fk1,n2,sk3,fk4),encrypt(fk1',n2',sk3',fk4'))=
+          or(sm(fk1,fk1'),
+             and(eq(fk1,fk1'),
+                 or(sm(n2,n2'),
+                      and(eq(n2,n2'),
+                          or(sm(sk3,sk3'),
+                             and(eq(sk3,sk3'),
+                                 sm(fk4,fk4')))))))
+
+      encrypted1(encrypt(fk1,sk2),sk3)=eq(sk2,sk3)
+      encrypted1(encrypt(n1,a2,fk3),sk4)=F
+      encrypted1(encrypt(fk1,n2,sk3,fk4),sk5)=F
+
+      encrypted2(encrypt(fk1,sk2),fk3)=F
+      encrypted2(encrypt(n1,a2,fk3),fk4)=eq(fk3,fk4)
+      encrypted2(encrypt(fk1,n2,sk3,fk4),fk5)=F
+
+      encrypted3(encrypt(fk1,sk2),fk3)=F
+      encrypted3(encrypt(n1,a2,fk3),fk4)=F
+      encrypted3(encrypt(fk1,n2,sk3,fk4),fk5)=eq(fk4,fk5)
+
+% The sort MessageList contains sorted list of messages obtained by 
+% the intruder. It has the same operations as the lists of nonces 
+% and addresses. We do not store the messages directly in the intruder's 
+% knowledge but distinguish between those encoded by symmetric keys and
+% and those encoded by the functional keys (see ConditionalfunKEYList and
+% ConditionalsymKEYList below).
+
+sort  MessageList 
+func  emptyMessageList:->MessageList
+      inMessage:Message#MessageList->MessageList
+map   add:Message#MessageList->MessageList
+      if:Bool#MessageList#MessageList->MessageList
+      length:MessageList->Nat
+      get:Nat#MessageList->Message
+
+var   m1,m2:Message
+      l1,l2:MessageList
+      n:Nat
+rew   add(m1,emptyMessageList)=inMessage(m1,emptyMessageList)
+      add(m1,inMessage(m2,l1))=
+          if(sm(m1,m2),inMessage(m1,inMessage(m2,l1)),
+             if(eq(m1,m2),inMessage(m2,l1),
+                          inMessage(m2,add(m1,l1))))
+      
+      if(T,l1,l2)=l1
+      if(F,l1,l2)=l2
+
+      length(emptyMessageList)=0
+      length(inMessage(m1,l1))=S(length(l1))
+
+      get(0,inMessage(m1,l1))=m1
+      get(S(n),inMessage(m1,l1))=get(n,l1)
+
+% The sort funEncaps is an auxiliary sort, needed in ConditionalfunKEYList. 
+% It represents a pair of (ConditionalfunKEYList,MessageList).
+
+sort funEncaps
+func  encaps:ConditionalfunKEYList#MessageList->funEncaps
+map  pr1: funEncaps->ConditionalfunKEYList
+     pr2: funEncaps->MessageList
+     if:Bool#funEncaps#funEncaps->funEncaps
+
+var  fcl:ConditionalfunKEYList
+     ml:MessageList
+     fe1,fe2:funEncaps
+rew  pr1(encaps(fcl,ml)) = fcl
+     pr2(encaps(fcl,ml)) = ml
+     if(T,fe1,fe2)=fe1
+     if(F,fe1,fe2)=fe2
+
+% The list of the messages received by the intruder that are indexed by 
+% functional keys is given in the sort ConditionalFunKEYList. The list has 
+% the form <fk1,l1,fk2,l2,...> where each li is a list of messages 
+% received so far that are encrypted by the preceeding 
+% functional key fki. The function addCond adds a pair (funKEY,Message) 
+% to an existing list ConditionalfunKEYList and returns an updated list.
+% The function removeCond removes messages encoded by funKEY from the
+% list ConditionalfunKEYList. It returns a pair encoded by the sort
+% funEncaps: an updated list ConditionalfunKEYList and a list of messages 
+% corresponding to funKEY in the original list. If no messages encoded 
+% by funKEY are present, it returns an unchanged list ConditionalfunKEYList 
+% and an empty list of messages. The second equation for the function 
+% addCond is quite complex. It makes a distinction between the values of
+% k1 and k2. If k1<k2 then (k1,m) should be added at the front of the 
+% list of messages. If k1 = k2 then the intruder has already some 
+% messages encrypted by k1. Therefore, m has to be added to the 
+% corresponding list of messages. If k1>k2 then, since the list is 
+% ordered, we proceed with adding (k,m) to its tail. A similar distinction
+% is made for removeCond.
+          
+sort ConditionalfunKEYList 
+func emptyCfunKEYList:->ConditionalfunKEYList
+     inCfunKEY:funKEY#MessageList#ConditionalfunKEYList->
+            ConditionalfunKEYList                                                                             
+map  addCond:funKEY#Message#ConditionalfunKEYList->    
+        ConditionalfunKEYList              
+     removeCond:funKEY#ConditionalfunKEYList->funEncaps                                                         
+     if:Bool#ConditionalfunKEYList#ConditionalfunKEYList->
+        ConditionalfunKEYList
+     getMessageList:Nat#ConditionalfunKEYList->MessageList
+     length:ConditionalfunKEYList->Nat
+
+var  k1,k2:funKEY
+     m:Message
+     L:MessageList
+     CL,CL1:ConditionalfunKEYList
+     n:Nat
+rew  addCond(k1,m,emptyCfunKEYList)=
+        inCfunKEY(k1,inMessage(m,emptyMessageList),
+                emptyCfunKEYList)
+     addCond(k1,m,inCfunKEY(k2,L,CL))=
+        if(sm(k1,k2),   
+            inCfunKEY(k1,inMessage(m,emptyMessageList),inCfunKEY(k2,L,CL)),
+          if(eq(k1,k2),
+              inCfunKEY(k2,add(m,L),CL),
+              inCfunKEY(k2,L,addCond(k1,m,CL))))
+
+     removeCond(k1,emptyCfunKEYList)=
+        encaps(emptyCfunKEYList,emptyMessageList)
+     removeCond(k1,inCfunKEY(k2,L,CL))=
+        if(sm(k1,k2),                   
+            encaps(CL,emptyMessageList),
+          if(eq(k1,k2),
+              encaps(CL,L),        
+              encaps(inCfunKEY(k2,L,pr1(removeCond(k1,CL))), 
+                      pr2(removeCond(k1,CL)))))
+
+      if(T,CL,CL1)=CL
+      if(F,CL,CL1)=CL1
+      
+      length(emptyCfunKEYList) = 0
+      length(inCfunKEY(k1,L,CL)) = S(length(CL))
+
+      getMessageList(n,emptyCfunKEYList) = emptyMessageList
+      getMessageList(0,inCfunKEY(k1,L,CL)) = L
+      getMessageList(S(n),inCfunKEY(k1,L,CL)) = getMessageList(n,CL)
+
+% The sort symEncaps is also auxiliary, similar to funEncaps.
+
+sort symEncaps
+func  encaps:ConditionalsymKEYList#MessageList->symEncaps
+map  pr1: symEncaps->ConditionalsymKEYList
+     pr2: symEncaps->MessageList
+     if:Bool#symEncaps#symEncaps->symEncaps
+
+var  fcl:ConditionalsymKEYList
+     ml:MessageList
+     se1,se2:symEncaps
+rew  pr1(encaps(fcl,ml)) = fcl
+     pr2(encaps(fcl,ml)) = ml
+     if(T,se1,se2)=se1
+     if(F,se1,se2)=se2
+
+% The sort ConditionalsymKEYList contains a list of messages received 
+% en that have been encoded by symmetric keys. For 
+% explanations see ConditionalfunKEYList above, which has exactly
+% the same structure.
+
+sort  ConditionalsymKEYList 
+func  emptyCsymKEYList:->ConditionalsymKEYList
+      inCsymKEY:symKEY#MessageList#ConditionalsymKEYList->
+         ConditionalsymKEYList                                                
+map   addCond:symKEY#Message#ConditionalsymKEYList->
+         ConditionalsymKEYList
+      removeCond:symKEY#ConditionalsymKEYList->symEncaps
+      if:Bool#ConditionalsymKEYList#ConditionalsymKEYList->
+                ConditionalsymKEYList
+      getMessageList:Nat#ConditionalsymKEYList->MessageList
+      length:ConditionalsymKEYList->Nat
+
+var   k1,k2:symKEY
+      m: Message
+      L:MessageList
+      CL,CL1:ConditionalsymKEYList
+      n:Nat
+rew   addCond(k1,m,emptyCsymKEYList)=
+        inCsymKEY(k1,inMessage(m,emptyMessageList),
+                emptyCsymKEYList)
+
+      addCond(k1,m,inCsymKEY(k2,L,CL))=
+         if(sm(k1,k2),
+             inCsymKEY(k1,inMessage(m,emptyMessageList),
+                inCsymKEY(k2,L,CL)),
+           if(eq(k1,k2),
+               inCsymKEY(k2,add(m,L),CL),
+               inCsymKEY(k2,L,addCond(k1,m,CL))))
+
+      removeCond(k1,emptyCsymKEYList)=
+         encaps(emptyCsymKEYList,emptyMessageList)
+      removeCond(k1,inCsymKEY(k2,L,CL))=
+         if(sm(k1,k2),
+             encaps(CL,emptyMessageList),
+           if(eq(k1,k2),
+               encaps(CL,L),
+               encaps(inCsymKEY(k2,L,pr1(removeCond(k1,CL))),
+                      pr2(removeCond(k1,CL)))))
+
+      if(T,CL,CL1)=CL
+      if(F,CL,CL1)=CL1
+      
+      length(emptyCsymKEYList)=0
+      length(inCsymKEY(k1,L,CL))=S(length(CL))
+      
+      getMessageList(n,emptyCsymKEYList)=emptyMessageList
+      getMessageList(0,inCsymKEY(k1,L,CL))=L
+      getMessageList(S(n),inCsymKEY(k1,L,CL))=getMessageList(n,CL)
+
+% The sort Knowledge of the intruder. This sort implements the entire 
+% knowledge of the intruder, consisting of six different lists: two 
+% lists of messages (encoded by symmetric and functional keys), and 
+% lists of symmetric keys, functional keys, nonces and addresses. The 
+% most important function of this sort is updateKnowledge that given 
+% a (list of) message(s) and the current state of intruder's knowledge
+% updates it and returns the updated state of knowledge. Updating knowledge 
+% is a recursive process since decrypting a message can result in obtaining 
+% new symmetric or functional keys that in their turn can be used to 
+% decrypt further messages. This propagation step is modeled by two 
+% auxiliary functions propagates and propagatef.
+
+sort Knowledge
+func wrap:ConditionalsymKEYList#ConditionalfunKEYList#
+     symKEYList#funKEYList#NONCEList#ADDRList->Knowledge                               
+map  fEncMessages: Knowledge->ConditionalfunKEYList
+     sEncMessages: Knowledge->ConditionalsymKEYList
+     fKEYs: Knowledge->funKEYList 
+     sKEYs: Knowledge->symKEYList 
+     addresses: Knowledge->ADDRList
+     nonces: Knowledge->NONCEList
+     if:Bool#Knowledge#Knowledge->Knowledge
+     updateKnowledge:Message#Knowledge->Knowledge
+     updateKnowledge:MessageList#Knowledge->Knowledge
+     propagates:symKEY#Knowledge->Knowledge
+     propagatef:funKEY#Knowledge->Knowledge
+     initialKnowledge:->Knowledge
+
+var  scl: ConditionalsymKEYList
+     fcl:ConditionalfunKEYList
+     sl: symKEYList
+     fl: funKEYList
+     nl:NONCEList
+     al:ADDRList 
+     K1,K2:Knowledge
+     f,f1:funKEY
+     s:symKEY
+     n:NONCE
+     a:ADDR
+     ml:MessageList
+     m: Message
+rew  sEncMessages(wrap(scl,fcl,sl,fl,nl,al)) = scl
+     fEncMessages(wrap(scl,fcl,sl,fl,nl,al)) = fcl
+     sKEYs(wrap(scl,fcl,sl,fl,nl,al)) = sl
+     fKEYs(wrap(scl,fcl,sl,fl,nl,al)) = fl
+     addresses(wrap(scl,fcl,sl,fl,nl,al)) = al
+     nonces(wrap(scl,fcl,sl,fl,nl,al)) = nl
+     if(T,K1,K2) = K1
+     if(F,K1,K2) = K2
+
+     updateKnowledge(encrypt(f,s),wrap(scl,fcl,sl,fl,nl,al)) =
+        if(isIn(s,sl),             
+           propagatef(f,wrap(scl,fcl,sl,add(f,fl),nl,al)),  
+           wrap(addCond(s,encrypt(f,s),scl),fcl,sl,fl,nl,al))
+     updateKnowledge(encrypt(n,a,f),wrap(scl,fcl,sl,fl,nl,al)) =
+        if(isIn(decodeKEY(f),fl),
+           wrap(scl,fcl,sl,fl,add(n,nl),add(a,al)),
+           wrap(scl,addCond(f,encrypt(n,a,f),fcl),sl,fl,nl,al))
+     updateKnowledge(encrypt(f1,n,s,f),wrap(scl,fcl,sl,fl,nl,al)) =
+        if(isIn(decodeKEY(f),fl),
+           propagates(s,
+             propagatef(f1,
+                wrap(scl,fcl,add(s,sl),add(f1,fl),add(n,nl),al))),
+                wrap(scl,addCond(f,encrypt(f1,n,s,f),fcl),sl,fl,nl,al))
+
+     updateKnowledge(emptyMessageList,K1) = K1
+     updateKnowledge(inMessage(m,ml),K1) = 
+        updateKnowledge(ml,updateKnowledge(m,K1))
+
+     propagates(s,wrap(scl,fcl,sl,fl,nl,al)) =
+        updateKnowledge(pr2(removeCond(s,scl)),
+                wrap(pr1(removeCond(s,scl)),fcl,sl,fl,nl,al))
+
+     propagatef(f,wrap(scl,fcl,sl,fl,nl,al)) =
+        updateKnowledge(pr2(removeCond(f,fcl)),
+                wrap(scl,pr1(removeCond(f,fcl)),sl,fl,nl,al))
+
+     initialKnowledge =
+        wrap(emptyCsymKEYList,emptyCfunKEYList,
+                initialsymKEYList, initialfunKEYList,
+                initialNONCEList, initialADDRList)
+
+
+% Here we are finished with the required datatypes. Below we
+% define the processes. We start out with declaring the actions
+% that the processes use to communicate. Using the comm declaration
+% section, it is defined how these action communicate. Then we 
+% model three processes, the initiator, the responder and the
+% eavesdropper (Iproc, Rproc and Eproc). Then we define different
+% constellations of initiators, responder and eavesdroppers that
+% we have analysed. The concrete selection is made using the 
+% keyword init at the end.
+
+act  sE         :Message     % send of the eavesdropper.
+     sE         :Agent#Nat   % send of the eavesdropper 
+                             % (the preliminary step).
+     rE         :Message     % receive of the eavesdropper.
+     sI         :Message     % send of the initiator.
+     rI         :Message     % receive of the initiator.
+     rI         :Agent#Nat   % receive of the initiator 
+                             % (the preliminary step).
+     sR         :Message     % send of the responder.
+     rR         :Message     % receive of the responder.
+     rR         :Agent#Nat   % receive of the responder 
+                             % (the preliminary step).
+     c1,c2,c3,c4:Message     % communication between sends 
+                             % and receives. See "comm" below.
+     c2,c4      :Agent#Nat   % communication between sends and 
+                             % receives. See "comm" below 
+                             % (the preliminary step).
+     secret     :symKEY      % secrecy claims of the initiator 
+                             % and the responder.
+     secret_    :symKEY      % the receipt of a claim by the 
+                             % eavesdropper to check whether
+                             % it knows the secret.
+     secret__   :symKEY      % communcation of secrecy claims.
+     NOT_SECRET              % secrecy violation indicator.
+
+% Below it is defined on which channels the different 
+% processes synchronize to exchange information.
+
+comm  sI|rE = c1             % from the initiator to the intruder      
+      sE|rI = c2             % from the intruder to the initiator   
+      sR|rE = c3             % from the responder to the intruder
+      sE|rR = c4             % from the intruder to the responder 
+      secret|secret_ = secret__
+
+% Below we model the initiator. The initiator starts by creating a 
+% fresh nonce. The first message sent by the initiator consists of 
+% the nonce and his address encrypted with the public key of the 
+% intended responder. Then, the initiator reads a message, verifies 
+% that it has the expected form (a functional key and a hash of a 
+% nonce encrypted by the initiator's public key), and acknowledges
+% receipt of the message by sending hash of the shared nonce 
+% encrypted by the shared symmetric key. Finally, the initiator 
+% claims security of the shared symmetric key. For further details 
+% see the main text.
+
+proc Iproc(self:Agent,n:Nat)=
+       sum(a:Agent,rI(a,n).
+         sI(encrypt(nonce(n),addr(self),PK(a))).
+       sum(m:Message,rI(m).
+         (sI(encrypt(h(get2N(m)),get3s(m))).
+            (secret(get3s(m))<|not(eq(a,E))|>delta).delta)
+            <|and(encrypted3(m,PK(self)),eq(get1f(m),h(nonce(n))))|> delta
+         ))
+        
+% The responder is similarly to the initiator. The responder starts 
+% by receiving a message, verifies that it is in the expected form 
+% (contains the address of the presumed counterpart encrypted by the 
+% responder's public key), generates a new nonce and sends a message 
+% consisting of the hashed nonce of the counterpart, the newly 
+% created nonce and the symmetric key to be shared, encrypted by the 
+% public key of the counterpart. Next, the responder reads a new 
+% message, verifies that it has been encrypted by the shared symmetric
+% key and contains the hash function of his nonce, and claims secrecy 
+% of the shared key. Additional information can be found in the main text.
+
+proc Rproc(self:Agent,n:Nat)= 
+       sum(a:Agent,rR(a,n).
+       sum(m1:Message,rR(m1).
+         sR(encrypt(h(get1N(m1)),nonce(n),K(n),PK(a))).
+             (sum(m2:Message,rR(m2).
+                 secret(K(n)).delta
+                     <| and(not(eq(a,E)),and(encrypted1(m2,K(n)),
+                     eq(get1f(m2),h(nonce(n))))) |> delta   
+                     ))
+                   <| and(eq(get2A(m1),addr(a)),
+                    encrypted2(m1,PK(self))) |> delta
+                 ))
+
+% The process Eproc models the eavesdropper. The first summand (action rE)
+% describes the receipt of a message. This message is immediately added to
+% the knowledge that the eavesdropper already has. The next summands, except
+% the last, describe the sending of an arbitrary message that can be 
+% constructed with the knowledge of the eavesdropper. In this way all 
+% possible attacks on the protocol are modelled. The last summand consists
+% of receiving a supposed to be secret. If the eavesdropper knows it, 
+% it signals a NOT_SECRET action. Please refer to Section 4 of 
+% the main text for further details.
+
+proc Eproc(K:Knowledge,p:Nat,aI:Agent,aR:Agent)=
+   
+       sum(m:Message,rE(m).Eproc(updateKnowledge(m,K),p,aI,aR)
+         <| eq(0,p) |> delta) +
+
+       sum(a:Agent, 
+         (sE(a,p).Eproc(K,P(p),aI,if(eq(p,2),E,a)) 
+                 <| and(sm(0,p),not(sm(a,aR))) |> delta)
+         <| even(p) |>
+         (sE(a,p).Eproc(K,P(p),if(eq(p,1),E,a),aR) 
+                 <| and(and(sm(0,p),not(sm(a,aI))), 
+                         imply(and(eq(p,1),eq(aI,E)),
+                         not(eq(a,E)))) |> delta))+
+
+       sum(n1:Nat,sum(n2:Nat,
+         sE(encrypt(h(get(n1,nonces(K))),
+                 get(n2,sKEYs(K)))).Eproc(K,p,aI,aR)
+            <|and(eq(0,p),
+              and(sm(n1,length(nonces(K))),
+                  sm(n2,length(sKEYs(K)))))
+            |>delta)) +
+
+       sum(n1:Nat,sum(n2:Nat,
+         sE(encrypt(get(n1,fKEYs(K)),
+                 get(n2,sKEYs(K)))).Eproc(K,p,aI,aR)
+            <|and(eq(0,p),
+              and(sm(n1,length(fKEYs(K))),
+                  sm(n2,length(sKEYs(K)))))
+            |>delta)) +
+
+       sum(n1:Nat,sum(n2:Nat,sum(n3:Nat,
+          sE(encrypt(get(n1,nonces(K)),get(n2,addresses(K)),
+                 get(n3,fKEYs(K)))).Eproc(K,p,aI,aR)
+            <|and(eq(0,p),
+              and(sm(n1,length(nonces(K))),
+              and(sm(n2,length(addresses(K))),
+                  sm(n3,length(fKEYs(K))))))
+            |>delta)))+
+
+       sum(n1:Nat,sum(n2:Nat,sum(n3:Nat,sum(n4:Nat,
+         sE(encrypt(h(get(n1,nonces(K))),get(n2,nonces(K)),
+                 get(n3,sKEYs(K)),get(n4,fKEYs(K)))).
+                 Eproc(K,p,aI,aR)
+            <|and(eq(0,p),
+              and(sm(n1,length(nonces(K))),
+              and(sm(n2,length(nonces(K))),
+              and(sm(n3,length(sKEYs(K))),
+                  sm(n4,length(fKEYs(K)))))))
+            |>delta))))+
+
+       sum(n1:Nat,sum(n2:Nat,sum(n3:Nat,sum(n4:Nat,
+         sE(encrypt(get(n1,fKEYs(K)),get(n2,nonces(K)),
+                 get(n3,sKEYs(K)),get(n4,fKEYs(K)))).
+                 Eproc(K,p,aI,aR)
+             <|and(eq(0,p),
+               and(sm(n1,length(fKEYs(K))),
+               and(sm(n2,length(nonces(K))),
+               and(sm(n3,length(sKEYs(K))),
+                   sm(n4,length(fKEYs(K)))))))
+             |>delta))))+
+      
+       sum(n1:Nat,sum(n2:Nat,
+            sE(get(n2,getMessageList(n1,sEncMessages(K)))).
+                 Eproc(K,p,aI,aR)
+             <|and(eq(0,p),
+               and(sm(n1,length(sEncMessages(K))),
+                   sm(n2,length(getMessageList(n1,sEncMessages(K))))))
+             |>delta))+
+
+       sum(n1:Nat,sum(n2:Nat,
+            sE(get(n2,getMessageList(n1,fEncMessages(K)))).
+                 Eproc(K,p,aI,aR)
+             <|and(eq(0,p),
+               and(sm(n1,length(fEncMessages(K))),
+                   sm(n2,length(getMessageList(n1,fEncMessages(K))))))
+             |>delta))+
+      
+       sum(k:symKEY, secret_(k).
+          (NOT_SECRET.Eproc(K,p,aI,aR) 
+         <| isIn(k,sKEYs(K)) |>
+            Eproc(K,p,aI,aR)
+          ))
+
+% System1..System9 are used to test the protocol for 1..9 processes.
+% To generate the state space: replace 'init System5' below by 'init 
+% SystemN', where N is the desired number of processes.
+
+proc System1=
+      encap({rE,sI,rI,sE,sR,rR,secret,secret_},
+             Iproc(A,1)||
+             Eproc(initialKnowledge,1,E,E))
+
+proc System2=
+      encap({rE,sI,rI,sE,sR,rR,secret,secret_},
+             Iproc(A,1)||Rproc(B,2)||
+             Eproc(initialKnowledge,2,E,E))
+
+
+proc System3=
+      encap({rE,sI,rI,sE,sR,rR,secret,secret_},
+             Iproc(A,1)||Rproc(B,2)||
+             Iproc(A,3)||
+             Eproc(initialKnowledge,3,E,E))
+
+proc System4=
+      encap({rE,sI,rI,sE,sR,rR,secret,secret_},
+             Iproc(A,1)||Rproc(B,2)||
+             Iproc(A,3)||Rproc(B,4)||
+             Eproc(initialKnowledge,4,E,E))
+
+proc System5=
+      encap({rE,sI,rI,sE,sR,rR,secret,secret_},
+             Iproc(A,1)||Rproc(B,2)||
+             Iproc(A,3)||Rproc(B,4)||
+             Iproc(A,5)||
+             Eproc(initialKnowledge,5,E,E))
+
+proc System6=
+     encap({rE,sI,rI,sE,sR,rR,secret,secret_},
+             Iproc(A,1)||Rproc(B,2)||
+             Iproc(A,3)||Rproc(B,4)||
+             Iproc(A,5)||Rproc(B,6)||
+             Eproc(initialKnowledge,6,E,E))
+
+proc System7=
+     encap({rE,sI,rI,sE,sR,rR,secret,secret_},
+             Iproc(A,1)||Rproc(B,2)||
+             Iproc(A,3)||Rproc(B,4)||
+             Iproc(A,5)||Rproc(B,6)||
+             Iproc(A,7)||
+             Eproc(initialKnowledge,7,E,E))
+
+proc System8=
+     encap({rE,sI,rI,sE,sR,rR,secret,secret_},
+             Iproc(A,1)||Rproc(B,2)||
+             Iproc(A,3)||Rproc(B,4)||
+             Iproc(A,5)||Rproc(B,6)||
+             Iproc(A,7)||Rproc(B,8)||
+             Eproc(initialKnowledge,8,E,E))
+
+proc System9=
+     encap({rE,sI,rI,sE,sR,rR,secret,secret_},
+             Iproc(A,1)||Rproc(B,2)||
+             Iproc(A,3)||Rproc(B,4)||
+             Iproc(A,5)||Rproc(B,6)||
+             Iproc(A,7)||Rproc(B,8)||
+             Iproc(A,9)||
+             Eproc(initialKnowledge,9,E,E))
+
+
+init System5

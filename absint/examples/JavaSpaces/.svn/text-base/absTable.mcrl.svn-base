@@ -1,0 +1,95 @@
+sort abs_Pair 
+func aP:D#setOf_abs_Nat->abs_Pair
+func
+	zero, more, all:-> abs_Nat
+var
+	m: Nat
+	n, n': abs_Nat
+rew
+	abs_eq(n, n) = T
+	abs_eq(zero, more) = F
+	abs_eq(all, more) = F
+	abs_eq(zero, all) = F
+	abs_eq(all, zero) = F
+	abs_eq(more, all) = F
+	abs_eq(more, zero) = F
+	
+	H(m) = absIf(eq(m, 0), zero, absIf(eq(m, N), all, more))
+	
+	S(zero) = sing(more)
+	S(more) = in_setOf(more, sing(all))
+	S(all) = sing(all)
+	
+	P(zero) = sing(zero)
+	P(more) = in_setOf(more, sing(zero))
+	P(all) = sing(more)
+	
+	match(zero) = sing(F)
+	match(more) = in_setOf(T, sing(F))
+	match(all) = sing(T)
+
+sort
+	abs_DTableC
+func
+	aEmTableC:-> abs_DTableC
+	aIns:abs_Pair#abs_DTableC-> abs_DTableC
+	aIns:Pair#abs_DTableC-> abs_DTableC
+map
+   get:D#abs_DTableC -> setOf_Bool
+   rem:D#abs_DTableC -> abs_DTableC
+   upd:D#D#abs_DTableC -> setOf_abs_DTableC
+	insert:D#abs_DTableC -> abs_DTableC % insert ordered
+	if:Bool#abs_DTableC#abs_DTableC -> abs_DTableC
+var
+	d, d': D
+	dt, dt': abs_DTableC
+	n, n': setOf_abs_Nat
+	m: Nat
+rew	
+	if(T, dt, dt') = dt
+	if(F, dt, dt') = dt'
+	
+	get(d, aEmTableC) = sing(F)
+	
+	get(d, aIns(aP(d', n), dt)) = 
+		if(eq(d, d'), match(n), get(d, dt))
+		
+	get(d, aIns(p(d', m), dt)) = 
+		if(eq(d, d'), sing(match(m)), get(d, dt))
+	
+	
+	upd(d, d', dt) = sing(insert(d, rem(d', dt)))
+	
+	insert(d, aEmTableC) = 
+	if(eq(d, waiting),
+		aIns(p(d, 1), aEmTableC),
+		aIns(aP(d, sing(H(1))), aEmTableC))
+	
+	
+	insert(d, aIns(aP(d', n), dt)) = 
+		if(eq(d, d'), aIns(aP(d, S(n)), dt),
+			if(lt(d', d),
+				aIns(aP(d', n), insert(d, dt)), 
+				if(eq(d, waiting),
+				aIns(p(d, 1), aIns(aP(d', n), dt)),
+				aIns(aP(d, sing(H(1))), aIns(aP(d', n), dt)))))
+				
+	insert(d, aIns(p(d', m), dt)) = 
+		if(eq(d, d'), aIns(p(d, S(m)), dt),
+			if(lt(d', d),
+				aIns(p(d', m), insert(d, dt)), 
+				if(eq(d, waiting),
+				aIns(p(d, 1), aIns(p(d', m), dt)),
+				aIns(aP(d, sing(H(1))), aIns(p(d', m), dt)))))
+	
+	
+			
+	rem(d, aEmTableC) = aEmTableC
+	rem(d, aIns(aP(d', n), dt)) = 
+		if(eq(d, d'), aIns(aP(d, P(n)), dt),
+		aIns(aP(d', n), rem(d, dt)))
+	rem(d, aIns(p(d', m), dt)) = 
+		if(eq(d, d'), aIns(p(d, P(m)), dt),
+		aIns(p(d', m), rem(d, dt))) 
+	
+	H(initTable) = aIns(aP(taking, sing(all)), aEmTableC)			

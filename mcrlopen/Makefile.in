@@ -1,0 +1,55 @@
+SHELL           = /bin/sh
+.SUFFIXES:      .c .o
+
+ARCH 	=	@ARCH@
+
+srcdir		= @srcdir@
+top_srcdir	= @top_srcdir@
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+datarootdir 	= @datarootdir@
+bindir		= @bindir@
+libdir          = @libdir@
+datadir		= @datadir@
+libexecdir	= @libexecdir@
+distdir		= @distdir@
+
+CC        = @CC@
+CPPFLAGS  = -I$(top_srcdir)/src @CPPFLAGS@
+RM	  = @RM@
+CFLAGS    = @CFLAGS@
+
+INSTALL         = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA    = @INSTALL_DATA@
+SUBDIR  	= mcrlopen
+
+DISTFILES=	Makefile.in mcrl_open.in mcrl_open.c README_mcrl_open
+
+@SET_MAKE@
+all:		mcrl_open.o
+
+mcrl_open.o:	mcrl_open.c Makefile
+		$(CC) $(CFLAGS) $(CPPFLAGS) -c $*.c
+
+clean:		
+		$(RM) *.o core core.* 
+dist:
+		mkdir $(distdir)/$(SUBDIR)
+		cp $(DISTFILES) $(distdir)/$(SUBDIR)  
+
+install:	all
+		$(INSTALL_PROGRAM) mcrl_open $(bindir)
+		$(INSTALL_DATA) mcrl_open.o $(libdir)
+		$(INSTALL_DATA) README_mcrl_open $(datadir)
+
+uninstall:
+		if test -d $(bindir); then \
+		(cd $(bindir); $(RM) mcrl_open); \
+		fi
+		if test -d $(libdir); then \
+		(cd $(libdir); $(RM) mcrl_open.o); \
+		fi
+		if test -d $(datadir); then \
+		(cd $(datadir); $(RM) README_mcrl_open); \
+		fi

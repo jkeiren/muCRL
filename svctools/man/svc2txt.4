@@ -1,0 +1,59 @@
+.\"  SVC tools -- the SVC (Systems Validation Centre) tool set
+.\"
+.\"  Copyright (C) 2000  Stichting Mathematisch Centrum, Amsterdam,
+.\"                      The  Netherlands
+.\"
+.\"  This program is free software; you can redistribute it and/or
+.\"  modify it under the terms of the GNU General Public License
+.\"  as published by the Free Software Foundation; either version 2
+.\"  of the License, or (at your option) any later version.
+.\"
+.\"  This program is distributed in the hope that it will be useful,
+.\"  but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"  GNU General Public License for more details.
+.\"
+.\"  You should have received a copy of the GNU General Public License
+.\"  along with this program; if not, write to the Free Software
+.\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+.\"
+.\" $Id: svc2txt.4,v 1.2 2001/01/04 15:55:42 izak Exp $
+.TH SVC2TXT 1 15/5/2000
+.SH NAME
+svc2txt \- dump the contents of a file in SVC format into an ASCII text file
+
+.SH SYNOPSIS
+.B svc2txt
+[-c][-v][-h][-o 
+.I 
+outfile\c
+] 
+.I 
+infile
+
+.SH DESCRIPTION
+.B svc2txt
+is a tool for the dumping of files in SVC format (.svc) to ASCII text files 
+(.txt)
+
+.SH OPTIONS 
+.IP \-c
+Don't overwrite existing files
+.IP \-v
+Print version number
+.IP \-h
+List available options
+.IP \-o\ \fIoutfile\fR
+Write the output to \fIoutfile\fR. The default is 
+.I outfile.txt
+
+.SH FILES
+.IP filename.txt
+A file in ASCII text format
+.IP filename.svc
+A file in SVC format
+
+.SH AUTHOR
+Izak van Langevelde <izak@cwi.nl>
+.LP
+Please send all complaints, comments and bug fixes to me. 

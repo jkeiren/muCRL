@@ -1,0 +1,158 @@
+
+<refentry id="invcheck">
+<refmeta>
+<refentrytitle>invcheck</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>invcheck</refname>
+<refpurpose>
+Checks whether a formula is an invariant of an LPE
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>invcheck</command> 
+<arg choice="plain"><option>-invariant</option> 
+<replaceable>file</replaceable>
+</arg>
+<arg><option>-generate</option></arg>
+<arg><option>-all</option></arg>
+<arg><option>-verbose</option></arg>
+&common1;
+<arg><option><link linkend="libmcrl">Data Options</link></option></arg>
+<arg><option><link linkend="rw">Rewriter Options</link></option></arg>
+<arg><option><parameter>input</parameter>.tbf</option></arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+This filter reads from 
+<filename><replaceable>input</replaceable>.tbf</filename> (or 
+<filename> stdin </filename> if not given) an &lpe; 
+in <literal>.tbf </literal> format,reads a conjectured invariant 
+&phi; from
+<filename><replaceable>file</replaceable></filename>.
+ <command>invcheck</command> reports on
+<filename>stderr</filename> for which summands the invariant 
+holds. If <option>-generate</option> is absent, <option>-verbose</option> 
+is turned on automatically, otherwise there would no output on 
+<filename>stderr</filename> at all.
+</para>
+<para>
+Given process parameters <parameter>d</parameter>, 
+initial state <parameter>init</parameter>, and summands
+<simplelist>
+<member><literal><parameter>
+&tsum; (e<subscript>i</subscript>,
+a<subscript>i</subscript>(f<subscript>i</subscript>) .
+P(g<subscript>i</subscript>)
+&lef; h<subscript>i</subscript> &rig; &delta; )
+</parameter></literal></member>
+</simplelist>
+then <command>invcheck</command> tries to prove
+<parameter>&phi;(init)</parameter> and  
+for all <parameter>i</parameter> the universal closure of:
+<literal><parameter>&phi;(d) &and;
+h<subscript>i</subscript>(d, e<subscript>i</subscript>)
+&implies; &phi;(g<subscript>i</subscript>(d, e<subscript>i</subscript>))
+</parameter></literal>.
+The first proves the invariant initially holds, the second that it is
+preserved by all transitions.
+The tool terminates as soon as a counter example is found, unless the
+<option>-all</option> flag is given.
+</para>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+<!--<title>Options</title>-->
+<varlistentry>
+  <term><option>-invariant</option> <parameter>file</parameter></term>
+  <listitem>
+    <para>
+   Read an invariant from <parameter>file</parameter>.
+   This file should contain exactly one formula, i.e of type Bool.
+   The formula may contain the process parameters of the LPE as free variables,
+   but no other variables. This flag is obligatory.
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-generate</option></term>
+  <listitem>
+    <para>
+   Generate the invariance formulae and write them to 
+   <filename>stdout</filename>  in the format understood by
+   <command>formcheck</command>.
+   They are not checked but merely generated. The main reason is that the
+   formulae could be translated and submitted to other theorem provers,
+   like PVS or Isabelle. 
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-all</option> </term>
+  <listitem>
+  <para>
+  Do not terminate as-soon-as invariant violation is found
+  </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-print</option></term>
+  <listitem>
+  <para>
+  Print BDDs for failed summands in ASCII
+  on <filename>stderr</filename>
+  </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-print-dot</option></term>
+  <listitem>
+  <para>
+  Print BDDs for failed summands in dot-format 
+  on <filename>stdout</filename>
+  </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-counter</option></term>
+  <listitem>
+  <para>
+  Print counter examples
+  </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-verbose</option> </term>
+  <listitem>
+  <para>
+  Indicate to <filename>stderr</filename> which summands holds
+  </para>
+  </listitem>
+</varlistentry>
+&common2;
+</variablelist>
+</refsect1>
+<refsect1>
+<title>Limitations</title>
+<para>
+Besides the limitations of the prover, it should be noted that
+<command>invcheck</command> doesn't perform induction-loading.
+The invariant should hold "as is". Invariants that need a simultaneous
+induction proof should be put in conjunction in one formula-file.
+Furthermore, it is not possible to express invariants containing 
+quantifiers. These can often be avoided by adding more functions in the
+specification. For instance, the  invariant on list <parameter>L</parameter>:
+<literal>&forall; l. l &in; L &implies; l &lt; 5 </literal>
+should be replaced by
+<literal>max(L)&lt;5</literal>, after specifying the function
+<literal>max</literal> which returns the maximum value in a list. 
+</para>
+</refsect1>
+&invcheck.xml;
+</refentry>

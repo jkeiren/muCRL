@@ -1,0 +1,75 @@
+
+<refentry id="sumelm">
+<refmeta>
+<refentrytitle>sumelm</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>sumelm</refname>
+<refpurpose>
+Elimination of sum variables
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>sumelm</command> 
+&common1;
+<arg><option>-monitor</option></arg>
+<arg><option>-no-singleton</option></arg>
+<arg><option><link linkend="libmcrl">Data Options</link></option></arg>
+<arg><option><link linkend="rw">Rewriter Options</link></option></arg>
+<arg><option><parameter>input</parameter>.tbf</option></arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+This filter reads from 
+<filename><replaceable>input</replaceable>.tbf</filename> (or 
+<filename> stdin </filename> if not given) an &lpe; 
+in <literal>.tbf </literal> format. 
+Sometimes a sum variable or a process parameter in a summand is bound to one 
+and not more than one data term by the condition of that summand.
+This binding will be caused by the occurrences of 
+<literal>eq</literal> functions in the conditions.
+If such a data term is found
+then this will be substituted in all the occurrences of that sum variable
+or process parameter.
+</para> 
+<para>  
+The involved sum variables become superfluous and will be removed
+from the summands.
+</para>
+<para>
+It writes the rewritten LPE to <filename>stdout</filename>.
+</para>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+<!--<title>Options</title>-->
+&common2;
+<varlistentry>
+  <term><option>-monitor</option>
+  </term>
+  <listitem>
+    <para>
+    Display progressing information
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-no-singleton</option> </term>
+  <listitem>
+  <para> 
+  No removal of sum variables which
+  have sorts of cardinality one
+  </para>
+  </listitem>
+</varlistentry>
+
+</variablelist>
+</refsect1>
+&sumelm.xml;
+</refentry>

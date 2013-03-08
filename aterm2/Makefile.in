@@ -1,0 +1,118 @@
+# $Id: Makefile.in,v 1.10 2008/02/04 14:52:49 bertl Exp $
+SHELL		= /bin/sh
+.SUFFIXES:	.c .o
+
+PRODUCT		= "mcrl"
+VERSION		= "2.4.2"
+
+srcdir      = @srcdir@
+top_srcdir  = @top_srcdir@
+prefix      = @prefix@
+exec_prefix = @exec_prefix@
+datarootdir = @datarootdir@
+libdir      = @libdir@
+includedir  = @includedir@
+distdir     = @distdir@
+atermlib    = @atermlib@
+atermlocallib    = @atermlocallib@
+aterminclude    = @aterminclude@
+
+INSTALL         = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA    = @INSTALL_DATA@
+
+
+RM		=	@RM@
+CC              =       @CC@
+CC99            =       @CC99@
+CFLAGS          =       @CFLAGS@ 
+CPPFLAGS        =       -I.
+DEFS            =       -DCURDATE="\"`date +%d/%m/%Y`\"" -DVERSION="\"${VERSION}\""
+LDFLAGS         =       @LDFLAGS@
+LIBS            =       @LIBS@
+ATLIBNAME       =       libATerm.a
+
+SUBDIR          =	aterm2
+
+PUBLIC_INCL     = \
+		abool.h \
+		afun.h \
+		aterm1.h \
+		aterm2.h \
+		atypes.h \
+		deprecated.h \
+		encoding.h
+
+PRIVATE_INCL    = \
+		_aterm.h \
+		_afun.h \
+		bafio.h \
+		byteencoding.h \
+		byteio.h \
+		debug.h \
+		gc.h \
+		idmappings.h \
+		list.h \
+		make.h \
+		md5.h \
+		memory.h \
+		safio.h \
+		tafio.h \
+		util.h \
+		version.h
+
+ATERMINCL       = $(PUBLIC_INCL) $(PRIVATE_INCL)
+
+AR              = ar
+AR_FLAGS        = crs
+
+OBJECTS       = aterm.o list.o make.o memory.o afun.o gc.o bafio.o \
+		version.o hash.o safio.o tafio.o byteio.o md5c.o \
+		byteencoding.o memmgnt.o idmappings.o
+
+SOURCES_C       = aterm.c list.c make.c memory.c afun.c gc.c bafio.c \
+		version.c hash.c safio.c tafio.c byteio.c md5c.c \
+		byteencoding.c memmgnt.c idmappings.c
+
+DISTFILES	= Makefile.in $(PUBLIC_INCL) $(PRIVATE_INCL) $(SOURCES_C) 
+
+all:	lib
+
+lib:	Makefile
+	$(MAKE) $(ATLIBNAME)
+
+$(ATLIBNAME): $(OBJECTS) Makefile
+	$(AR) $(AR_FLAGS) $@ $(OBJECTS)
+
+install: 	
+	$(MAKE) all
+	$(INSTALL) -d $(includedir)
+	for file in $(PUBLIC_INCL); do \
+	    $(INSTALL_DATA) $$file $(includedir);\
+	done
+	$(INSTALL) -d $(libdir)
+	$(INSTALL_DATA) $(ATLIBNAME) $(libdir)
+	echo "$(ATLIBNAME) is installed in $(libdir)"
+
+clean:
+	$(RM) $(OBJECTS) $(ATLIBNAME) core core.*
+
+uninstall:
+	if test -d $(libdir); then \
+	(cd $(libdir);$(RM) $(ATLIBNAME)); \
+	fi
+	if test -d $(includedir); then \
+	(cd $(includedir);$(RM) $(PUBLIC_INCL)); \
+	fi 
+
+dist:
+	@test -d $(distdir)/$(SUBDIR) || mkdir -p $(distdir)/$(SUBDIR)
+	@for file in $(DISTFILES); do \
+	    cp  $$file "$(distdir)/$(SUBDIR)"; \
+	done
+
+.c.o:
+	$(CC) $(DEFS) $(CFLAGS) $(CPPFLAGS) -c $*.c
+
+
+$(OBJECTS):	Makefile $(ATERMINCL)

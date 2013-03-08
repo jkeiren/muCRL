@@ -1,0 +1,264 @@
+
+<refentry id="instantiator">
+<refmeta>
+<refentrytitle>instantiator</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>instantiator</refname>
+<refpurpose>Generates state space
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>instantiator</command> 
+&common1;
+<arg><option>-max</option> <replaceable>N</replaceable></arg>
+<arg><option>-max-enum</option> <replaceable>N</replaceable></arg>
+<arg><option>-reduce</option></arg>
+<arg><option>-i</option></arg>
+<arg><option>-o</option> 
+<replaceable>file</replaceable>
+</arg>
+<arg><option>-monitor</option></arg>
+<arg><option>-explore</option></arg>
+<group>
+<arg choice="plain"><option>-svc-term</option></arg>
+<arg choice="plain"><option>-svc-num</option></arg>
+<arg choice="plain"><option>-aut</option></arg>
+<arg choice="plain"><option>-check</option></arg>
+<arg choice="plain"><option>-deadlock</option></arg>
+<arg choice="plain"><option>-trace</option> <replaceable>actions</replaceable> </arg>
+<arg choice="plain"><option>-traces</option> <replaceable>actions</replaceable> </arg>
+<arg choice="plain"><option>-user</option> 
+<replaceable>file</replaceable>.so
+</arg>
+<arg choice="plain"><option>-invariant</option> 
+<replaceable>file</replaceable>
+</arg>
+</group>
+<arg><option><link linkend="step">Stepper Options</link></option></arg>
+<arg><option><link linkend="rw">Rewriter Options</link></option></arg>
+<arg><option><link linkend="libmcrl">Data Options</link></option></arg>
+<arg choice="plain"><option><replaceable>input</replaceable>.tbf</option></arg>
+</cmdsynopsis>
+<cmdsynopsis>
+<command><replaceable>actions</replaceable><token>::=</token></command>
+<arg choice="plain"> <replaceable>action</replaceable></arg>
+<arg rep="repeat" choice="plain"><arg choice="req"><replaceable>,action
+</replaceable></arg></arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+The state space, defined by the &lpe;
+contained in <filename><replaceable>input</replaceable>.tbf</filename>, 
+will be traversed in breadth-first order. There are options that 
+encountered actions and deadlocks will be printed during the traversal.
+</para>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+<!--<title>Options</title>-->
+&common2;
+<varlistentry>
+  <term><option>-max</option> <parameter>N</parameter>
+  </term>
+  <listitem>
+    <para>
+    <parameter>N</parameter>*<literal>1000</literal>
+     is the upperbound of the number of states
+     which will be explored
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-max-enum</option> <parameter>N</parameter>
+  </term>
+  <listitem>
+    <para>
+    <parameter>N</parameter><literal>*1000</literal>
+     is the upperbound of help variables used during enumeration
+    </para>
+  </listitem>  
+</varlistentry>
+
+<varlistentry>
+  <term><option>-reduce</option>
+  </term>
+  <listitem>
+    <para>
+    Write the LPE containing only the summands which are used during state 
+    space generation to <literal>stdout</literal>
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-i</option>
+  </term>
+  <listitem>
+    <para>
+    Tau replaced by i (Needed for <application> CADP </application>)
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-deadlock</option>
+  </term>
+  <listitem>
+    <para>
+    Write an action trace to each deadlock state in text file
+ <filename><parameter>input</parameter>.trc/<parameter>n</parameter></filename>
+    and write report of this in 
+    <filename><parameter>input</parameter>.dlk</filename>
+    These files can be read by <application>msim</application> and
+    <application>jsim</application>.
+    </para>
+  </listitem>
+</varlistentry>
+
+
+
+<varlistentry>
+  <term><option>-o</option> 
+  <filename><parameter>output</parameter></filename>
+  </term>
+  <listitem>
+    <para>
+    Write state space to  
+    <filename><parameter>output</parameter>.ext</filename> in which 
+    <literal>ext</literal> is determined by a chosen option 
+    (default <literal>ext</literal> equal to <literal>aut</literal>)
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-monitor</option>
+  </term>
+  <listitem>
+    <para>
+    Display progressing information
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-explore</option>
+  </term>
+  <listitem>
+    <para>
+   See <option>-monitor</option>. In addition encountered deadlocks will be 
+   printed.
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-check</option>
+  </term>
+  <listitem>
+    <para>
+    Perform only a type check during state space traversal  
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-aut</option>
+  </term>
+  <listitem>
+    <para>
+    Write transition system in <literal>.aut</literal> format (default)
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-svc-term</option>
+  </term>
+  <listitem>
+    <para>
+    Write transition system in SVC format.
+    States are represented by vector of terms.
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-svc-num</option>
+  </term>
+  <listitem>
+    <para>
+    Write transition system in SVC format.
+    States are represented by numbers.
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-trace</option> <parameter>actions</parameter>
+  </term>
+  <listitem>
+    <para>
+    Write an action trace to each <parameter>action</parameter>
+    mentioned in <parameter>actions</parameter> in text file
+<filename><parameter>input</parameter>.trc/<parameter>action</parameter></filename>
+    and writes report of this in 
+    <filename><parameter>input</parameter>.dlk</filename>.
+    Also traces to deadlock states will be written.
+    These files can be read by <application>msim</application> and
+    <application>jsim</application>.
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-traces</option> <parameter>actions</parameter>
+  </term>
+  <listitem>
+    <para>
+    See <option>-trace</option>.  
+    However more traces per action will be written.
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-user</option> 
+  <filename><parameter>file</parameter>.so</filename>
+  </term>
+  <listitem>
+    <para>
+Link user defined callback functions.
+These C-functions must be defined in 
+<filename><parameter>file</parameter>.c</filename>.
+See the example in 
+<filename>labelfreq.c</filename>.
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-invariant</option> 
+  <filename><parameter>file</parameter></filename>
+  </term>
+  <listitem>
+    <para>
+Check the invariants written in 
+<filename><parameter>file</parameter></filename>
+during instantiation. 
+Further information about output, see the flag <option>-deadlock</option>.
+</para> 
+</listitem>
+</varlistentry>
+
+</variablelist>
+</refsect1>
+&instantiator.xml;
+</refentry>

@@ -1,0 +1,94 @@
+
+<refentry id="structelm">
+<refmeta>
+<refentrytitle>structelm</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>structelm</refname>
+<refpurpose>Structure elimination</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>structelm</command> 
+&common1;
+<arg><option><link linkend="libmcrl">Data Options</link></option></arg>
+<arg><option>-depth <parameter>N</parameter></option></arg>
+<arg><option>-expand <parameter>sort</parameter></option></arg>
+<arg><option>-report</option></arg>
+<arg><option>-binary</option></arg>
+<arg choice="plain"><option><parameter>input</parameter>
+</option></arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+This filter reads from 
+<filename><replaceable>input</replaceable>.tbf</filename> (or 
+<filename> stdin </filename> if not given) an LPE 
+in <literal>.tbf </literal> format, 
+replaces each variable of <parameter>sort</parameter> by all the 
+arguments of all the constructors of that  <parameter>sort</parameter>,
+and writes the LPE to <filename>stdout</filename>.
+Structured sort, <parameter>sort</parameter>, is then expanded.
+An extra variable with a Case function is added to determine to which
+constructor a vector of an expanded sort belongs. 
+The other elimination tools will work better on the output LPE.
+Advised is to run <command>&rewr.lnk; -case</command>  after 
+<command>structelm</command>. 
+</para>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+&common2;
+<!--<title>Options</title>-->
+<varlistentry>
+  <term><option>-depth <parameter>N</parameter></option>
+  </term>
+  <listitem>
+    <para>
+    The steps of expanding sorts will be repeated
+    <parameter>N</parameter> times
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-expand</option> <parameter>sort</parameter></term>
+  <listitem>
+  <para>
+  The argument <parameter>sort</parameter> is candidate to be expanded.
+  If no <option>-expand</option> flag is present then all non-recursive
+  structured sorts will be expanded.
+  Expanding more sorts simultaneously can be done by adding
+  the <option>-expand</option> flag  more times on the command line.
+  </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-binary</option>
+  </term>
+  <listitem>
+   <para>
+   Use binary Case functions
+   </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-report</option>
+  </term>
+  <listitem>
+   <para>
+   Display a list of structured sorts and exit
+   </para>
+  </listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+&structelm.xml;
+</refentry>

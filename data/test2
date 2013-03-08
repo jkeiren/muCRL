@@ -1,0 +1,8 @@
+#!/bin/sh
+PATH=../prover/src:../src:../lin:../svctools/src:$PATH
+rm -f abpE.tbf abp1.tbf
+mcrl -nocluster -regular abpE
+rewr -extend-adt -verbose abpE.tbf | stategraph -minchange -extend-adt > abp1.tbf
+invcheck -invariant abp.inv < abp1.tbf
+rewr -extend-adt -pr-full -invariant abp.inv -monitor abp1.tbf | parelm |sumelm -monitor  > abpE.tbf
+

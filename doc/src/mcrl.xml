@@ -1,0 +1,507 @@
+
+<refentry id="mcrl">
+<refmeta>
+<refentrytitle>mcrl</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>mcrl</refname>
+<refpurpose>timed &mcrl; parser and (untimed) &lpe; generator
+<!--Transforms mCRL process definitions to linear process equations.-->
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>mcrl</command> 
+<arg><option>-linear</option></arg>
+<arg><option>-tbf</option></arg>
+<arg><option>-stdout</option></arg>
+<arg><option>-regular</option></arg>
+<arg><option>-regular2</option></arg>
+<arg><option>-cluster</option></arg>
+<arg><option>-nocluster</option></arg>
+<arg><option>-binary</option></arg>
+<arg><option>-multi</option></arg>
+<arg><option>-newstate</option></arg>
+<arg><option>-statenames</option></arg>
+<arg><option>-help</option></arg>
+<arg><option>-version</option></arg>
+<arg choice="plain"><option><parameter>file</parameter>.mcrl
+</option></arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+This program checks the syntax
+and the static semantics of a timed &mcrl; specification written in
+<filename><replaceable>file</replaceable>.mcrl</filename>, and with
+proper flags transforms a subclass of untimed mCRL specifications
+to linear process operators (&lpe;s).
+This transformation is called linearization.
+</para>
+<refsect2>
+<title>Syntax and static semantics</title>
+<para>
+The tool mcrl checks whether a specification is 
+<literal>well-formed (timed)</literal> &mcrl;.
+An &example1; of a <literal>well-formed</literal> specification 
+is the &abp1;.
+A &mcrl; specification is <literal>well-formed</literal> if:
+<itemizedlist>
+<listitem><para>
+The specification is syntactically correct
+</para></listitem>
+<listitem><para>
+All names in the specification 
+(of sorts, functions, variables, actions, and processes) 
+are appropriately declared
+</para></listitem>
+<listitem><para>
+The sort &bool; is declared, as are the two constructors 
+&true; and &false; of this sort
+</para></listitem>
+<listitem><para>
+If the sort <literal>Time</literal> is declared, both 
+<literal>time0</literal> and <literal>le</literal> are declared as 
+functions of this sort
+</para></listitem>
+<listitem><para>
+All data-terms conform with the declarations (i.e. they are type correct)
+</para></listitem>
+<listitem><para>
+Both data-terms of each equation are of the same sort
+</para></listitem>
+<listitem><para>
+All conditions are of sort &bool;
+</para></listitem>
+<listitem><para>
+The term at the right-hand side of every @ operator is of sort 
+<literal>Time</literal>
+</para></listitem>
+<listitem><para>
+If an action <parameter>a</parameter> is renamed to 
+<parameter>b</parameter>, <parameter>b</parameter> is declared with 
+respect to all the domains of <parameter>a</parameter>
+</para></listitem>
+<listitem><para>
+The sorts of all communicating actions match
+</para></listitem>
+<listitem><para>
+The communications are defined in such way that communication 
+is associative and commutative
+</para></listitem>
+<listitem><para>
+There is not more than one initial process declared
+</para></listitem>
+</itemizedlist>
+.
+</para>
+</refsect2>
+<refsect2>
+<title>Linearization</title>
+<para>
+The tool mcrl can also be used to 
+translate a well-formed &mcrl; specification to a 
+linear process equation provided that the specification meets
+the following requirements:
+<itemizedlist>
+<listitem><para>
+The process descriptions do not refer to time 
+(i.e. neither the <literal>@</literal> nor the 
+<literal>&lt;&lt;</literal> operator is used).
+</para></listitem>
+
+<listitem><para>
+The left merge <literal>|_</literal>
+and the 
+communication merge <literal>|</literal> are not used to specify 
+processes.
+</para></listitem>
+
+<listitem><para>
+Every process declaration must belong to one of the following syntactic 
+categories:
+  <itemizedlist>
+  <listitem><para>
+  Declarations in which action and process names are glued together 
+  by means of the operators <literal>.</literal>, 
+  <literal>+</literal>, &lef; ... &rig;, and <literal>sum</literal>
+  </para></listitem>
+  <listitem><para>
+  Declarations in which process names are glued together 
+  by means of the operators <literal>||</literal>, 
+  <literal>hide</literal>, <literal>encap</literal>, and 
+  <literal>rename</literal>.
+  </para></listitem>
+  </itemizedlist>.
+If this requirement is violated the lineariser will respond with
+error message:
+<literal>
+Mixing pCRL with &mcrl; operators
+</literal>
+</para></listitem>
+<listitem><para>
+The operators <literal>||</literal>, 
+<literal>hide</literal>, <literal>encap</literal>, and 
+<literal>rename</literal> are not used within the scope of the operators
+ <literal>.</literal>, 
+  <literal>+</literal>, &lef; ... &rig;, and <literal>sum</literal>.
+If this requirement is violated the lineariser will respond with
+error message:
+<literal>
+Parallel operator in the scope of pCRL operators
+</literal>
+</para></listitem>
+<listitem><para>
+Recursion is guarded
+</para></listitem>
+<listitem><para>
+There is no recursion at the level of the 
+<literal>||</literal>, 
+<literal>hide</literal>, <literal>encap</literal>, and 
+<literal>rename</literal> operators
+</para></listitem>
+<listitem><para>
+The functions <literal>not</literal>,
+<literal>and</literal>, and <literal>or</literal> 
+of sort &bool; must be defined in the &mcrl; specification.
+</para></listitem>
+</itemizedlist>
+</para>
+</refsect2>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+<!--<title>Options</title>-->
+<varlistentry>
+  <term><option>-linear</option>
+  </term>
+  <listitem>
+    <para>
+    A human readable LPE of the input file is written to 
+    <filename><replaceable>file</replaceable>.lin</filename>
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-tbf</option> </term>
+  <listitem>
+  <para>
+  An LPE of the input file in toolbus term format is
+  written to <filename><replaceable>file</replaceable>.tbf</filename>
+  </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-stdout</option></term>
+  <listitem>
+  <para>
+   An LPE in toolbus term format is generated, and written
+   to <filename>stdout</filename>
+  </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-regular</option>
+  </term>
+  <listitem>
+   <para>
+   It is assumed that the input file is regular, and the
+   output LPE will be generated in regular form
+   </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-regular2</option>
+  </term>
+  <listitem>
+   <para>
+   A variant of regular where much more data variables are
+   being used. <option>-regular2</option> is sometimes successful where
+   the use of <option>-regular</option> leads to non termination of this tool
+   </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-cluster</option>
+  </term>
+  <listitem>
+   <para>
+   All actions in the output are clustered
+   </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-nocluster</option>
+  </term>
+  <listitem>
+   <para>
+   No actions are clustered, not even in intermediate LPEs
+   </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-binary</option>
+  </term>
+  <listitem>
+   <para>
+   Use binary, instead of n-ary, case functions when clustering.
+   In the presence of <option>-newstate</option>, state variables use 
+   binary encoding.
+   </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-multi</option>
+  </term>
+  <listitem>
+   <para>
+    Write the term before the final composition of LPEs
+   </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-newstate</option>
+  </term>
+  <listitem>
+   <para>
+    Encode state variables using enumerated types.
+    <option>-newstate</option> is only allowed in the presence of 
+    <option>-regular</option> or <option>-regular2</option>.
+    Using the flag <option>-binary</option> in addition  
+    the state will be encoded by a vector of boolean variables.
+    By default (i.e. without -newstate), the functions
+    <literal>one</literal>, 
+    <literal>x2p1</literal> and <literal>x2p0</literal> will be used.
+   </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-statenames</option>
+  </term>
+  <listitem>
+   <para> 
+   Use meaningful names derived from the specification
+   for the state variables
+   </para>
+  </listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1>
+<title>Language &mcrl;</title>
+<para>
+This language includes the Algebra of Communicating Processes
+with abstraction and abstract data types.
+The abstract data type consists of definitions of
+constructors, operators and  rewrite rules.
+The data consists of sorted terms.
+Processes can be described using the ordinary process operators:
+<literal>+</literal>, <literal>.</literal>, &or;, &delta;, &tau;, &deltah;, &taui;,
+actions and recursive equations.
+Extra features of &mcrl; provide interaction of data with processes:
+<variablelist>
+<varlistentry>
+<term>process/action parameters</term>
+<listitem>
+<para>
+Process variables and actions are
+supplied with parameters.
+The parameters of the process variables and actions can be instantiated
+with data terms of the right sort.
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry>
+<term>conditionals</term>
+<listitem>
+<para>
+The process expression 
+<parameter>p</parameter> &lef;<parameter>b</parameter>&rig; <parameter>q</parameter>
+where
+<parameter>p</parameter> and <parameter>q</parameter> are processes, and 
+<parameter>b</parameter> is a data term of sort &bool;, 
+behaves like <parameter>p</parameter> if <parameter>b</parameter> is 
+equal to &true; (true) and
+behaves like <parameter>q</parameter> if <parameter>b</parameter> is equal 
+to &false; (false).
+This process expression requires that the sort &bool;, 
+with constants &true;,
+and &false;, is defined in each &mcrl; specification.
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry>
+<term>sums</term>
+<listitem>
+<para>
+The sum operator 
+<literal>&tsum;(<parameter>e:E</parameter>,<parameter>P(e))
+</parameter></literal> 
+behaves like
+<parameter>P(e<subscript>1</subscript>)+P(e<subscript>2</subscript>)+
+&middot;&middot;&middot; </parameter> i.e. as 
+the choice between <parameter>P(e<subscript>i</subscript>)</parameter> 
+for any data term <parameter>e<subscript>i</subscript></parameter>
+taken from <parameter>E</parameter>,
+which may be infinite, where <parameter>P</parameter> is a process term.
+</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</para>
+</refsect1>
+<refsect1 id="lpe">
+<title>Linear Process Equation</title>
+<para>A Linear Process Equation, abbreviaton LPE, is in essence a vector 
+of typed process
+parameters (abstract data types are specified in signature <literal>S</literal>) 
+and a list of condition, action and effect triples that
+describes when an action may happen, and what its effect is on the
+vector of process parameters. Here an LPE is a special instance of a &mcrl;
+process, namely
+</para>
+<para>
+<parameter> proc
+P(d<subscript>1</subscript>:D<subscript>1</subscript>,...,
+  d<subscript>n</subscript>:D<subscript>n</subscript>)=
+</parameter>
+<simplelist>
+<member><emphasis>&tsum; (e<subscript>11</subscript>:E<subscript>11</subscript>
+,...,
+e<subscript>1 m1</subscript>:E<subscript>1 m1</subscript> ,
+a<subscript>1</subscript> (f<subscript>11</subscript> ,...,
+     f<subscript>1 k1</subscript>) .
+P(g<subscript>11</subscript> ,...,
+     g<subscript>1n</subscript>)
+&lef; h<subscript>1</subscript> &rig; &delta; ) +
+</emphasis></member>
+<member><emphasis>.</emphasis></member>
+<member><emphasis>&tsum; (e<subscript>i1</subscript>:E<subscript>i1</subscript>
+,...,
+e<subscript>i mi</subscript>:E<subscript>i mi</subscript> ,
+a<subscript>i</subscript>(f<subscript>i1</subscript> ,...,
+     f<subscript>i ki</subscript>) .
+P(g<subscript>i1</subscript> ,...,
+     g<subscript>in</subscript>)
+&lef; h<subscript>i</subscript> &rig; &delta; ) +
+</emphasis></member>
+<member><emphasis>.</emphasis></member>
+<member><emphasis>&tsum; (e<subscript>m1</subscript>:E<subscript>m1</subscript>
+,...,
+e<subscript>m mm</subscript>:E<subscript>m mm</subscript> ,
+a<subscript>m</subscript> (f<subscript>m1</subscript> ,...,
+     f<subscript>m km</subscript>) .
+P(g<subscript>m1</subscript> ,...,
+     g<subscript>mn</subscript>)
+&lef; h<subscript>m</subscript> &rig; &delta; )
+</emphasis></member>
+</simplelist>
+in which 
+<variablelist>
+<varlistentry>
+<term>
+<literal><parameter>n,m,mi,ki</parameter></literal>
+</term>
+<listitem><para>
+Respectively number of process parameters, number of summands,
+number of sumvariables in summand
+<literal><parameter>i</parameter></literal>, and number of action arguments in 
+summand <literal><parameter>i</parameter></literal>
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>
+<literal><parameter>D<subscript>i</subscript></parameter></literal>,
+<literal><parameter>E<subscript>ij</subscript></parameter></literal>
+</term>
+<listitem><para>
+Abstract Data Types
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>
+<literal><parameter>d<subscript>i</subscript></parameter></literal>,
+<literal><parameter>e<subscript>ij</subscript></parameter></literal>
+</term>
+<listitem><para>
+Process parameter of sort 
+<literal><parameter>D<subscript>i</subscript></parameter></literal>,
+respectively sumvariable of sort
+<literal><parameter>E<subscript>ij</subscript></parameter></literal>
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>
+<literal><parameter>a<subscript>i</subscript>(f<subscript>i1</subscript> ,...,
+     f<subscript>i ki</subscript>)
+</parameter></literal> 
+</term>
+<listitem>
+<para> 
+Parametrized action with
+  <itemizedlist>
+  <listitem><para>
+  action name <literal><parameter>a<subscript>i</subscript></parameter></literal>
+  </para></listitem>
+  
+  <listitem><para>
+  data term <literal><parameter>f<subscript>ij</subscript></parameter></literal> 
+  in <literal>T[S,<parameter>{d<subscript>1</subscript> ,...,
+   d<subscript>n</subscript>,e<subscript>i1</subscript> ,...,
+   e<subscript>i mi</subscript>}</parameter>]</literal>
+  </para></listitem>
+  </itemizedlist>
+  </para> 
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+<literal><parameter>g<subscript>ij</subscript></parameter></literal>
+</term>
+<listitem><para>
+Process argument
+<literal><parameter>g<subscript>ij</subscript></parameter></literal>
+, which is a data term 
+in <literal>T[S,<parameter>{d<subscript>1</subscript> ,...,
+   d<subscript>n</subscript>,e<subscript>i1</subscript> ,...,
+   e<subscript>i mi</subscript>}</parameter>]</literal>
+of sort 
+<literal><parameter>D<subscript>j</subscript></parameter></literal>
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>
+<literal><parameter>h<subscript>i</subscript></parameter></literal>
+</term>
+<listitem><para>
+Condition
+<literal><parameter>
+h<subscript>i</subscript>
+</parameter></literal>, which is a data term 
+in <literal>T[S,<parameter>{d<subscript>1</subscript> ,...,
+   d<subscript>n</subscript>,e<subscript>i1</subscript> ,...,
+   e<subscript>i mi</subscript>}</parameter>]</literal>
+of sort &bool;
+</para></listitem>
+</varlistentry>
+
+</variablelist>
+,and a vector of closed data terms, whose sorts are one by one equal to 
+the sorts of the process parameters. 
+This vector of closed data terms defines the initial state.
+An LPE can be seen as an inductive definition of a state space,
+which belongs to the process described by the &mcrl; specification. 
+</para>
+</refsect1>
+&mcrl.xml;
+</refentry>

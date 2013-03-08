@@ -1,0 +1,78 @@
+# $Id: Makefile.in,v 1.4 2005/11/10 16:11:47 bertl Exp $
+# Set the following macros to their appropriate values.
+SHELL		= /bin/sh
+.SUFFIXES:	.c .o .y .l
+
+ARCH    =       @ARCH@
+
+srcdir      = @srcdir@
+top_srcdir  = @top_srcdir@
+prefix      = @prefix@
+exec_prefix = @exec_prefix@
+datarootdir = @datarootdir@
+libdir      = @libdir@
+bindir      = @bindir@
+includedir  = @includedir@ 
+
+INSTALL         = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA    = @INSTALL_DATA@
+
+RM		=	@RM@
+CC              =       @CC@
+DEFS            =       @DEFS@
+CFLAGS          =       @CFLAGS@
+CPPFLAGS        =       -I. @CPPFLAGS@
+LDFLAGS         =       @LDFLAGS@
+LIBS            =       @LIBS@
+LEX		=	@LEX@
+YACC		=	@YACC@
+distdir		=	@distdir@
+
+
+SUBDIR		=	lin
+INCL		=	tmcrl.h
+OBJECTS		=	main.o y.tab.o datatypes.o
+SOURCES_C	=	main.c y.tab.c lex.yy.c datatypes.c
+SOURCES_Y	=	tmcrl.y tmcrl.l
+DISTFILES	=	Makefile.in $(INCL) $(SOURCES_C) $(SOURCES_Y)
+
+@SET_MAKE@
+
+all:		mcrl
+
+install:
+		$(MAKE) all
+		$(INSTALL) -d $(bindir)
+		$(INSTALL_PROGRAM) mcrl $(bindir)
+
+uninstall:	
+		if test -d $(bindir); then \
+		(cd $(bindir);rm -f mcrl) ;\
+		fi
+
+mcrl:	$(OBJECTS)
+		${CC} -o $@ $(LDFLAGS) $(OBJECTS) $(LIBS)
+
+lex.yy.c:	tmcrl.l 
+			$(LEX) tmcrl.l
+
+y.tab.c:	tmcrl.y lex.yy.c $(INCL)
+			$(YACC) tmcrl.y
+
+
+clean:
+		$(RM) $(OBJECTS) core core.* mcrl
+
+dist:		y.tab.c lex.yy.c
+		@test -d $(distdir)/$(SUBDIR) || mkdir -p $(distdir)/$(SUBDIR)
+		@for file in $(DISTFILES); do \
+		    cp  $$file "$(distdir)/$(SUBDIR)"; \
+		done
+
+
+.c.o:
+		$(CC) $(DEFS) $(CFLAGS) $(CPPFLAGS) -c $*.c
+
+$(OBJECTS):	$(INCL) Makefile
+

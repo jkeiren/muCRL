@@ -1,0 +1,245 @@
+
+<refentry id="instantiators">
+<refmeta>
+<refentrytitle>instantiators</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>instantiators</refname>
+<refpurpose>Distributed state space generator</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>instantiators</command> 
+<arg><option>-norewr</option></arg>
+<arg><option>-nsegments <parameter>number</parameter></option></arg>
+<arg><option>-deadlock</option></arg>
+<arg><option>-action <parameter>regexp</parameter></option></arg>
+<arg><option>-priority <parameter>regexp</parameter></option></arg>
+<arg><option>-all</option></arg>
+<arg><option>-trace</option></arg>
+<arg><option>-tick</option></arg>
+<arg><option>-select <parameter>regexp</parameter></option></arg>
+<arg><option>-no-lts</option></arg>
+<arg><option>-local</option></arg>
+<arg><option>-port <parameter>number</parameter></option></arg>
+<arg><option>-private</option></arg>
+<arg><option>-nskip <parameter>number</parameter></option></arg>
+<arg><option>-buffersize <parameter>number</parameter></option></arg>
+<arg><option><link linkend="step">Stepper Options</link></option></arg>
+<arg><option><link linkend="rw">Rewriter Options</link></option></arg>
+<arg><option><link linkend="libmcrl">Data Options</link></option></arg>
+<arg choice="plain"><option><filename><replaceable>input</replaceable></filename>
+</option></arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+The state space, defined by the &lpe;
+contained in the input file <filename><replaceable>input</replaceable>.tbf</filename>, 
+will be traversed in breadth-first order. There are options that 
+encountered actions and deadlocks will be printed during the traversal.
+If <command>instantiators</command> is invoked 
+with the option <option>-o</option>, then the encountered 
+transitions will be written down in the directory 
+<filename><replaceable>input</replaceable>.dmp</filename>.
+This output directory can be 
+read by the tools <command>&ltsmin.lnk;</command>, <command>&ltscp.lnk;</command>, and 
+<command>jsim</command>.
+The state space will be traversed by 
+processes located at the hosts mentioned
+in the lines of the file defined in shell variable 
+<literal>PBS_NODEFILE</literal>
+(or <filename>~/hosts</filename> if <literal>PBS_NODEFILE</literal>
+is undefined).
+</para>
+<para>
+State space generation can be halted by command  
+<command>mgr</command>, which is short for <command>mgr -exit</command>.
+All involved processes are killed.
+</para>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+<!--<title>Options</title>-->
+<varlistentry>
+  <term><option>-norewr</option></term>
+  <listitem>
+    <para>
+Loads the existing compiled data part contained in 
+<filename><replaceable>file</replaceable>.so</filename>
+instead of creating this.
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-nsegments <parameter>number</parameter></option>
+  </term>
+  <listitem>
+    <para>
+    The number of distributed state space traversing processes. 
+    This number must be smaller or equal to the number of hosts mentioned
+    in  <filename>~/hosts</filename> (except if the flag  
+     <option>-local </option> is used).
+    Each process maintains an unique subset of the data base, called 
+    <literal>segment</literal>. All objects of the data base are member of
+    one and not more than one segment.
+    The number of segments is equal to the number of 
+    state space traversing processes. 
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-deadlock</option> </term>
+  <listitem>
+  <para>
+  Search for the existence of a deadlock
+  </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-action <parameter>regexp</parameter></option></term>
+  <listitem>
+  <para>
+  Search for the existence of an action which matches 
+  <parameter>regexp</parameter>, which stands for a regular expression.
+  </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-priority <parameter>regexp</parameter></option></term>
+  <listitem>
+  <para> if transitions with labels satisfying
+   <parameter>regexp</parameter> are enabled, take only these transitions.
+   Take all transitions otherwise.
+  </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-all</option>
+  </term>
+  <listitem>
+   <para>
+  Print all encountered deadlocks, and all encountered actions 
+  mentioned in the option <option>-action</option>.
+   </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-trace</option>
+  </term>
+  <listitem>
+   <para>
+  Print in addition traces to encountered deadlocks, 
+  and all encountered actions
+  mentioned in the option <option>-action</option>.
+   </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-tick</option>
+  </term>
+  <listitem>
+   <para>
+  Postpone <literal>tick</literal> transitions until no other transitions are
+  possible.
+   </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-select <parameter>regexp</parameter></option></term>
+  <listitem>
+  <para>
+  For each explored state create a partition of outgoing transitions
+which is defined by the first argument of their actions.
+If there is a class containing only transitions, whose action names 
+satisfying <parameter>regexp</parameter> then select the transitions 
+in this class. Select all, otherwise. 
+  </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-no-lts</option>
+  </term>
+  <listitem>
+   <para>
+   No Labeled Transition System will be written down.
+   </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+
+  <term><option>-port <parameter>number</parameter></option></term>
+  <listitem>
+    <para>
+    Port numbers  
+    <parameter>number</parameter>,...,<parameter>number</parameter> 
+    + <parameter>number of segments</parameter> + 1 are taken.
+    The first two ports are used by the
+    <application>manager</application> and the 
+    <application>master database</application>;
+    both of them are processes.
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-local</option></term>
+  <listitem>
+    <para>
+    The host name <literal>localhost</literal> will be used
+    (instead of the host names mentioned in <filename>~/hosts</filename>).
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-private</option></term>
+  <listitem>
+    <para>
+    Private disks will be used, which causes a less burden on 
+    <literal>NFS</literal>
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-nskip <parameter>number</parameter></option></term>
+  <listitem>
+    <para>
+    The number of top lines that will be skipped in 
+    <filename>~/hosts</filename>. 
+Advised is to add the flag <literal>-nskip 1</literal> to the command line.
+The host defined in the first line is then reserved for only the processes
+<literal>dbstart </literal> and  <literal>mgrstart</literal>.
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><option>-bufsize <parameter>number</parameter></option></term>
+  <listitem>
+    <para>
+    Set the size of the IO buffers (in bytes). 
+    Advantages of taking a large number are: less (expensive) flushes, 
+    and contiguous files. 
+    </para>
+  </listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+&instantiators.xml;
+</refentry>

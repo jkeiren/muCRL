@@ -1,0 +1,57 @@
+.TH INVCHECK 4 19/03/2001
+.SH NAME
+invcheck \- Check an invariant for a linear process (LPO)
+
+.SH SYNOPSIS
+.B invcheck
+-invariant 
+.I 
+inv-file\c
+ [OPTIONS]
+
+.SH OPTIONS 
+.IP \-generate
+writes the invariance formulae to stdout, instead of proving them.
+.IP \-all
+doesn't terminate as soon as an invariant-violation is found
+.IP \-verbose
+indicates on stderr for which summands the invariant holds
+.IP \-print
+prints the resulting BDDs
+.IP \-counter
+prints counter-examples for summands where the invariant is not preserved
+.IP \-help
+prints a help message
+
+.in 0.75i
+If -generate is absent, -verbose is turned on automatically. Furthermore,
+-generate cannot be used in combination with -print or -counter.
+
+.SH DESCRIPTION
+.B invcheck
+is a tool that checks and reports whether the formula in 
+.I inv-file
+holds for the initial state, and whether it is preserved by all
+transitions in the LPO on stdin.  With the -counter and -print
+options, one gets some diagnostic information.
+
+With the -generate flag, the invariance formulas are generated in the
+format understood by formcheck. These can be solved by another prover.
+
+.SH FILES
+.IP inv-file
+A file containing a formula, which is a term of type Bool, containing
+the LPO parameters as free variables.
+.IP stdin
+An LPO in tbf-format.
+.IP stdout
+A list of declarations and formulae, only generated with option -generate.
+
+.SH SEE ALSO
+
+prover(4), formcheck(4)
+
+.SH AUTHOR
+Jaco van de Pol <vdpol@cwi.nl>
+.LP
+Please send all complaints, comments and bug fixes to me. 

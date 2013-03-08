@@ -1,0 +1,11 @@
+<cmdsynopsis>
+<command><replaceable>ext2</replaceable><token>::=</token></command>
+<group choice="plain">
+<arg choice="plain">svc</arg>
+<arg choice="plain">bcg</arg>
+<arg choice="plain">aut</arg>
+<arg choice="plain">dir</arg>
+<arg choice="plain">fsm</arg>
+<arg choice="plain">fc2</arg>
+</group>
+</cmdsynopsis>

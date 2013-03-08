@@ -1,0 +1,122 @@
+
+<refentry id="abp">
+<refmeta>
+<refentrytitle>alternating bit protocol</refentrytitle>
+<manvolnum>7</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>abp</refname>
+<refpurpose>Example of an &mcrl; specification  
+</refpurpose> 
+</refnamediv>
+
+<refsect1>
+<title>Alternating Bit Protocol</title>
+<programlisting>
+%% $Id: abp.mcrl,v 1.1.1.1 2004/09/07 15:06:33 uid523 Exp $
+%% This file contains the alternating bit protocol,
+%% as described in J.C.M. Baeten and W.P. Weijland,
+%% Process Algebra, Cambridge Tracts in Theoretical
+%% Computer Science 18, Cambridge University Press, 1990.
+%% The only exception is that the domain
+%% D to consist of two data elements d1 and d2 to facilitate
+%% simulation.
+
+
+<command>sort</command> D
+<command>func</command> d1,d2: &mapsto; D
+<command>map</command>  eq:D#D &mapsto; Bool
+
+<command>rew</command> eq(d1,d1)=T
+     eq(d2,d2)=T
+     eq(d1,d2)=F
+     eq(d2,d1)=F
+
+
+<command>sort</command> Bool
+
+<command>map</command>  and,or:Bool#Bool &mapsto; Bool
+     not:Bool &mapsto; Bool
+     eq:Bool#Bool&mapsto;Bool
+
+<command>func</command> T,F:&mapsto; Bool
+
+<command>var</command>  x:Bool
+<command>rew</command>  and(T,x)=x
+     and(x,T)=x
+     and(x,F)=F
+     and(F,x)=F
+     
+     or(T,x)=T
+     or(x,T)=T
+     or(x,F)=x
+     or(F,x)=x
+
+     not(F)=T
+     not(T)=F
+
+     eq(x,T)=x
+     eq(T,x)=x
+     eq(F,x)=not(x)
+     eq(x,F)=not(x)
+
+
+<command>sort</command>  error
+<command>func</command>  e:&mapsto; error
+<command>map</command>   eq:error#error &mapsto; Bool
+
+<command>var</command>   x:error
+<command>rew</command>   eq(x,x)=T
+ 
+<command>sort</command>  bit
+<command>func</command>  0,1:&mapsto; bit
+<command>map</command>   invert:bit &mapsto; bit
+      eq:bit#bit&mapsto; Bool
+
+<command>var</command>   x:bit
+<command>rew</command>   eq(x,x)=T
+      eq(0,1)=F
+      eq(1,0)=F
+
+<command>rew</command>   invert(1)=0
+      invert(0)=1
+
+<command>act</command>   r1,s4    : D
+      s2,r2,c2 : D#bit
+      s3,r3,c3 : D#bit
+      s3,r3,c3 : error
+      s5,r5,c5 : bit
+      s6,r6,c6 : bit
+      s6,r6,c6 : error
+
+      tau_s3dn tau_s3e tau_s6n tau_s6e
+
+<command>comm</command>  r2|s2 = c2
+      r3|s3 = c3
+      r5|s5 = c5
+      r6|s6 = c6
+
+<command>proc</command>  S            = S(0).S(1).S
+      S(n:bit)     = sum(d:D,r1(d).S(d,n))
+      S(d:D,n:bit) = s2(d,n).((r6(invert(n))+r6(e)).S(d,n)+r6(n))
+
+      R            = R(1).R(0).R
+      R(n:bit)     = (sum(d:D,r3(d,n))+r3(e)).s5(n).R(n)+
+                      sum(d:D,r3(d,invert(n)).s4(d).s5(invert(n)))
+
+      K            = sum(d:D,sum(n:bit,r2(d,n).
+                          (tau_s3dn.s3(d,n)+tau_s3e.s3(e)))) .K
+
+      L            = sum(n:bit,r5(n).(tau_s6n.s6(n)+tau_s6e.s6(e))).L
+
+
+<command>init</command>
+% hide({c2,c3,c5,c6,tau_s3dn,tau_s3e,tau_s6n,tau_s6e}, 
+             encap({r2,r3,r5,r6,s2,s3,s5,s6}, S || K || L ||  R)
+% )
+
+</programlisting>
+</refsect1>
+&abp.xml;
+</refentry>

@@ -1,0 +1,68 @@
+
+<refentry id="parelm">
+<refmeta>
+<refentrytitle>parelm</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>parelm</refname>
+<refpurpose>
+Elimination of inert process parameters and not occurring sum variables
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>parelm</command> 
+&common1;
+<arg><option><link linkend="libmcrl">Data Options</link></option></arg>
+<arg><option><parameter>input</parameter>.tbf</option></arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+<refsect1>
+<title>Description</title>
+<para>
+This filter reads from 
+<filename><replaceable>input</replaceable>.tbf</filename> (or 
+<filename> stdin </filename> if not given) an &lpe; 
+in <literal>.tbf </literal> format. 
+It removes process parameters and not occurring sum variables.
+The output LPE is stronly bisimilar to the input LPE.
+</para>
+<para>
+It does the following steps:
+</para>
+<itemizedlist>
+<listitem><para> 
+Select the process parameters which occur in the conditions
+and the action arguments of the LPE
+</para></listitem>
+<listitem><para>
+Add to that selection all these process parameters on which all
+in the previous step selected process parameters depend
+</para></listitem>
+<listitem><para>
+Remove all these parameters which are not selected
+</para></listitem>
+<listitem><para>
+Remove in each summand the process arguments belonging
+to the removed parameters
+</para></listitem>
+<listitem><para>
+Remove in each summand all these sum variables which occur neither
+in the condition, nor in the action arguments, nor in the state vector
+</para></listitem>
+</itemizedlist>
+<para>
+It writes the  LPE to <filename>stdout</filename>.
+</para>
+</refsect1>
+<refsect1>
+<title>Options</title>
+<variablelist>
+<!--<title>Options</title>-->
+&common2;
+</variablelist>
+</refsect1>
+&parelm.xml;
+</refentry>

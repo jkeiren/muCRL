@@ -1,0 +1,4 @@
+% in every state it should be possible to perform a step:
+[T*]<T>T
+% without regular formulas:
+%   nu Z.(<T>T && [T]Z)

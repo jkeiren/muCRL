@@ -1,0 +1,38 @@
+% This is a very simple description of a control system
+% for a parking garage specified by Henri Korver.
+
+ 
+sort	Bool
+
+func	T,F        :          ->Bool
+map     eq         : Bool#Bool->Bool
+
+rew	eq(T,T)  = T
+	eq(T,F)  = F
+	eq(F,T)  = F
+	eq(F,F)  = T
+
+
+act	ParkingAllowed 
+        ParkingRequest
+	LeavingAllowed
+	LeavingRequest
+        ExitEmployed
+
+	FullSignal    : Bool 
+	ParkingStatus : Bool
+	GuardChange   : Bool
+
+proc    FP  = ParkingRequest.ParkingAllowed.OOP + 
+              LeavingRequest.LeavingAllowed.FOP +
+              GuardChange(F).FullSignal(T).PF
+
+	OOP = ParkingStatus(T).FP + 
+              ParkingStatus(F).FullSignal(T).PF
+
+	PF  = GuardChange(T).FullSignal(F).FP + 
+              LeavingRequest.LeavingAllowed.FullSignal(F).FOP
+
+	FOP = ExitEmployed.FP
+
+init FP
