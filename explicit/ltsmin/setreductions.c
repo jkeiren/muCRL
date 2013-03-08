@@ -418,6 +418,7 @@ void set_reduce_branching2(lts_t lts){
 	//lts_t inv;
 
 	tau=lts->tau;
+        lts_divergence_marking(lts);
 	if (tau_cycle_elim) {
 		lts_tau_cycle_elim(lts);
 		Warning(1,"size after tau cycle elimination is %d states and %d transitions",lts->states,lts->transitions);

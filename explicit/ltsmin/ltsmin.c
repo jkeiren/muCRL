@@ -152,6 +152,7 @@ static int bfs_reorder=0;
 static int randomize_stateno=0;
 static int sort_lts=0;
 static int postsort_lts=0;
+static int tau_divergence_marking=0;
 
 struct option options[]={
 	{"",OPT_NORMAL,NULL,NULL,NULL,	"usage: ltsmin options input [output]",
@@ -179,6 +180,7 @@ struct option options[]={
 			"compute smallest deterministic LTS, which is trace equivalence"},
 	{"-w",OPT_NORMAL,select_weak_reduction,NULL,NULL,"apply weak bisimulation reduction"},
 	{"-diam",OPT_NORMAL,select_compute_diameter,NULL,NULL,"compute diameter of LTS"},
+        {"-div",OPT_NORMAL,set_int,&tau_divergence_marking,NULL,"preserve divergences when applying branching bisimulation reduction"},
 	{"-c",OPT_NORMAL,set_int,&tau_cycle_elim,NULL,"apply tau cycle elimination before reduction",
 			"possible preprocessing step for branching bisimulation."},
 	{"-i",OPT_NORMAL,set_int,&tau_indir_elim,NULL,"apply tau indirection elimination before reduction",
@@ -315,6 +317,19 @@ int main(int argc,char **argv){
 			stopTimer(timer);
 			if (verbosity>0) ReportTimer(timer,"sorting took");
 	}
+        switch(action){
+          case BRANCHING_REDUCTION_SET:
+          case BRANCHING_REDUCTION_SET2:
+          case BRANCHING_REDUCTION_SET3:
+            resetTimer(timer);
+            startTimer(timer);
+            lts_divergence_marking(lts);
+            stopTimer(timer);
+            if(verbosity>0) ReportTimer(timer,"marking divergences took");
+          default:
+            break;
+        }
+
 	switch(action){
 		case CYCLE_REDUCTION:
 			resetTimer(timer);
@@ -430,6 +445,19 @@ int main(int argc,char **argv){
 			break;
 	}
 	MEMSTAT_CHECK;
+        switch(action){
+          case BRANCHING_REDUCTION_SET:
+          case BRANCHING_REDUCTION_SET2:
+          case BRANCHING_REDUCTION_SET3:
+            resetTimer(timer);
+            startTimer(timer);
+            lts_remove_divergence_marking(lts);
+            stopTimer(timer);
+            if(verbosity>0) ReportTimer(timer,"removing divergence labels took");
+          default:
+            break;
+        }
+        MEMSTAT_CHECK;
 	if (postsort_lts){
 			resetTimer(timer);
 			startTimer(timer);

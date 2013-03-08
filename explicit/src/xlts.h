@@ -29,7 +29,7 @@ typedef struct lts {
 	cell_t *src;
 	uint32_t *label;
 	cell_t *dest;
-	int tau, deadlock;
+	int tau, divergence, deadlock;
 	char **label_string;
 	uint32_t label_count;
 } *lts_t;
@@ -56,6 +56,10 @@ extern void lts_bfs_reorder(lts_t lts);
 extern void lts_randomize(lts_t lts);
 
 extern void lts_tau_cycle_elim(lts_t lts);
+
+extern void lts_divergence_marking(lts_t lts);
+
+extern void lts_remove_divergence_marking(lts_t lts);
 
 extern void lts_tau_indir_elim(lts_t lts);
 

@@ -15,6 +15,11 @@
 #include "vector_db.h"
 #include "utl.h"
 
+/* AUT IO */
+
+#include "aut-io.h"
+#include "label.h"
+
 typedef int (*compar_f) (const void *,const void *);
 
 int lts_write_segments=0;
@@ -31,10 +36,11 @@ lts_t lts_create(){
 	lts->type=LTS_LIST;
 	lts->transitions=0;
 	lts->states=0;
-	lts->tau=-1; lts->deadlock = DEADLOCK;
+	lts->tau=-1;
+        lts->deadlock = DEADLOCK;
 	lts->label_string=NULL;
-   lts->s_ofs= lts->t_ofs = 0;
-   lts->root = lts->root2 = 0;
+        lts->s_ofs= lts->t_ofs = 0;
+        lts->root = lts->root2 = 0;
 	return lts;
 }
 
@@ -133,7 +139,7 @@ void lts_set_type(lts_t lts,LTS_TYPE type){
 			break;
 	}
 	MEMSTAT_CHECK;
-	/* then change to requried type */
+	/* then change to required type */
 	lts->type=type;
 	switch(type){
 		case LTS_LIST:
@@ -409,10 +415,10 @@ void lts_tau_cycle_elim(lts_t lts){
 	for(i=0;i<lts->states;i++){
 		pass1_dfs_count=0;
 		pass1_dfs(lts,tau,map,&time,i);
-		if (pass1_dfs_count) Warning(3,"tau compenent has size %d",pass1_dfs_count);
+		if (pass1_dfs_count) Warning(3,"(tau cycle elim) tau compenent has size %d",pass1_dfs_count);
 		if (pass1_dfs_count>max) max=pass1_dfs_count;
 	}
-	Warning(2,"worst tau component has size %d",max);
+	Warning(2,"(tau cycle elim) worst tau component has size %d",max);
 	/* renumber: highest exit time means lowest number */
 	/* at the same time reverse direction of edges */
 	lts_set_type(lts,LTS_LIST);
@@ -453,11 +459,241 @@ void lts_tau_cycle_elim(lts_t lts){
 			Fatal(1,0,"tau from high to low");
 		}
 	}
-	Warning(2,"all tau steps from low to high");
+	Warning(2,"(tau cycle elim) all tau steps from low to high");
 	lts_set_size(lts,component,count);
 	free(map);
 	lts_uniq(lts);
 }
+
+// lts_divergence_marking replaces divergent tau actions with a dedicated
+// divergence action ("divergence").
+// This variation does contract all nodes in a strongly connected tau component
+// into a single node.
+static void lts_divergence_marking_contract(lts_t lts){
+	int i,time,tmp,component,count,s,l,d,max,tau,divergent;
+	uint32_t *map;
+
+        // Create new label, and store some index
+        divergent = getlabelindex("divergent", 1);
+        Warning(2,"label index for divergent: %d\n", divergent);
+        // New count of labels (this includes divergent)
+        count=getlabelcount();
+        // Record label in label_string structure.
+        // This requires additional space
+        lts->label_string=(char**) realloc(lts->label_string, count*sizeof(char*));
+        lts->label_string[count-1]=getlabelstring(divergent);
+
+	tau=lts->tau;
+	/* mark with exit times */
+	lts_set_type(lts,LTS_BLOCK);
+	map=(uint32_t*)malloc(sizeof(uint32_t)*lts->states);
+	for(i=0;i<lts->states;i++) {
+		map[i]=0;
+	}
+	time=1;
+	max=0;
+	for(i=0;i<lts->states;i++){
+		pass1_dfs_count=0;
+		pass1_dfs(lts,tau,map,&time,i);
+		if (pass1_dfs_count) Warning(3,"(div marking) tau component has size %d",pass1_dfs_count);
+		if (pass1_dfs_count>max) max=pass1_dfs_count;
+	}
+	Warning(2,"(div marking) worst tau component has size %d",max);
+	/* renumber: highest exit time means lowest number */
+	/* at the same time reverse direction of edges */
+	lts_set_type(lts,LTS_LIST);
+	lts->root=time-map[lts->root];
+	for(i=0;i<lts->transitions;i++){
+		tmp=lts->src[i];
+		lts->src[i]=time-map[lts->dest[i]];
+		lts->dest[i]=time-map[tmp];
+	}
+        // At this point, direction of edges has been reversed.
+
+	/* mark components */
+	lts_set_type(lts,LTS_BLOCK);
+	for(i=0;i<lts->states;i++){
+		map[i]=0;
+	}
+	component=0;
+	for(i=0;i<lts->states;i++){
+		if(map[i]==0){
+			component++;
+			pass2_dfs(lts,tau,map,component,i);
+		}
+	}
+        // Components have been marked.
+
+	/* divide out equivalence classes reverse direction of edges again */
+	lts_set_type(lts,LTS_LIST);
+	lts->root=map[lts->root]-1;
+	count=0;
+	for(i=0;i<lts->transitions;i++){
+		d=map[lts->src[i]]-1; // SCC of src
+		s=map[lts->dest[i]]-1; // SCC of dest
+		l=lts->label[i]; // Original label
+
+		if ((l==tau)&&(s==d)) {
+                  // Class is divergent (has tau-loop).
+                  // Change label into div and re-add the transition.
+                  //l=divergent;
+//                  continue;
+                  l=divergent;
+		}
+                // Reverse transitions, keep original states.
+		//lts->src[count]=lts->dest[i];
+		//lts->label[count]=l;
+		//lts->dest[count]=lts->src[i];
+                lts->src[count]=s;
+		lts->label[count]=l;
+		lts->dest[count]=d;
+		++count;
+		if ((l==tau)&&(s>d)){
+			Fatal(1,0,"tau from high to low");
+		}
+	}
+	Warning(2,"(div marking) all tau steps from low to high");
+	lts_set_size(lts,component,count);
+	free(map);
+	lts_uniq(lts);
+}
+
+void lts_divergence_marking(lts_t lts){
+	int i,time,tmp,component,count,s,l,d,max,tau,divergent;
+	uint32_t *map;
+
+        // array recording divergence information per state
+        int* divergence_marking;
+        uint32_t divergence_count; // record number of divergences
+        divergence_count = 0;
+        divergence_marking=(uint32_t*)malloc(sizeof(uint32_t)*lts->states);
+        for(i=0; i<lts->states;++i)
+        {
+          divergence_marking[i]=0;
+        }
+        // marking has position for each state;
+
+        // Create new label, and store some index
+        divergent = getlabelindex("divergent", 1);
+        Warning(2,"label index for divergent: %d\n", divergent);
+        // New count of labels (this includes divergent)
+        count=getlabelcount();
+        // Record label in label_string structure.
+        // This requires additional space
+        lts->label_string=(char**) realloc(lts->label_string, count*sizeof(char*));
+        lts->label_string[count-1]=getlabelstring(divergent);
+
+	tau=lts->tau;
+	/* mark with exit times */
+	lts_set_type(lts,LTS_BLOCK);
+	map=(uint32_t*)malloc(sizeof(uint32_t)*lts->states);
+	for(i=0;i<lts->states;++i) {
+		map[i]=0;
+	}
+	time=1;
+	max=0;
+	for(i=0;i<lts->states;i++){
+		pass1_dfs_count=0;
+		pass1_dfs(lts,tau,map,&time,i);
+		if (pass1_dfs_count) Warning(3,"(div marking) tau component has size %d",pass1_dfs_count);
+		if (pass1_dfs_count>max) max=pass1_dfs_count;
+	}
+	Warning(2,"(div marking) worst tau component has size %d",max);
+	/* renumber: highest exit time means lowest number */
+	/* at the same time reverse direction of edges */
+	lts_set_type(lts,LTS_LIST);
+	lts->root=time-map[lts->root];
+	for(i=0;i<lts->transitions;i++){
+		tmp=lts->src[i];
+		lts->src[i]=time-map[lts->dest[i]];
+		lts->dest[i]=time-map[tmp];
+	}
+        // At this point, direction of edges has been reversed.
+
+	/* mark components */
+	lts_set_type(lts,LTS_BLOCK);
+	for(i=0;i<lts->states;i++){
+		map[i]=0;
+	}
+	component=0;
+	for(i=0;i<lts->states;i++){
+		if(map[i]==0){
+			++component;
+			pass2_dfs(lts,tau,map,component,i);
+		}
+	}
+        // Components have been marked.
+
+	/* divide out equivalence classes reverse direction of edges again */
+	lts_set_type(lts,LTS_LIST);
+	lts->root=map[lts->root]-1;
+	for(i=0;i<lts->transitions;++i){
+		d=map[lts->src[i]]-1; // SCC of src
+		s=map[lts->dest[i]]-1; // SCC of dest
+		l=lts->label[i]; // Original label
+
+		if ((l==tau)&&(s==d)) {
+                  // Class is divergent (has tau-loop).
+                  // Change label into div and re-add the transition.
+                  divergence_marking[lts->src[i]] = 1;
+                  ++divergence_count;
+		}
+                // Reverse transitions, keep original states.
+                tmp=lts->src[i];
+		lts->src[i]=lts->dest[i];
+		lts->label[i]=l;
+		lts->dest[i]=tmp;
+		if ((l==tau)&&(s>d)){
+			Fatal(1,0,"tau from high to low");
+		}
+	}
+
+        tmp = lts->transitions;
+	//lts_set_size(lts,component,count);
+        lts_set_size(lts, lts->states, (lts->transitions) + divergence_count);
+        // start adding at position tmp;
+        for(i = 0; i < lts->states; ++i)
+        {
+          if(divergence_marking[i]==1)
+          {
+            Warning(3,"  marking state i: %ld as divergent. Position: %ls", i, tmp);
+            lts->src[tmp]=i;
+            lts->label[tmp]=divergent;
+            lts->dest[tmp]=i;
+            ++tmp;
+          }
+        }
+        lts->transitions=tmp;
+	Warning(2,"(div marking) all tau steps from low to high");
+
+	free(map);
+        free(divergence_marking);
+	lts_uniq(lts);
+        Warning(2,"done marking divergent states");
+}
+
+void lts_remove_divergence_marking(lts_t lts){
+  int i, tau, divergent;
+  tau = lts->tau;
+
+  divergent = getlabelindex("divergent", 0);
+  
+  Warning(2,"replacing divergent labels with tau");
+
+  if(divergent >= 0)
+  {
+    for(i = 0; i < lts->transitions; ++i)
+    {
+      if(lts->label[i] == divergent)
+      {
+        lts->label[i] = tau;
+      }
+    }
+  }
+
+  Warning(2,"done replacing divergent labels with tau");
+}
+
 
 static int normalize(int *map,int i){
 	int old;
@@ -523,11 +759,6 @@ void lts_tau_indir_elim(lts_t lts){
 	free(map);
 }
 
-
-/* AUT IO */
-
-#include "aut-io.h"
-#include "label.h"
 
 static void lts_read_aut(char *name,lts_t lts){
 	GZfile file;
