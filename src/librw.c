@@ -1301,7 +1301,7 @@ static ATbool PRrightN(ATerm rhs, ATbool lazy) {
        result = ATtrue;
        }
    if (ATgetType(rhs)==AT_LIST) {
-        P(" return ");PRoutputVariable((ATermList) rhs);P(";\n"); return;
+        P(" return ");PRoutputVariable((ATermList) rhs);P(";\n"); return result; // JK Fix to build on OS X 10.9 (clang)
    }
    if (!lazy) P(" "); 
    P(" return ");

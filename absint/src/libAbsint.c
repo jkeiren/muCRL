@@ -1,6 +1,6 @@
 /* $Id: libAbsint.c,v 1.1.1.1 2004/09/07 15:06:33 uid523 Exp $ */
 
-
+#include <string.h>
 #include "libAbsint.h"
 
 ATbool ORDER = ATfalse;
@@ -167,7 +167,7 @@ AFun createAbstractAlpha(ATerm absSort, AFun H){
 	func = (ATerm)ATmakeApplList(alpha, ATmakeList1(liftSort(sort)));
 	MCRLputMap(func, liftSort(absSort), &ok);
 	
-	if(GALOIS) return;
+	if(GALOIS) return alpha;
 	
 	emptyTerm = createEmptyCons(liftSort(sort));
 	emptyAbsTerm = createEmptyCons(liftSort(absSort));
